@@ -1,0 +1,59 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    ext {
+        lancet_group = 'com.jude'
+        lancet_version = '0.1.8'
+
+        android_tools_version = '2.3.1'
+        guava_version = '20.0'
+    }
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:$android_tools_version"
+        classpath 'com.novoda:bintray-release:0.4.0'
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+task bintrayuploadAll {
+    doLast{
+        "./gradlew clean build bintrayUpload -PbintrayUser=${properties.getProperty('bintrayUser')} -PbintrayKey=${properties.getProperty('bintrayKey')} -PdryRun=false".execute()
+    }
+}
+
+
+subprojects {
+
+    apply plugin: 'com.novoda.bintray-release'
+
+    version = lancet_version
+    group = lancet_group
+
+    publish {
+        userOrg = 'jude95'
+        groupId = 'com.jude'
+        artifactId = name
+        publishVersion = lancet_version
+        desc = 'a lightweight aop framework'
+        website = 'https://github.com/jude95'
+    }
+}
+
+

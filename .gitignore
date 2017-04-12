@@ -1,0 +1,22 @@
+# Eclipse
+.classpath
+.project
+.settings
+eclipsebin
+.gradle
+bin
+gen
+build
+out
+lib
+target
+pom.xml.*
+release.properties
+# Idea
+.idea
+*.iml
+classes
+obj
+#MacOS
+.DS_Store
+local.properties

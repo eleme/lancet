@@ -1,0 +1,15 @@
+apply plugin: 'java'
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile project(':lancet-base')
+    compile gradleApi()
+    compile "com.android.tools.build:gradle:$android_tools_version"
+    compile "com.google.guava:guava:$guava_version"
+    compile 'org.ow2.asm:asm-all:5.1', {
+        force = true
+    }
+}
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"

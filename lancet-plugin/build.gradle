@@ -1,0 +1,14 @@
+apply plugin: 'java'
+apply plugin: 'groovy'
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile localGroovy()
+    compile gradleApi()
+    compile "com.android.tools.build:gradle:$android_tools_version"
+    compile project(':lancet-weaver')
+}
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
