@@ -30,6 +30,7 @@ public class JarClassSupplier implements ClassSupplier {
     public JarClassSupplier(Collection<File> jars, ClassLoader loader) {
         this.jars = jars;
         this.loader = loader;
+        Log.i("jars: " + jars);
     }
 
     @Override

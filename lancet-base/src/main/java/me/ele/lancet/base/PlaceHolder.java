@@ -7,7 +7,7 @@ public final class PlaceHolder {
 
     public static final String SUPPLIER_CLASS_NAME = "me.ele.lancet.weaver.internal.supplier.DirClassSupplier";
     public static final String CLASS_NAME = PlaceHolder.class.getName().replace('.', '/');
-    public static final String RESOURCE_PATH = "/META-INF/fragarach/classes.txt";
+    public static final String RESOURCE_PATH = "META-INF/fragarach/classes.txt";
 
     private PlaceHolder() {
         throw new AssertionError();

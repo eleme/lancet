@@ -49,7 +49,7 @@ class JarRunner {
         ZipEntry entry
         try {
             while ((entry = zis.nextEntry) != null) {
-                if (entry.isDirectory() || PlaceHolder.RESOURCE_PATH == entry.name) {
+                if (entry.isDirectory() || PlaceHolder.RESOURCE_PATH == entry.name || PlaceHolder.CLASS_NAME == entry.name) {
                     continue
                 }
 
