@@ -68,11 +68,11 @@ subprojects { pro ->
         apply plugin: 'com.novoda.bintray-release'
         publish {
             userOrg = 'jude95'
-            groupId = 'com.jude'
+            groupId = lancet_group
             artifactId = pro.name
             publishVersion = lancet_version
-            desc = 'a lightweight aop framework'
-            website = 'https://github.com/jude95'
+            desc = 'a lightweight aop framework for java'
+            website = 'https://github.com/eleme'
         }
     }
 

@@ -10,19 +10,19 @@ import me.ele.lancet.weaver.internal.log.Log
 
 class LancetTransform extends Transform {
 
-    private final LancetExtension fragarachExtension
+    private final LancetExtension lancetExtension
     private final AppExtension appExtension
     private final Configuration configuration
 
-    public LancetTransform(LancetExtension fragarachExtension, AppExtension appExtension) {
-        this.fragarachExtension = fragarachExtension
+    public LancetTransform(LancetExtension lancetExtension, AppExtension appExtension) {
+        this.lancetExtension = lancetExtension
         this.appExtension = appExtension
-        this.configuration = new Configuration(appExtension, fragarachExtension)
+        this.configuration = new Configuration(appExtension, lancetExtension)
     }
 
     @Override
     String getName() {
-        "fragarach"
+        "lancet"
     }
 
 
@@ -69,9 +69,9 @@ class LancetTransform extends Transform {
     }
 
     private void initLog() {
-        Log.setLevel fragarachExtension.logLevel
-        if (!Strings.isNullOrEmpty(fragarachExtension.fileName)) {
-            Log.setImpl FileLoggerImpl.of(fragarachExtension.fileName)
+        Log.setLevel lancetExtension.logLevel
+        if (!Strings.isNullOrEmpty(lancetExtension.fileName)) {
+            Log.setImpl FileLoggerImpl.of(lancetExtension.fileName)
         }
     }
 

@@ -47,34 +47,35 @@ public class FileLoggerImpl implements ILogger {
 
 
     @Override
-    public void d(String msg) {
-        write("fragarach.debug", msg, null);
+    public void d(String tag,String msg) {
+        write("D "+tag, msg, null);
     }
 
     @Override
-    public void i(String msg) {
-        write("fragarach.info", msg, null);
+    public void i(String tag,String msg) {
+        write("I "+tag, msg, null);
     }
 
     @Override
-    public void w(String msg) {
-        w(msg, null);
+    public void w(String tag,String msg) {
+        w(tag,msg, null);
     }
 
     @Override
-    public void w(String msg, Throwable t) {
-        write("fragarach.warn", msg, t);
+    public void w(String tag,String msg, Throwable t) {
+        write("W "+tag, msg, t);
     }
 
     @Override
-    public void e(String msg) {
-        e(msg, null);
+    public void e(String tag,String msg) {
+        e(tag,msg, null);
     }
 
     @Override
-    public void e(String msg, Throwable t) {
-        write("fragarach.error", msg, t);
+    public void e(String tag,String msg, Throwable t) {
+        write("E "+tag, msg, t);
     }
+
 
     synchronized protected void write(String prefix, String msg, Throwable t) {
         pr.println(String.format("[%-10s] %s", prefix, msg));

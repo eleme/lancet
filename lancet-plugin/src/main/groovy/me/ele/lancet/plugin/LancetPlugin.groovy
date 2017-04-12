@@ -13,7 +13,7 @@ class LancetPlugin implements Plugin<Project> {
         }
 
         def appExtension = project.android as AppExtension
-        def fragarachExtension = project.extensions.create('lancet', LancetExtension)
-        appExtension.registerTransform(new LancetTransform(fragarachExtension, appExtension))
+        def lancetExtension = project.extensions.create('lancet', LancetExtension)
+        appExtension.registerTransform(new LancetTransform(lancetExtension, appExtension))
     }
 }
