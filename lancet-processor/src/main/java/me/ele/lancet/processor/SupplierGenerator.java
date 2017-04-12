@@ -1,4 +1,4 @@
-package me.ele.lancet.collector;
+package me.ele.lancet.processor;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;

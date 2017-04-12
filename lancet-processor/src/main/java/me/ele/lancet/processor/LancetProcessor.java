@@ -1,4 +1,4 @@
-package me.ele.lancet.collector;
+package me.ele.lancet.processor;
 
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.ClassName;

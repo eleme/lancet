@@ -3,7 +3,7 @@
 buildscript {
     ext {
         lancet_group = 'com.jude'
-        lancet_version = '0.1.8'
+        lancet_version = '0.1.9'
 
         android_tools_version = '2.3.1'
         guava_version = '20.0'

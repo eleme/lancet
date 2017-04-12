@@ -1,1 +1,1 @@
-include ':lancet-base', ':lancet-weaver', ':lancet-plugin', ':lancet-collector'
+include ':lancet-base', ':lancet-weaver', ':lancet-plugin', ':lancet-processor'
