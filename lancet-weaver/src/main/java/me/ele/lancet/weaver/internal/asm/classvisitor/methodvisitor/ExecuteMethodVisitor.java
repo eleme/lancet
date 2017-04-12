@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
 import me.ele.lancet.weaver.internal.entity.TargetMethodInfo;
+import me.ele.lancet.weaver.internal.log.Log;
 import me.ele.lancet.weaver.internal.util.AopMethodAdjuster;
 
 /**
@@ -52,6 +53,7 @@ public class ExecuteMethodVisitor extends MethodNode {
     public void transform() {
         int fromIndex = this.maxLocals;
         for (ExecuteInfo executeInfo : targetMethodInfo.executes) {
+            Log.i("executeInfo: "+executeInfo);
             fromIndex = transformEachExecute(fromIndex, executeInfo);
         }
         maxLocals = fromIndex;

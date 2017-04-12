@@ -1,6 +1,5 @@
 package me.ele.lancet.weaver.internal;
 
-import me.ele.lancet.weaver.internal.supplier.JarClassSupplier;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -33,6 +32,7 @@ import me.ele.lancet.weaver.internal.meta.MethodMetaInfo;
 import me.ele.lancet.weaver.internal.parser.ReflectiveMetaParser;
 import me.ele.lancet.weaver.internal.supplier.ComponentSupplier;
 import me.ele.lancet.weaver.internal.supplier.DirCodeSupplier;
+import me.ele.lancet.weaver.internal.supplier.JarClassSupplier;
 
 
 /**
@@ -46,7 +46,7 @@ public class AsmWeaver implements Weaver {
 
         ClassSupplier dirSupplier = new DirCodeSupplier(loader);
         ClassSupplier jarSupplier = new JarClassSupplier(jars, loader);
-        ClassSupplier supplier = ComponentSupplier.newInstance(dirSupplier);
+        ClassSupplier supplier = ComponentSupplier.newInstance(dirSupplier, jarSupplier);
 
         MetaParser parser = new ReflectiveMetaParser(loader);
         List<Class<?>> classes = supplier.get();

@@ -18,7 +18,7 @@ public class ExcludeClassVisitor extends ClassVisitor {
     static private final Set<String> excludePackage;
     static{
         excludePackage = new HashSet<>();
-        excludePackage.add("me/ele/fragarach");
+        excludePackage.add("me/ele/lancet");
         excludePackage.add("android");
         excludePackage.add("com/android");
         excludePackage.add("java");
