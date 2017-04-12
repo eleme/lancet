@@ -54,15 +54,11 @@ public class Log {
     }
 
     public static void d(String msg) {
-        if (level.compareTo(Level.DEBUG) <= 0) {
-            tag(DEFAULT_TAG).d(msg);
-        }
+        tag(DEFAULT_TAG).d(msg);
     }
 
     public static void i(String msg) {
-        if (level.compareTo(Level.INFO) <= 0) {
-            tag(DEFAULT_TAG).i(msg);
-        }
+        tag(DEFAULT_TAG).i(msg);
     }
 
     public static void w(String msg) {
@@ -70,9 +66,7 @@ public class Log {
     }
 
     public static void w(String msg, Throwable t) {
-        if (level.compareTo(Level.WARN) <= 0) {
-            tag(DEFAULT_TAG).w(msg, t);
-        }
+        tag(DEFAULT_TAG).w(msg, t);
     }
 
     public static void e(String msg) {
@@ -80,9 +74,7 @@ public class Log {
     }
 
     public static void e(String msg, Throwable t) {
-        if (level.compareTo(Level.ERROR) <= 0) {
-            tag(DEFAULT_TAG).e(msg, t);
-        }
+        tag(DEFAULT_TAG).e(msg, t);
     }
 
     public enum Level {

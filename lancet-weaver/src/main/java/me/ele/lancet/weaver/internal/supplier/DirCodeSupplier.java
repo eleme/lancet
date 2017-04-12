@@ -2,6 +2,7 @@ package me.ele.lancet.weaver.internal.supplier;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,12 +24,20 @@ public class DirCodeSupplier implements ClassSupplier {
 
     @Override
     public List<Class<?>> get() {
+        Class clazz = null;
         try {
-            Class clazz = cl.loadClass(PlaceHolder.SUPPLIER_CLASS_NAME);
+            clazz = cl.loadClass(PlaceHolder.SUPPLIER_CLASS_NAME);
+        } catch (ClassNotFoundException e) {
+            Log.w("There is no AOP class found in project");
+            return new ArrayList<>();
+        }
+        try {
             Constructor constructor = clazz.getConstructor(ClassLoader.class);
             Object supplier = constructor.newInstance(cl);
             Method method = clazz.getMethod("get");
-            return (List<Class<?>>) method.invoke(supplier);
+            List<Class<?>> list = (List<Class<?>>) method.invoke(supplier);
+            Log.tag("Process").i("read AOP class: "+list);
+            return list;
         } catch (Exception e) {
             Log.w("DirSupplier initialize failed", e);
         }
