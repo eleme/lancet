@@ -74,7 +74,7 @@ public class LancetProcessor extends AbstractProcessor {
         try {
             new SupplierGenerator(mAopClasses).build().writeTo(filer);
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         return true;
     }

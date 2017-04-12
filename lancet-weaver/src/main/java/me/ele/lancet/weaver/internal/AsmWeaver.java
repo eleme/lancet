@@ -32,7 +32,6 @@ import me.ele.lancet.weaver.internal.meta.MethodMetaInfo;
 import me.ele.lancet.weaver.internal.parser.ReflectiveMetaParser;
 import me.ele.lancet.weaver.internal.supplier.ComponentSupplier;
 import me.ele.lancet.weaver.internal.supplier.DirCodeSupplier;
-import me.ele.lancet.weaver.internal.supplier.FixedClassSupplier;
 
 
 /**
@@ -45,8 +44,8 @@ public class AsmWeaver implements Weaver {
         URLClassLoader loader = URLClassLoader.newInstance(toUrls(jars, dirs), ClassLoader.getSystemClassLoader());
 
         ClassSupplier dirSupplier = new DirCodeSupplier(loader);
-        ClassSupplier jarSupplier = new FixedClassSupplier(loader);
-        ClassSupplier supplier = ComponentSupplier.newInstance(jarSupplier,dirSupplier);
+//        ClassSupplier jarSupplier = new FixedClassSupplier(loader);
+        ClassSupplier supplier = ComponentSupplier.newInstance(dirSupplier);
 
         MetaParser parser = new ReflectiveMetaParser(loader);
         List<Class<?>> classes = supplier.get();

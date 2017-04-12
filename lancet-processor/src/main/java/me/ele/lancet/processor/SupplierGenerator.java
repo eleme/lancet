@@ -8,6 +8,7 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.WildcardTypeName;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -33,6 +34,7 @@ public class SupplierGenerator {
                 .build();
 
         MethodSpec constructor = MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
                 .addParameter(ClassName.get(ClassLoader.class),"classloader")
                 .addStatement("this.classloader = classloader")
                 .build();
@@ -41,7 +43,7 @@ public class SupplierGenerator {
                 .addAnnotation(ClassName.get(Override.class))
                 .addModifiers(Modifier.PUBLIC)
                 .returns(ParameterizedTypeName.get(ClassName.get(List.class),ParameterizedTypeName.get(ClassName.get(Class.class), WildcardTypeName.subtypeOf(Object.class))))
-                .addStatement("List<Class<?>> list = new ArrayList<>()")
+                .addStatement("$T<$T<?>> list = new $T<>()",List.class,Class.class, ArrayList.class)
                 .beginControlFlow("try");
         for (ClassName mAopClass : mAopClasses) {
             getBuilder.addStatement("list.add($T.class)",mAopClass);
@@ -56,6 +58,7 @@ public class SupplierGenerator {
 
         ClassName className = ClassName.bestGuess(PlaceHolder.SUPPLIER_CLASS_NAME);
         TypeSpec typeSpec = TypeSpec.classBuilder(className)
+                .addModifiers(Modifier.PUBLIC)
                 .addSuperinterface(ClassName.get(ClassSupplier.class))
                 .addField(fieldSpec)
                 .addMethod(constructor)

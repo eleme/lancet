@@ -1,7 +1,8 @@
 package me.ele.lancet.weaver.internal.meta;
 
 
-import org.gradle.internal.impldep.com.google.common.io.ByteStreams;
+import com.google.common.io.ByteStreams;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.tree.ClassNode;
 

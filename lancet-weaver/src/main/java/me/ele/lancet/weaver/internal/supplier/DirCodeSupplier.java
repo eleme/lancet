@@ -1,6 +1,7 @@
 package me.ele.lancet.weaver.internal.supplier;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,8 +26,9 @@ public class DirCodeSupplier implements ClassSupplier {
         try {
             Class clazz = cl.loadClass(PlaceHolder.SUPPLIER_CLASS_NAME);
             Constructor constructor = clazz.getConstructor(ClassLoader.class);
-            ClassSupplier supplier = (ClassSupplier) constructor.newInstance(cl);
-            return supplier.get();
+            Object supplier = constructor.newInstance(cl);
+            Method method = clazz.getMethod("get");
+            return (List<Class<?>>) method.invoke(supplier);
         } catch (Exception e) {
             Log.w("DirSupplier initialize failed", e);
         }
