@@ -1,0 +1,25 @@
+apply plugin: 'java'
+apply plugin: 'java-gradle-plugin'
+
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile gradleApi()
+    compile "org.ow2.asm:asm-all:$asm_version"
+    compile "com.google.guava:guava:$guava_version"
+    compile "com.android.tools.build:gradle:$android_tools_version"
+    compile project(":lancet-base")
+}
+
+gradlePlugin {
+    plugins {
+        simplePlugin {
+            id = "me.ele.fragarach-parser"
+            implementationClass = "me.ele.fragarach.parser.ParseClassNamePlugin"
+        }
+    }
+}

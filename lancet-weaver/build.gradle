@@ -6,9 +6,7 @@ dependencies {
     compile gradleApi()
     compile "com.android.tools.build:gradle:$android_tools_version"
     compile "com.google.guava:guava:$guava_version"
-    compile 'org.ow2.asm:asm-all:5.1', {
-        force = true
-    }
+    compile "org.ow2.asm:asm-all:$asm_version"
 }
 
 sourceCompatibility = "1.8"
