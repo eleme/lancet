@@ -5,6 +5,7 @@ import com.android.utils.FileUtils
 import com.google.common.base.Preconditions
 import com.google.common.io.ByteStreams
 import com.google.common.io.Files
+import me.ele.lancet.base.PlaceHolder
 
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
@@ -48,7 +49,7 @@ class JarRunner {
         ZipEntry entry
         try {
             while ((entry = zis.nextEntry) != null) {
-                if (entry.isDirectory()) {
+                if (entry.isDirectory() || PlaceHolder.RESOURCE_PATH == entry.name) {
                     continue
                 }
 
