@@ -23,7 +23,12 @@ public class ParseClassNamePlugin implements Plugin<Project> {
             if (project.getPlugins().findPlugin("com.android.library") != null) {
                 LibraryExtension extension = (LibraryExtension) project.getExtensions().getByName("android");
                 extension.getLibraryVariants().all(l -> {
-                    project.getTasks().getByName("bundle" + StringHelper.capitalize(l.getName())).doLast(new ZipAction());
+                    String variant = StringHelper.capitalize(l.getName());
+                    project.getTasks().getByName("bundle" + variant).doLast(new ZipAction());
+                    Zip zip = (Zip) project.getTasks().findByName("jar" + variant);
+                    if(zip != null){
+                        zip.doLast(new ZipAction());
+                    }
                 });
             } else {
                 project.getTasks().getByName("jar").doLast(new ZipAction());
