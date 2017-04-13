@@ -1,23 +1,13 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor.methodvisitor;
 
+import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
+import me.ele.lancet.weaver.internal.entity.TargetMethodInfo;
+import me.ele.lancet.weaver.internal.util.AopMethodAdjuster;
+import me.ele.lancet.weaver.internal.util.AsmUtil;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.InsnNode;
-import org.objectweb.asm.tree.JumpInsnNode;
-import org.objectweb.asm.tree.LabelNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.VarInsnNode;
-
-import java.util.ArrayList;
-
-import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
-import me.ele.lancet.weaver.internal.entity.TargetMethodInfo;
-import me.ele.lancet.weaver.internal.log.Log;
-import me.ele.lancet.weaver.internal.util.AopMethodAdjuster;
+import org.objectweb.asm.tree.*;
 
 /**
  * Created by gengwanpeng on 17/3/27.
@@ -53,7 +43,6 @@ public class ExecuteMethodVisitor extends MethodNode {
     public void transform() {
         int fromIndex = this.maxLocals;
         for (ExecuteInfo executeInfo : targetMethodInfo.executes) {
-            Log.i("executeInfo: "+executeInfo);
             fromIndex = transformEachExecute(fromIndex, executeInfo);
         }
         maxLocals = fromIndex;
@@ -65,14 +54,17 @@ public class ExecuteMethodVisitor extends MethodNode {
         // transform return to jump
         removeReturnInsn();
 
-        MethodNode clone = new MethodNode();
-        executeInfo.node.accept(clone);
+        MethodNode clone = AsmUtil.clone(executeInfo.node);
         InsnList insnList = clone.instructions;
         boolean callOrigin = findCallOrigin(insnList);
 
         if (callOrigin) {
-            if (tryCatchBlocks == null) tryCatchBlocks = new ArrayList();
-            if (clone.tryCatchBlocks != null) tryCatchBlocks.addAll(clone.tryCatchBlocks);
+            tryCatchBlocks.addAll(clone.tryCatchBlocks);
+            /*List<LocalVariableNode> locals = ((List<LocalVariableNode>) clone.localVariables).stream()
+                    .filter(l -> l.index < paramLocals)
+                    .peek(l -> l.index += addition)
+                    .collect(Collectors.toList());
+            localVariables.addAll(locals);*/
         }
 
         AbstractInsnNode element = insnList.getFirst();
@@ -99,7 +91,7 @@ public class ExecuteMethodVisitor extends MethodNode {
         }
 
         instructions = insnList;
-        int newIndex = executeInfo.node.maxLocals;
+        int newIndex = clone.maxLocals;
         if (callOrigin) {
             newIndex = newIndex - paramLocals + fromIndex;
         }

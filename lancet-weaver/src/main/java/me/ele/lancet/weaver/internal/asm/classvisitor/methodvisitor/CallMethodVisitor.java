@@ -1,22 +1,18 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor.methodvisitor;
 
+import me.ele.lancet.weaver.internal.entity.CallInfo;
+import me.ele.lancet.weaver.internal.log.Log;
+import me.ele.lancet.weaver.internal.util.AopMethodAdjuster;
+import me.ele.lancet.weaver.internal.util.AsmUtil;
+import me.ele.lancet.weaver.internal.util.PrimitiveUtil;
+import me.ele.lancet.weaver.internal.util.TypeUtil;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.VarInsnNode;
+import org.objectweb.asm.tree.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import me.ele.lancet.weaver.internal.entity.CallInfo;
-import me.ele.lancet.weaver.internal.log.Log;
-import me.ele.lancet.weaver.internal.util.AopMethodAdjuster;
-import me.ele.lancet.weaver.internal.util.PrimitiveUtil;
-import me.ele.lancet.weaver.internal.util.TypeUtil;
 
 /**
  * Created by gengwanpeng on 17/4/1.
@@ -55,17 +51,27 @@ public class CallMethodVisitor extends MethodNode {
                 element = element.getNext();
             }
         }
-        accept(mv);
+        try {
+            accept(mv);
+        }catch (RuntimeException e){
+            throw new RuntimeException("transform: " + name + " " + desc,e);
+        }
     }
 
     private AbstractInsnNode addCall(List<CallInfo> infos, MethodInsnNode methodInsnNode) {
         int nowLocal = maxLocals;
         for (CallInfo callInfo : infos) {
-            MethodNode node = callInfo.node;
-            MethodNode clone = new MethodNode();
-            node.instructions.accept(clone);
+            MethodNode clone = AsmUtil.clone(callInfo.node);
             // insert pop to local
             popToLocal(nowLocal, methodInsnNode);
+
+            //try catch
+            tryCatchBlocks.addAll(clone.tryCatchBlocks);
+            // local var
+            /*for(LocalVariableNode l : (List<LocalVariableNode>)clone.localVariables){
+                l.index += nowLocal;
+            }
+            localVariables.addAll(clone.localVariables);*/
 
             // insert aop codes
             for (AbstractInsnNode e : clone.instructions.toArray()) {
@@ -83,7 +89,8 @@ public class CallMethodVisitor extends MethodNode {
                 }
                 instructions.insertBefore(methodInsnNode, e);
             }
-            nowLocal += node.maxLocals;
+            nowLocal += clone.maxLocals;
+            maxStack = Math.max(maxStack, clone.maxStack);
         }
         maxLocals = nowLocal;
         AbstractInsnNode tempNode = methodInsnNode.getPrevious();

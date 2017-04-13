@@ -1,5 +1,9 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor;
 
+import me.ele.lancet.weaver.internal.asm.classvisitor.methodvisitor.ExecuteMethodVisitor;
+import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
+import me.ele.lancet.weaver.internal.entity.TargetMethodInfo;
+import me.ele.lancet.weaver.internal.entity.TotalInfo;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -11,13 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-
-import me.ele.lancet.weaver.internal.asm.classvisitor.methodvisitor.ExecuteMethodVisitor;
-import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
-import me.ele.lancet.weaver.internal.entity.TargetMethodInfo;
-import me.ele.lancet.weaver.internal.entity.TotalInfo;
-import me.ele.lancet.weaver.internal.log.Log;
-
 
 /**
  * Created by gengwanpeng on 17/3/27.
@@ -33,7 +30,6 @@ public class ExecuteClassVisitor extends ClassVisitor {
     public ExecuteClassVisitor(int api, ClassVisitor cv, TotalInfo info) {
         super(api, cv);
         this.executeInfos = info.executeInfos;
-
     }
 
     @Override
@@ -43,11 +39,8 @@ public class ExecuteClassVisitor extends ClassVisitor {
         this.className = name;
         this.superClassName = superName;
 
-
         String javaName = name.replace('/', '.');
         String javaSuperName = superName.replace('/', '.');
-        Log.i(executeInfos.toString());
-        Log.i("javaName "+javaName+"  javaSuperName "+javaSuperName);
         if (interfaces != null) {
             for (int i = 0; i < interfaces.length; i++) {
                 interfaces[i] = interfaces[i].replace('/', '.');
@@ -61,7 +54,6 @@ public class ExecuteClassVisitor extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-        Log.i("name: "+name+"  desc: "+desc);
         TargetMethodInfo targetMethodInfo = methodContainer.get(name, desc);
         if (targetMethodInfo != null) {
             targetMethodInfo.used = true;
