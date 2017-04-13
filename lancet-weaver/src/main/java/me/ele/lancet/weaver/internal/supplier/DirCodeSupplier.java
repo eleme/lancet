@@ -27,17 +27,16 @@ public class DirCodeSupplier implements ClassSupplier {
         Class clazz = null;
         try {
             clazz = cl.loadClass(PlaceHolder.SUPPLIER_CLASS_NAME);
+            Log.tag("Collect").w("Has found DirCodeSupplier in project");
         } catch (ClassNotFoundException e) {
-            Log.w("There is no AOP class found in project");
+            Log.tag("Collect").w("There is no DirCodeSupplier found in project");
             return new ArrayList<>();
         }
         try {
             Constructor constructor = clazz.getConstructor(ClassLoader.class);
             Object supplier = constructor.newInstance(cl);
             Method method = clazz.getMethod("get");
-            List<Class<?>> list = (List<Class<?>>) method.invoke(supplier);
-            Log.tag("Process").i("read AOP class: "+list);
-            return list;
+            return  (List<Class<?>>) method.invoke(supplier);
         } catch (Exception e) {
             Log.w("DirSupplier initialize failed", e);
         }

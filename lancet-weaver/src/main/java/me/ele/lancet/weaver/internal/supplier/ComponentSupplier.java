@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import me.ele.lancet.base.api.ClassSupplier;
+import me.ele.lancet.weaver.internal.log.Log;
 
 
 /**
@@ -28,6 +29,7 @@ public class ComponentSupplier implements ClassSupplier {
                 .parallel()
                 .flatMap(s -> s.get().stream())
                 .distinct()
+                .peek(clazz -> Log.tag("Collect").w("register aop class: "+clazz))
                 .collect(Collectors.toList());
     }
 }

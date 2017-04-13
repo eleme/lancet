@@ -4,9 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Closeables;
-import me.ele.lancet.base.PlaceHolder;
-import me.ele.lancet.base.api.ClassSupplier;
-import me.ele.lancet.weaver.internal.log.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +16,10 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import me.ele.lancet.base.PlaceHolder;
+import me.ele.lancet.base.api.ClassSupplier;
+import me.ele.lancet.weaver.internal.log.Log;
+
 /**
  * Created by gengwanpeng on 17/3/21.
  */
@@ -30,7 +31,9 @@ public class JarClassSupplier implements ClassSupplier {
     public JarClassSupplier(Collection<File> jars, ClassLoader loader) {
         this.jars = jars;
         this.loader = loader;
-        Log.i("jars: " + jars);
+        for (File jar : jars) {
+            Log.tag("Collect").i("find jar: " + jar);
+        }
     }
 
     @Override
@@ -38,9 +41,7 @@ public class JarClassSupplier implements ClassSupplier {
         try {
             Enumeration<URL> s = loader.getResources(PlaceHolder.RESOURCE_PATH);
             return ImmutableList.copyOf(Iterators.forEnumeration(s)).stream()
-                    .peek(u -> Log.d("url: " + u))
                     .map(this::urlToClassNames)
-                    .peek(l -> Log.d("names: " + l))
                     .flatMap(Collection::stream)
                     .map(name -> {
                         try {

@@ -24,16 +24,20 @@ import me.ele.lancet.weaver.internal.util.TypeUtil;
 public class CallMethodVisitor extends MethodNode {
 
     private final Map<String, List<CallInfo>> matchMap;
+    private String targetClassName;
 
-    public CallMethodVisitor(int api, int access, String name, String desc, String signature, String[] exceptions, MethodVisitor mv, Map<String, List<CallInfo>> matchMap) {
+
+    public CallMethodVisitor(int api, int access, String name, String desc, String signature, String[] exceptions, MethodVisitor mv, Map<String, List<CallInfo>> matchMap,String targetClassName) {
         super(api, access, name, desc, signature, exceptions);
         this.matchMap = matchMap;
+        this.targetClassName = targetClassName;
         this.mv = mv;
 
     }
 
     @Override
     public void visitEnd() {
+        Log.tag("transform").i("start Call transform method: "+targetClassName+"."+name+" "+desc);
         transformCode();
         super.visitEnd();
     }
@@ -45,7 +49,6 @@ public class CallMethodVisitor extends MethodNode {
                 MethodInsnNode methodInsnNode = (MethodInsnNode) element;
                 List<CallInfo> infos = matchMap.get(methodInsnNode.owner + " " + methodInsnNode.name + " " + methodInsnNode.desc);
                 if (infos != null) {
-                    Log.i(name + desc + "'s call: " + methodInsnNode.owner + " " + methodInsnNode.name + " " + methodInsnNode.desc);
                     element = addCall(infos, methodInsnNode);
                 }
             }

@@ -30,9 +30,10 @@ public class ExecuteMethodVisitor extends MethodNode {
 
     private int paramLocals;
 
-    public ExecuteMethodVisitor(int api, int access, String name, String desc, String signature, String[] exceptions, MethodVisitor delegate) {
+    public ExecuteMethodVisitor(int api, int access, String name, String desc, String signature, String[] exceptions, MethodVisitor delegate,String targetClassName) {
         super(api, access, name, desc, signature, exceptions);
         this.delegate = delegate;
+        this.targetClassName = targetClassName;
         paramLocals = (Type.getArgumentsAndReturnSizes(desc) >> 2) - 1;
         if ((access & Opcodes.ACC_STATIC) == 0) {
             paramLocals++;
@@ -46,6 +47,7 @@ public class ExecuteMethodVisitor extends MethodNode {
 
     @Override
     public void visitEnd() {
+        Log.tag("transform").i("start Execute transform method: "+targetClassName+"."+name+" "+desc);
         transform();
         accept(delegate);
     }
@@ -53,7 +55,6 @@ public class ExecuteMethodVisitor extends MethodNode {
     public void transform() {
         int fromIndex = this.maxLocals;
         for (ExecuteInfo executeInfo : targetMethodInfo.executes) {
-            Log.i("executeInfo: "+executeInfo);
             fromIndex = transformEachExecute(fromIndex, executeInfo);
         }
         maxLocals = fromIndex;

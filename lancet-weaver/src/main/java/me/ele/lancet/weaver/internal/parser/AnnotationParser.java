@@ -41,17 +41,20 @@ public class AnnotationParser {
     public ClassMetaInfo parse(Class<?> clazz) {
         ClassMetaInfo classMetaInfo = parseClass(clazz);
         ((List<MethodNode>) classMetaInfo.node.methods).stream()
-                .map(AnnotationParser::parseMethods)
+                .map(info -> parseMethods(clazz,info))
                 .filter(m -> m != null)
                 .forEach(classMetaInfo::addMethod);
         if (classMetaInfo.infos.size() <= 0) {
             return null;
         }
+        Log.tag("Parser").w("generate ClassMetaInfo: "+classMetaInfo);
         return classMetaInfo;
     }
 
 
     private ClassMetaInfo parseClass(Class<?> clazz) {
+        Log.tag("Parser").w("parse aop class: "+clazz);
+
         ClassMetaInfo classMetaInfo = new ClassMetaInfo(clazz, loader);
         classMetaInfo.myClassName = clazz.getName();
         for (AnnotationNode node : (List<AnnotationNode>) classMetaInfo.node.visibleAnnotations) {
@@ -79,7 +82,9 @@ public class AnnotationParser {
         return classMetaInfo;
     }
 
-    private static MethodMetaInfo parseMethods(MethodNode method) {
+    private static MethodMetaInfo parseMethods(Class<?> clazz,MethodNode method) {
+        Log.tag("Parser").w("parse aop method: "+clazz+"."+method.name);
+
         MethodMetaInfo methodMetaInfo = new MethodMetaInfo();
 
         if (method.visibleAnnotations != null) {
@@ -122,8 +127,10 @@ public class AnnotationParser {
         }
 
         if (!methodMetaInfo.hasType()) {
-            Log.w("Method " + method.name + " has no aop annotation, such as " +
-                    "@Execute @Call @TryCatchHandler.");
+            if (!method.name.equals("<init>")){
+                Log.w("Method " + clazz+"."+method.desc + " has no aop annotation, such as " +
+                        "@Execute @Call @TryCatchHandler.");
+            }
             return null;
         }
 

@@ -46,8 +46,6 @@ public class ExecuteClassVisitor extends ClassVisitor {
 
         String javaName = name.replace('/', '.');
         String javaSuperName = superName.replace('/', '.');
-        Log.i(executeInfos.toString());
-        Log.i("javaName "+javaName+"  javaSuperName "+javaSuperName);
         if (interfaces != null) {
             for (int i = 0; i < interfaces.length; i++) {
                 interfaces[i] = interfaces[i].replace('/', '.');
@@ -61,12 +59,12 @@ public class ExecuteClassVisitor extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-        Log.i("name: "+name+"  desc: "+desc);
         TargetMethodInfo targetMethodInfo = methodContainer.get(name, desc);
         if (targetMethodInfo != null) {
             targetMethodInfo.used = true;
             if ((access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) == 0) {
-                ExecuteMethodVisitor m = new ExecuteMethodVisitor(Opcodes.ASM5, access, name, desc, signature, exceptions, mv);
+                Log.tag("transform").i("visit Execute method: "+className+"."+name+" "+desc);
+                ExecuteMethodVisitor m = new ExecuteMethodVisitor(Opcodes.ASM5, access, name, desc, signature, exceptions, mv,className);
                 m.setAopInfo(this.className, targetMethodInfo);
                 mv = m;
             }
