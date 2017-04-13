@@ -24,10 +24,10 @@ class LancetWorker {
             try {
                 it.get()
             } catch (InterruptedException e) {
-                configuration.provider.deleteAll()
+                //configuration.provider.deleteAll()
                 throw e
             } catch (ExecutionException e) {
-                configuration.provider.deleteAll()
+                //configuration.provider.deleteAll()
                 if (e.getCause() instanceof IOException) {
                     throw e.getCause() as IOException
                 } else if (e.getCause() instanceof TransformException) {

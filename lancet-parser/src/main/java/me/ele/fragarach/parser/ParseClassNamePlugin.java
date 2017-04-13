@@ -2,7 +2,10 @@ package me.ele.fragarach.parser;
 
 import com.android.build.gradle.LibraryExtension;
 import com.android.utils.StringHelper;
+import groovy.lang.Closure;
+import org.gradle.BuildAdapter;
 import org.gradle.api.*;
+import org.gradle.api.invocation.Gradle;
 import org.gradle.api.tasks.bundling.Zip;
 
 import java.io.IOException;
@@ -22,8 +25,19 @@ public class ParseClassNamePlugin implements Plugin<Project> {
 
             if (project.getPlugins().findPlugin("com.android.library") != null) {
                 LibraryExtension extension = (LibraryExtension) project.getExtensions().getByName("android");
-                extension.getLibraryVariants().all(l -> {
-                    project.getTasks().getByName("bundle" + StringHelper.capitalize(l.getName())).doLast(new ZipAction());
+                //for eleme eradle
+                project.getGradle().addBuildListener(new BuildAdapter(){
+                    @Override
+                    public void projectsEvaluated(Gradle gradle) {
+                        extension.getLibraryVariants().all(l -> {
+                            String variant = StringHelper.capitalize(l.getName());
+                            project.getTasks().getByName("bundle" + variant).doLast(new ZipAction());
+                            Zip zip = (Zip) project.getTasks().findByName("jar" + variant);
+                            if(zip != null){
+                                zip.doLast(new ZipAction());
+                            }
+                        });
+                    }
                 });
             } else {
                 project.getTasks().getByName("jar").doLast(new ZipAction());
