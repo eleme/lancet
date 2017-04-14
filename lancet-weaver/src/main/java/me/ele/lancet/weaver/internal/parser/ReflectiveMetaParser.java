@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import me.ele.lancet.weaver.MetaParser;
+import me.ele.lancet.weaver.internal.log.Log;
 import me.ele.lancet.weaver.internal.meta.ClassMetaInfo;
 
 
@@ -21,7 +22,7 @@ public class ReflectiveMetaParser implements MetaParser {
 
     @Override
     public List<ClassMetaInfo> parse(List<Class<?>> classes) {
-        System.out.println(classes);
+        Log.i("aop classes: \n" + classes.stream().map(Class::getName).collect(Collectors.joining("\n")));
         return classes.parallelStream()
                 .map(clazz -> new AnnotationParser(loader).parse(clazz))
                 .filter(c -> c != null)
