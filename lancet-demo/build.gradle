@@ -1,8 +1,23 @@
 apply plugin: 'java'
+apply plugin: 'me.ele.lancet-parser'
+
+buildscript{
+
+    repositories{
+        maven{
+            url "https://dl.bintray.com/dieyidezui/maven"
+        }
+        jcenter()
+    }
+    dependencies{
+        classpath 'me.ele:lancet-parser:0.0.13'
+    }
+}
+
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile project(':lancet-weaver')
+    compile project(':lancet-base')
 }
 
 sourceCompatibility = "1.7"

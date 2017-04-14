@@ -7,7 +7,10 @@ public final class PlaceHolder {
 
     public static final String SUPPLIER_CLASS_NAME = "me.ele.lancet.weaver.internal.supplier.DirClassSupplier";
     public static final String CLASS_NAME = PlaceHolder.class.getName().replace('.', '/');
-    public static final String RESOURCE_PATH = "META-INF/fragarach/classes.txt";
+
+    // for skip merge resource
+    public static final String RESOURCE_DIR = "META-INF/lancet/";
+    public static final String RESOURCE_PATH = RESOURCE_DIR + "meta.json";
 
     private PlaceHolder() {
         throw new AssertionError();

@@ -50,7 +50,7 @@ public class AsmWeaver implements Weaver {
 
         MetaParser parser = new ReflectiveMetaParser(loader);
         List<Class<?>> classes = supplier.get();
-        List<ClassMetaInfo> list = parser.parse(supplier.get());
+        List<ClassMetaInfo> list = parser.parse(classes);
 
         return new AsmWeaver(loader, classes, list);
     }

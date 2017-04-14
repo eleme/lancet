@@ -4,6 +4,7 @@ import me.ele.lancet.weaver.internal.asm.classvisitor.methodvisitor.ExecuteMetho
 import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
 import me.ele.lancet.weaver.internal.entity.TargetMethodInfo;
 import me.ele.lancet.weaver.internal.entity.TotalInfo;
+import me.ele.lancet.weaver.internal.log.Log;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

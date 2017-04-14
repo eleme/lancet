@@ -26,7 +26,6 @@ public class ComponentSupplier implements ClassSupplier {
     @Override
     public List<Class<?>> get() {
         return Arrays.stream(suppliers)
-                .parallel()
                 .flatMap(s -> s.get().stream())
                 .distinct()
                 .peek(clazz -> Log.tag("Collect").w("register aop class: "+clazz))
