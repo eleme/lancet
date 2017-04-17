@@ -34,7 +34,7 @@ import me.ele.lancet.weaver.internal.log.ILogger;
  */
 public class SystemLoggerImpl implements ILogger {
 
-    private final Logger logger = Logging.getLogger("fragarach");
+    private final Logger logger = Logging.getLogger("lancet");
 
     @Override
     public void d(String tag,String msg) {

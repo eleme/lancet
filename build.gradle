@@ -13,7 +13,7 @@ buildscript {
             bintrayKey = properties.getProperty('bintrayKey')
         }
         lancet_group = 'me.ele'
-        lancet_version = '0.0.14'
+        lancet_version = '0.1.35'
 
         asm_version = '5.1'
         android_tools_version = '2.3.1'
@@ -40,16 +40,6 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
-
-/*
-
-task bintrayuploadAll {
-    doLast {
-        "./gradlew clean build bintrayUpload -PbintrayUser=${properties.getProperty('bintrayUser')} -PbintrayKey=${properties.getProperty('bintrayKey')} -PdryRun=false".execute()
-    }
-}
-*/
-
 
 subprojects { pro ->
 

@@ -19,7 +19,7 @@ gradlePlugin {
     plugins {
         simplePlugin {
             id = "me.ele.lancet-parser"
-            implementationClass = "me.ele.fragarach.parser.ParseClassNamePlugin"
+            implementationClass = "me.ele.lancet.parser.ParseClassNamePlugin"
         }
     }
 }

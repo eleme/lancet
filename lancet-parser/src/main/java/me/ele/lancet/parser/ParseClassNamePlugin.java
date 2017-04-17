@@ -1,8 +1,8 @@
-package me.ele.fragarach.parser;
+package me.ele.lancet.parser;
 
 import com.android.build.gradle.LibraryExtension;
 import com.android.utils.StringHelper;
-import groovy.lang.Closure;
+
 import org.gradle.BuildAdapter;
 import org.gradle.api.*;
 import org.gradle.api.invocation.Gradle;
