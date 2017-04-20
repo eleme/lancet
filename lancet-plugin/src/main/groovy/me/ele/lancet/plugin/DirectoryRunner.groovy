@@ -42,13 +42,13 @@ class DirectoryRunner {
 
     private
     static void transformClass(File sourceDir, File targetDir, File sourceFile) throws IOException, TransformException {
-        // 断言 源文件一定存在且为.class
+        // assert source file exists and must end with .class
         Preconditions.checkArgument sourceFile.exists() && sourceFile.name.endsWith('.class')
 
-        // 取得相对路径
+        // get relative path
         String path = FileUtils.relativePossiblyNonExistingPath sourceFile, sourceDir
         File targetFile = new File(targetDir, path)
-        // 创建父目录
+        // create parent dir
         Files.createParentDirs targetFile
 
         byte[] bytes = Files.toByteArray sourceFile
@@ -62,7 +62,6 @@ class DirectoryRunner {
 
 
     private static void removeClass(File sourceDir, File targetDir, File sourceFile) throws IOException {
-        //取得相对路径
         String path = FileUtils.relativePossiblyNonExistingPath sourceFile, sourceDir
         File targetFile = new File(targetDir, path)
 
