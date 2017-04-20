@@ -1,5 +1,6 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor;
 
+import me.ele.lancet.base.PlaceHolder;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassVisitor;
@@ -16,22 +17,28 @@ import java.util.Set;
 public class ExcludeClassVisitor extends ClassVisitor {
 
     static private final Set<String> excludePackage;
-    static{
+
+    static {
         excludePackage = new HashSet<>();
-        excludePackage.add("me/ele/lancet");
-        excludePackage.add("android");
-        excludePackage.add("com/android");
-        excludePackage.add("java");
-        excludePackage.add("javax");
+        excludePackage.add("me/ele/lancet/");
+        excludePackage.add("android/");
+        excludePackage.add("com/android/");
+        excludePackage.add("java/");
+        excludePackage.add("javax/");
     }
 
 
     private final Set<String> excludes;
     private boolean exclude = false;
+    private String name;
 
     public ExcludeClassVisitor(int api, ClassVisitor mv, Set<String> excludes) {
         super(api, mv);
         this.excludes = excludes;
+    }
+
+    public boolean isSupplierClass(){
+        return PlaceHolder.SUPPLIER_CLASS_NAME.equals(name.replace('/', '.'));
     }
 
     public boolean isExclude() {
@@ -40,7 +47,8 @@ public class ExcludeClassVisitor extends ClassVisitor {
 
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        if (excludes.contains(name) || excludePackage.stream().anyMatch(name::startsWith)) {
+        this.name = name;
+        if (excludes.contains(name) || excludePackage.stream().anyMatch(name::startsWith)){
             exclude = true;
         }
         if (!exclude) {

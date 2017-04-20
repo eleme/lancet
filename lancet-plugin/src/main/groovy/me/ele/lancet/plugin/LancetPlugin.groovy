@@ -15,7 +15,7 @@ class LancetPlugin implements Plugin<Project> {
 
         def appExtension = project.android as AppExtension
         def lancetExtension = project.extensions.create 'lancet', LancetExtension
-        appExtension.registerTransform new LancetTransform(lancetExtension, appExtension)
+        appExtension.registerTransform new LancetTransform(project, lancetExtension, appExtension)
 
         project.gradle.afterProject {
             if (it == project) {

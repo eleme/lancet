@@ -40,7 +40,8 @@ class DirectoryRunner {
     }
 
 
-    private static void transformClass(File sourceDir, File targetDir, File sourceFile) throws IOException, TransformException {
+    private
+    static void transformClass(File sourceDir, File targetDir, File sourceFile) throws IOException, TransformException {
         // 断言 源文件一定存在且为.class
         Preconditions.checkArgument sourceFile.exists() && sourceFile.name.endsWith('.class')
 
@@ -54,7 +55,9 @@ class DirectoryRunner {
 
         bytes = transform bytes
 
-        Files.write bytes, targetFile
+        if (bytes != null) {
+            Files.write bytes, targetFile
+        }
     }
 
 

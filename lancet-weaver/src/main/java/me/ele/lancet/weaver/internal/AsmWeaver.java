@@ -1,5 +1,6 @@
 package me.ele.lancet.weaver.internal;
 
+import me.ele.lancet.base.PlaceHolder;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -9,7 +10,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -42,9 +42,10 @@ public class AsmWeaver implements Weaver {
 
 
     public static AsmWeaver newInstance(Collection<File> jars, Collection<File> dirs) {
-        URLClassLoader loader = URLClassLoader.newInstance(toUrls(jars, dirs), ClassLoader.getSystemClassLoader());
+        URLClassLoader dirLoader = URLClassLoader.newInstance(toUrls(dirs), Thread.currentThread().getContextClassLoader());
+        URLClassLoader loader = URLClassLoader.newInstance(toUrls(jars), dirLoader);
 
-        ClassSupplier dirSupplier = new DirCodeSupplier(loader);
+        ClassSupplier dirSupplier = new DirCodeSupplier(dirLoader);
         ClassSupplier jarSupplier = new JarClassSupplier(jars, loader);
         ClassSupplier supplier = ComponentSupplier.newInstance(dirSupplier, jarSupplier);
 
@@ -68,6 +69,11 @@ public class AsmWeaver implements Weaver {
     }
 
     @Override
+    public List<String> getBuiltInNames() {
+        return classes.stream().map(Class::getName).collect(Collectors.toList());
+    }
+
+    @Override
     public byte[] weave(byte[] input) {
         ClassReader cr = new ClassReader(input);
 
@@ -82,6 +88,10 @@ public class AsmWeaver implements Weaver {
         ExcludeClassVisitor ecv = new ExcludeClassVisitor(Opcodes.ASM5, tcv, excludes);
 
         cr.accept(ecv, ClassReader.SKIP_FRAMES);
+
+        if (ecv.isSupplierClass()) {
+            return null;
+        }
 
         if (ecv.isExclude()) {
             return input;
@@ -111,10 +121,8 @@ public class AsmWeaver implements Weaver {
         return new TotalInfo(executeInfos, tryCatchInfos, callInfos);
     }
 
-    private static URL[] toUrls(Collection<File> jars, Collection<File> dirs) {
-        List<File> list = new ArrayList<>(dirs);
-        list.addAll(jars);
-        return list.stream()
+    private static URL[] toUrls(Collection<File> files) {
+        return files.stream()
                 .map(File::toURI)
                 .map(u -> {
                     try {

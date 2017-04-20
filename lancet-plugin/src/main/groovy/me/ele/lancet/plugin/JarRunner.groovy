@@ -49,7 +49,7 @@ class JarRunner {
         ZipEntry entry
         try {
             while ((entry = zis.nextEntry) != null) {
-                if (entry.isDirectory() || PlaceHolder.RESOURCE_PATH == entry.name || PlaceHolder.CLASS_NAME == entry.name) {
+                if (entry.isDirectory() || PlaceHolder.RESOURCE_PATH == entry.name) {
                     continue
                 }
 
@@ -60,13 +60,16 @@ class JarRunner {
                 } else {
                     newEntry = new JarEntry(entry.name)
                 }
-                jos.putNextEntry newEntry
 
                 if (entry.name.endsWith('.class')) {
                     byte[] bytes = ByteStreams.toByteArray zis
                     bytes = transform bytes
-                    jos.write bytes
+                    if (bytes != null) {
+                        jos.putNextEntry newEntry
+                        jos.write bytes
+                    }
                 } else {
+                    jos.putNextEntry newEntry
                     ByteStreams.copy zis, jos
                 }
 

@@ -57,27 +57,24 @@ public class AnnotationParser {
 
         ClassMetaInfo classMetaInfo = new ClassMetaInfo(clazz, loader);
         classMetaInfo.myClassName = clazz.getName();
-        for (AnnotationNode node : (List<AnnotationNode>) classMetaInfo.node.visibleAnnotations) {
-            if (node.desc.equals(TARGET_CLASS) && node.values != null) {
-                List values = node.values;
-                for (int i = 0; i < values.size(); i += 2) {
-                    if ("value".equals(values.get(i))) {
-                        classMetaInfo.targetClassName = Strings.nullToEmpty((String) values.get(1 + i));
-                    } else if ("superName".equals(values.get(i))) {
-                        classMetaInfo.targetSuperClassName = Strings.nullToEmpty((String) values.get(i + 1));
-                    } else if ("interfaces".equals(values.get(i))) {
-                        List<String> l = (List<String>) values.get(i + 1);
-                        if (l != null) {
-                            classMetaInfo.targetInterfaces = contentNonNull(l.toArray(new String[l.size()]));
+        if(classMetaInfo.node.visibleAnnotations != null) {
+            for (AnnotationNode node : (List<AnnotationNode>) classMetaInfo.node.visibleAnnotations) {
+                if (node.desc.equals(TARGET_CLASS) && node.values != null) {
+                    List values = node.values;
+                    for (int i = 0; i < values.size(); i += 2) {
+                        if ("value".equals(values.get(i))) {
+                            classMetaInfo.targetClassName = Strings.nullToEmpty((String) values.get(1 + i));
+                        } else if ("superName".equals(values.get(i))) {
+                            classMetaInfo.targetSuperClassName = Strings.nullToEmpty((String) values.get(i + 1));
+                        } else if ("interfaces".equals(values.get(i))) {
+                            List<String> l = (List<String>) values.get(i + 1);
+                            if (l != null) {
+                                classMetaInfo.targetInterfaces = contentNonNull(l.toArray(new String[l.size()]));
+                            }
                         }
                     }
                 }
             }
-        }
-        TargetClass targetClass = clazz.getDeclaredAnnotation(TargetClass.class);
-        if (targetClass != null) {
-            classMetaInfo.targetSuperClassName = Strings.nullToEmpty(targetClass.superName());
-            classMetaInfo.targetInterfaces = contentNonNull(targetClass.interfaces());
         }
         return classMetaInfo;
     }
