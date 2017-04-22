@@ -8,32 +8,33 @@ import me.ele.lancet.weaver.internal.util.PrimitiveUtil;
 import me.ele.lancet.weaver.internal.util.TypeUtil;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.commons.JSRInlinerAdapter;
+import org.objectweb.asm.commons.TryCatchBlockSorter;
 import org.objectweb.asm.tree.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by gengwanpeng on 17/4/1.
  */
-public class CallMethodVisitor extends MethodNode {
+public class CallMethodVisitor extends TryCatchBlockSorter {
 
     private final Map<String, List<CallInfo>> matchMap;
     private String targetClassName;
 
 
-    public CallMethodVisitor(int api, int access, String name, String desc, String signature, String[] exceptions, MethodVisitor mv, Map<String, List<CallInfo>> matchMap,String targetClassName) {
-        super(api, access, name, desc, signature, exceptions);
+    public CallMethodVisitor(int api, int access, String name, String desc, String signature, String[] exceptions, MethodVisitor mv, Map<String, List<CallInfo>> matchMap, String targetClassName) {
+        super(api, mv, access, name, desc, signature, exceptions);
         this.matchMap = matchMap;
         this.targetClassName = targetClassName;
-        this.mv = mv;
-
     }
 
     @Override
     public void visitEnd() {
-        Log.tag("transform").i("start Call transform method: "+targetClassName+"."+name+" "+desc);
+        Log.tag("transform").i("start Call transform method: " + targetClassName + "." + name + " " + desc);
         transformCode();
         super.visitEnd();
     }
@@ -56,12 +57,17 @@ public class CallMethodVisitor extends MethodNode {
         }
         try {
             accept(mv);
-        }catch (RuntimeException e){
-            throw new RuntimeException("transform: " + name + " " + desc,e);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("transform: " + targetClassName + " " + name + " " + desc, e);
         }
     }
 
     private AbstractInsnNode addCall(List<CallInfo> infos, MethodInsnNode methodInsnNode) {
+        Log.tag("addCall").d(methodInsnNode.owner + " " + methodInsnNode.name + " " + methodInsnNode.desc);
+        Log.tag("added").d(
+                infos.stream()
+                        .map(i -> i.myClass + " " + i.myMethod + i.methodDescriptor)
+                        .collect(Collectors.joining("\n")));
         int nowLocal = maxLocals;
         for (CallInfo callInfo : infos) {
             MethodNode clone = AsmUtil.clone(callInfo.node);

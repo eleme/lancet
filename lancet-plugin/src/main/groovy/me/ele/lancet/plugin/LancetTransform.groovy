@@ -74,11 +74,8 @@ class LancetTransform extends Transform {
         initWeaver transformInvocation.inputs
 
         configuration.provider = transformInvocation.outputProvider
-        if (transformInvocation.incremental) {
-            incrementallyTransform transformInvocation
-        } else {
-            fullyTransform transformInvocation
-        }
+
+        collectTransformJobs transformInvocation
 
         new LancetWorker(configuration).execute()
     }
@@ -124,31 +121,29 @@ class LancetTransform extends Transform {
         }
     }
 
-    private void fullyTransform(TransformInvocation transformInvocation) {
+    private void collectTransformJobs(TransformInvocation transformInvocation) {
         transformInvocation.inputs.each {
+            Log.d it.toString()
             it.jarInputs.each {
-                configuration.collectJob it, Status.ADDED, null
-            }
-            it.directoryInputs.each {
-                configuration.collectJob it, Status.ADDED, null
-            }
-        }
-    }
-
-    private void incrementallyTransform(TransformInvocation transformInvocation) {
-        transformInvocation.inputs.each {
-            it.jarInputs.each {
-                if (it.status != Status.NOTCHANGED) {
-                    configuration.collectJob it, it.status, null
+                if (transformInvocation.incremental) {
+                    if (it.status != Status.NOTCHANGED) {
+                        configuration.collectJob it, it.status, null
+                    }
+                } else {
+                    configuration.collectJob it, Status.ADDED, null
                 }
             }
             it.directoryInputs.each { directoryInput ->
-                directoryInput.each {
-                    it.changedFiles.each {
-                        if (it.key.file && it.value != Status.NOTCHANGED) {
-                            configuration.collectJob directoryInput, it.value, it.key
+                if (transformInvocation.incremental) {
+                    directoryInput.each {
+                        it.changedFiles.each {
+                            if (it.key.file && it.value != Status.NOTCHANGED) {
+                                configuration.collectJob directoryInput, it.value, it.key
+                            }
                         }
                     }
+                } else {
+                    configuration.collectJob directoryInput, Status.ADDED, null
                 }
             }
         }
