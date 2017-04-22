@@ -10,7 +10,7 @@ import java.util.concurrent.Executors
 class LancetWorker {
 
     private final Configuration configuration
-    private ExecutorService executor = Executors.newFixedThreadPool Runtime.runtime.availableProcessors()
+    private ExecutorService executor = Executors.newFixedThreadPool 1//Runtime.runtime.availableProcessors()
 
     public LancetWorker(Configuration configuration) {
         this.configuration = configuration
@@ -24,9 +24,11 @@ class LancetWorker {
             try {
                 it.get()
             } catch (InterruptedException e) {
+                executor.shutdown()
                 //configuration.provider.deleteAll()
                 throw e
             } catch (ExecutionException e) {
+                executor.shutdown()
                 //configuration.provider.deleteAll()
                 if (e.getCause() instanceof IOException) {
                     throw e.getCause() as IOException
