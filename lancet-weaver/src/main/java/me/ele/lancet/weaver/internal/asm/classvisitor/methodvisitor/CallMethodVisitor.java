@@ -20,7 +20,8 @@ import java.util.stream.Collectors;
 /**
  * Created by gengwanpeng on 17/4/1.
  */
-public class CallMethodVisitor extends TryCatchBlockSorter {
+public class CallMethodVisitor extends //MethodNode {
+        TryCatchBlockSorter {
 
     private final Map<String, List<CallInfo>> matchMap;
     private String targetClassName;
@@ -30,13 +31,18 @@ public class CallMethodVisitor extends TryCatchBlockSorter {
         super(api, mv, access, name, desc, signature, exceptions);
         this.matchMap = matchMap;
         this.targetClassName = targetClassName;
+        //this.mv = mv;
     }
 
     @Override
     public void visitEnd() {
         Log.tag("transform").i("start Call transform method: " + targetClassName + "." + name + " " + desc);
-        transformCode();
-        super.visitEnd();
+        try {
+            transformCode();
+            super.visitEnd();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("transform: " + targetClassName + " " + name + " " + desc, e);
+        }
     }
 
     private void transformCode() {
@@ -54,11 +60,6 @@ public class CallMethodVisitor extends TryCatchBlockSorter {
             } else {
                 element = element.getNext();
             }
-        }
-        try {
-            accept(mv);
-        } catch (RuntimeException e) {
-            throw new RuntimeException("transform: " + targetClassName + " " + name + " " + desc, e);
         }
     }
 

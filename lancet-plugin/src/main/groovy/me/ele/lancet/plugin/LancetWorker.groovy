@@ -10,7 +10,7 @@ import java.util.concurrent.Executors
 class LancetWorker {
 
     private final Configuration configuration
-    private ExecutorService executor = Executors.newFixedThreadPool 1//Runtime.runtime.availableProcessors()
+    private ExecutorService executor = Executors.newFixedThreadPool Runtime.runtime.availableProcessors()
 
     public LancetWorker(Configuration configuration) {
         this.configuration = configuration
