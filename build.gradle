@@ -13,7 +13,7 @@ buildscript {
             bintrayKey = properties.getProperty('bintrayKey')
         }
         lancet_group = 'me.ele'
-        lancet_version = '1.0.0-alpha1'
+        lancet_version = '0.0.0.5'
 
         asm_version = '5.1'
         android_tools_version = '2.3.1'
@@ -93,6 +93,7 @@ subprojects { pro ->
             key = bintrayKey
             configurations = ['archives']
             pkg {
+                userOrg = "eleme-mt-arch"
                 repo = "maven"
                 name = pro.name    //发布到JCenter上的项目名字
                 websiteUrl = "https://github.com/eleme/lancet"
