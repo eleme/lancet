@@ -6,6 +6,7 @@ import com.google.common.base.Preconditions
 import com.google.common.io.ByteStreams
 import com.google.common.io.Files
 import me.ele.lancet.base.PlaceHolder
+import me.ele.lancet.weaver.ClassData
 
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
@@ -63,6 +64,7 @@ class JarRunner {
 
                 if (entry.name.endsWith('.class')) {
                     byte[] bytes = ByteStreams.toByteArray zis
+                    // TODO correct write
                     bytes = transform bytes
                     if (bytes != null) {
                         jos.putNextEntry newEntry
@@ -85,7 +87,7 @@ class JarRunner {
     /**
      * 转换处,只抛转换异常
      */
-    private static byte[] transform(byte[] bytes) throws TransformException {
+    private static ClassData[] transform(byte[] bytes) throws TransformException {
         Transformer.transform(bytes)
     }
 }

@@ -1,8 +1,8 @@
 package me.ele.lancet.plugin
 
 import com.android.build.api.transform.TransformException
+import me.ele.lancet.weaver.ClassData
 import me.ele.lancet.weaver.Weaver
-import me.ele.lancet.weaver.internal.AsmWeaver
 
 class Transformer {
     private static Weaver sWeaver
@@ -11,7 +11,7 @@ class Transformer {
         sWeaver = weaver
     }
 
-    static byte[] transform(byte[] classBytes) throws TransformException {
+    static ClassData[] transform(byte[] classBytes) throws TransformException {
 
         try {
             sWeaver.weave(classBytes)

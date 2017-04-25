@@ -4,6 +4,7 @@ import com.android.build.api.transform.*
 import com.android.utils.FileUtils
 import com.google.common.base.Preconditions
 import com.google.common.io.Files
+import me.ele.lancet.weaver.ClassData
 
 class DirectoryRunner {
 
@@ -52,11 +53,13 @@ class DirectoryRunner {
         Files.createParentDirs targetFile
 
         byte[] bytes = Files.toByteArray sourceFile
+        ClassData[] result = transform bytes
 
-        bytes = transform bytes
-
-        if (bytes != null) {
-            Files.write bytes, targetFile
+        if (result != null) {
+            result.each {
+                //TODO write correct file
+//                Files.write it, targetFile
+            }
         }
     }
 
@@ -69,7 +72,7 @@ class DirectoryRunner {
     }
 
 
-    private static byte[] transform(byte[] bytes) throws TransformException {
+    private static byte[][] transform(byte[] bytes) throws TransformException {
         Transformer.transform bytes
     }
 }

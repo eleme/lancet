@@ -1,20 +1,22 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor;
 
-import me.ele.lancet.base.PlaceHolder;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
-import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.TypePath;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import me.ele.lancet.base.PlaceHolder;
+import me.ele.lancet.weaver.internal.asm.LinkedClassVisitor;
 
 /**
  * Created by gengwanpeng on 17/3/29.
  */
-public class ExcludeClassVisitor extends ClassVisitor {
+public class ExcludeClassVisitor extends LinkedClassVisitor {
 
     static private final Set<String> excludePackage;
 
@@ -28,12 +30,11 @@ public class ExcludeClassVisitor extends ClassVisitor {
     }
 
 
-    private final Set<String> excludes;
+    private final List<String> excludes;
     private boolean exclude = false;
     private String name;
 
-    public ExcludeClassVisitor(int api, ClassVisitor mv, Set<String> excludes) {
-        super(api, mv);
+    public ExcludeClassVisitor(List<String> excludes) {
         this.excludes = excludes;
     }
 

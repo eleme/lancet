@@ -1,14 +1,13 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor;
 
-import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import me.ele.lancet.weaver.internal.asm.LinkedClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.methodvisitor.TryCatchMethodVisitor;
-import me.ele.lancet.weaver.internal.entity.TotalInfo;
 import me.ele.lancet.weaver.internal.entity.TryCatchInfo;
 import me.ele.lancet.weaver.internal.log.Log;
 
@@ -16,15 +15,15 @@ import me.ele.lancet.weaver.internal.log.Log;
 /**
  * Created by gengwanpeng on 17/3/27.
  */
-public class TryCatchInfoClassVisitor extends ClassVisitor {
+public class TryCatchInfoClassVisitor extends LinkedClassVisitor {
 
     private String className;
     private List<TryCatchInfo> infos;
     private List<TryCatchInfo> matches = null;
 
-    public TryCatchInfoClassVisitor(int api, ClassVisitor mv, TotalInfo totalInfo) {
-        super(api, mv);
-        infos = totalInfo.tryCatchInfos;
+
+    public TryCatchInfoClassVisitor(List<TryCatchInfo> infos) {
+        this.infos = infos;
     }
 
     @Override

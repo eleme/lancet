@@ -16,8 +16,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import me.ele.lancet.base.api.ClassSupplier;
+import me.ele.lancet.weaver.ClassData;
 import me.ele.lancet.weaver.MetaParser;
 import me.ele.lancet.weaver.Weaver;
+import me.ele.lancet.weaver.internal.asm.ClassTransform;
 import me.ele.lancet.weaver.internal.asm.CustomClassLoaderClassWriter;
 import me.ele.lancet.weaver.internal.asm.classvisitor.CallClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.ExcludeClassVisitor;
@@ -59,13 +61,13 @@ public class AsmWeaver implements Weaver {
     private final URLClassLoader loader;
     private final List<Class<?>> classes;
     private final TotalInfo totalInfo;
-    private final Set<String> excludes;
 
     public AsmWeaver(URLClassLoader loader, List<Class<?>> classes, List<ClassMetaInfo> list) {
         this.loader = loader;
         this.classes = classes;
         this.totalInfo = convertToAopInfo(list);
-        this.excludes = classes.stream().map(c -> c.getName().replace('.', '/')).collect(Collectors.toSet());
+        List<String> excludes = classes.stream().map(c -> c.getName().replace('.', '/')).collect(Collectors.toList());
+        this.totalInfo.setExcludes(excludes);
     }
 
     @Override
@@ -74,29 +76,8 @@ public class AsmWeaver implements Weaver {
     }
 
     @Override
-    public byte[] weave(byte[] input) {
-        ClassReader cr = new ClassReader(input);
-
-        CustomClassLoaderClassWriter cw = new CustomClassLoaderClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        cw.setCustomClassLoader(loader);
-
-        CheckClassAdapter cc = new CheckClassAdapter(cw);
-
-        ExecuteClassVisitor xcv = new ExecuteClassVisitor(Opcodes.ASM5, cw, totalInfo);
-        CallClassVisitor ccv = new CallClassVisitor(Opcodes.ASM5, xcv, totalInfo);
-        TryCatchInfoClassVisitor tcv = new TryCatchInfoClassVisitor(Opcodes.ASM5, ccv, totalInfo);
-        ExcludeClassVisitor ecv = new ExcludeClassVisitor(Opcodes.ASM5, tcv, excludes);
-
-        cr.accept(ecv, ClassReader.SKIP_FRAMES);
-
-        if (ecv.isSupplierClass()) {
-            return null;
-        }
-
-        if (ecv.isExclude()) {
-            return input;
-        }
-        return cw.toByteArray();
+    public ClassData[] weave(byte[] input) {
+        return ClassTransform.weave(loader,totalInfo,input);
     }
 
     private static TotalInfo convertToAopInfo(List<ClassMetaInfo> list) {

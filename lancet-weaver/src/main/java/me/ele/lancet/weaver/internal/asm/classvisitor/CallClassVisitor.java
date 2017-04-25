@@ -1,5 +1,6 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor;
 
+import me.ele.lancet.weaver.internal.asm.LinkedClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.methodvisitor.CallMethodVisitor;
 import me.ele.lancet.weaver.internal.entity.CallInfo;
 import me.ele.lancet.weaver.internal.entity.TotalInfo;
@@ -19,7 +20,7 @@ import me.ele.lancet.weaver.internal.log.Log;
 /**
  * Created by gengwanpeng on 17/3/27.
  */
-public class CallClassVisitor extends ClassVisitor {
+public class CallClassVisitor extends LinkedClassVisitor {
 
     public String className;
 
@@ -27,9 +28,8 @@ public class CallClassVisitor extends ClassVisitor {
     private List<CallInfo> infos;
     private Map<String, List<CallInfo>> matches;
 
-    public CallClassVisitor(int api, ClassVisitor cv, TotalInfo totalInfo) {
-        super(api, cv);
-        infos = totalInfo.callInfos;
+    public CallClassVisitor(List<CallInfo> infos) {
+        this.infos = infos;
     }
 
     @Override
