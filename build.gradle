@@ -13,7 +13,7 @@ buildscript {
             bintrayKey = properties.getProperty('bintrayKey')
         }
         lancet_group = 'me.ele'
-        lancet_version = '1.0.0-alpha2'
+        lancet_version = '1.0.0-alpha3'
 
         asm_version = '5.1'
         android_tools_version = '2.3.1'
@@ -60,6 +60,20 @@ subprojects { pro ->
         apply plugin: 'maven'
         apply plugin: 'com.jfrog.bintray'
         afterEvaluate {
+            task sourcesJar(type: Jar) {
+                from sourceSets.main.java.srcDirs
+                classifier = 'sources'
+            }
+
+            task javadocJar(type: Jar, dependsOn: javadoc) {
+                classifier = 'javadoc'
+                from javadoc.destinationDir
+            }
+
+            artifacts {
+                archives sourcesJar
+                archives javadocJar
+            }
             tasks.install {
                 repositories.mavenInstaller {
                     pom {
@@ -95,6 +109,7 @@ subprojects { pro ->
             pkg {
                 userOrg = "eleme-mt-arch"
                 repo = "maven"
+                userOrg = "eleme-mt-arch"
                 name = pro.name    //发布到JCenter上的项目名字
                 websiteUrl = "https://github.com/eleme/lancet"
                 vcsUrl = "git@github.com:eleme/lancet.git"

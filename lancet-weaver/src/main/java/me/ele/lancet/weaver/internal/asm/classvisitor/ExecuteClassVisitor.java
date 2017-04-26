@@ -1,5 +1,6 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor;
 
+import me.ele.lancet.weaver.internal.asm.LinkedClassVisitor;
 import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
 import me.ele.lancet.weaver.internal.entity.TargetMethodInfo;
 import me.ele.lancet.weaver.internal.entity.TotalInfo;
@@ -25,7 +26,7 @@ import me.ele.lancet.weaver.internal.log.Log;
 /**
  * Created by gengwanpeng on 17/3/27.
  */
-public class ExecuteClassVisitor extends ClassVisitor {
+public class ExecuteClassVisitor extends LinkedClassVisitor {
 
     private List<ExecuteInfo> executeInfos;
 
@@ -33,9 +34,9 @@ public class ExecuteClassVisitor extends ClassVisitor {
     private String superClassName;
     private MethodContainer methodContainer;
 
-    public ExecuteClassVisitor(int api, ClassVisitor cv, TotalInfo info) {
-        super(api, cv);
-        this.executeInfos = info.executeInfos;
+
+    public ExecuteClassVisitor(List<ExecuteInfo> executeInfos) {
+        this.executeInfos = executeInfos;
     }
 
     @Override

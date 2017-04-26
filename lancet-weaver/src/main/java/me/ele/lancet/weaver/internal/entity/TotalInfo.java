@@ -11,10 +11,15 @@ public class TotalInfo {
     public List<ExecuteInfo> executeInfos;
     public List<TryCatchInfo> tryCatchInfos;
     public List<CallInfo> callInfos;
+    public List<String> excludes;
 
     public TotalInfo(List<ExecuteInfo> executeInfos, List<TryCatchInfo> tryCatchInfos, List<CallInfo> callInfos) {
         this.executeInfos = executeInfos;
         this.tryCatchInfos = tryCatchInfos;
         this.callInfos = callInfos;
+    }
+
+    public void setExcludes(List<String> excludes) {
+        this.excludes = excludes;
     }
 }
