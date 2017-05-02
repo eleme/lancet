@@ -5,7 +5,7 @@ public class PutCoffeeHook {
 
     @Target("com.sample.playground.Cup")
     public void putCoffee(Cup cup,String coffee) {
-        System.out.println("exrcute PutCoffeHook: replace "+coffee+" with "+" nestle when add to cup");
+        System.out.println("execute PutCoffeeHook: replace "+coffee+" with "+" nestle when add to cup");
         coffee = "nestle";
         Origin.callVoid();
     }

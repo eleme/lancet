@@ -21,7 +21,6 @@ public class TransformHelper {
         for (File file : files) {
             ClassData[] datas = ClassTransform.weave(TransformHelper.class.getClassLoader(),totalInfo, Okio.buffer(Okio.source(file)).readByteArray());
             for (ClassData data : datas) {
-                System.out.println(data.getClassName()+"  "+data.getClassBytes().length+" Bytes");
                 Buffer buffer = new Buffer();
                 buffer.write(data.getClassBytes());
                 buffer.readAll(Okio.sink(ClassFileUtil.clearFile(ClassFileUtil.getProductFile(data.getClassName()))));

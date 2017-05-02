@@ -5,7 +5,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.util.CheckClassAdapter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,8 +38,8 @@ public class ClassCollector {
 
     public ClassVisitor getOriginClassWriter(){
         originClassWriter =  new CustomClassLoaderClassWriter(mClassReader,mClassLoader,0);
-        return new CheckClassAdapter(originClassWriter);
-//        return originClassWriter;
+//        return new CheckClassAdapter(originClassWriter);
+        return originClassWriter;
     }
 
     public ClassWriter getInnerClassWriter(String classSimpleName){

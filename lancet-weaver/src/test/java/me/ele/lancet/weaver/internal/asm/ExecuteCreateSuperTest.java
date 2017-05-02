@@ -1,37 +1,23 @@
 package me.ele.lancet.weaver.internal.asm;
 
 
-import org.junit.Before;
-import org.junit.Test;
-
 import java.io.IOException;
-import java.util.ArrayList;
 
-import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
-import me.ele.lancet.weaver.internal.entity.TotalInfo;
-import me.ele.lancet.weaver.internal.log.Impl.SystemOutputImpl;
-import me.ele.lancet.weaver.internal.log.Log;
-import me.ele.lancet.weaver.internal.util.HookInfoGnenerator;
-import me.ele.lancet.weaver.internal.util.TransformHelper;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by Jude on 2017/4/26.
  */
-public class ExecuteCreateSuperTest {
-    @Before
-    public void setUp(){
-        Log.setImpl(new SystemOutputImpl());
+public class ExecuteCreateSuperTest extends AOPBaseTest{
+
+    @Override
+    public void applyTotalInfo() throws IOException{
+        addExecuteClass("com.sample.hook.execute.SuperHeaterHook");
     }
 
-    @Test
-    public void testTransform() throws IOException {
-        TotalInfo totalInfo = new TotalInfo();
-        ArrayList<ExecuteInfo> executeInfos = new ArrayList<>();
-        totalInfo.setExecuteInfos(executeInfos);
-        executeInfos.addAll(HookInfoGnenerator.executeInfoList("com.sample.hook.execute.SuperHeaterHook"));
-        System.out.println(executeInfos);
-        TransformHelper.startTransform(totalInfo);
+    @Override
+    public void checkOutput(String output) {
+        assertThat(output)
+                .contains("Super");
     }
-
-
 }

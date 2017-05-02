@@ -49,4 +49,22 @@ public class ClassFileUtil {
         return file;
     }
 
+    public static void resetProductDir(){
+        travelDeleteFiles(new File(ProductDir));
+    }
+
+    private static void travelDeleteFiles(File file){
+        if (file == null || !file.exists()){
+            return;
+        }
+        for (File fileChild : file.listFiles()) {
+            if (fileChild.isDirectory()){
+                travelDeleteFiles(fileChild);
+            }else {
+                fileChild.delete();
+            }
+        }
+        file.delete();
+    }
+
 }

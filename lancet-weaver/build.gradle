@@ -3,6 +3,7 @@ apply plugin: 'java'
 dependencies {
     testCompile "junit:junit:4.12"
     testCompile 'com.squareup.okio:okio:1.11.0'
+    testCompile 'com.squareup.assertj:assertj-android:1.1.1'
 
     compile project(':lancet-base')
     compile gradleApi()
@@ -34,8 +35,4 @@ task executeTestSample(type:JavaExec) {
 task executeTestSampleProduct(type:JavaExec) {
     main = "com.sample.playground.Main"
     classpath = files('src/test/sample/product')
-}
-
-task cleanTestSampleProduct << {
-    delete file('src/test/sample/product')
 }

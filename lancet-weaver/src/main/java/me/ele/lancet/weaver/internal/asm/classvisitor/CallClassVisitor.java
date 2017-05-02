@@ -41,7 +41,7 @@ public class CallClassVisitor extends LinkedClassVisitor {
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
         if (matches!= null && matches.size() > 0
                 && (access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) == 0) {
-            mv = new CallMethodVisitor(Opcodes.ASM5, access, name, desc, signature, exceptions, mv, matches,className,getClassCollector());
+            mv = new CallMethodVisitor(mv, matches,className,getClassCollector());
         }
         return mv;
     }

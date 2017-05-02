@@ -1,11 +1,11 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor.methodvisitor;
 
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -15,54 +15,43 @@ import java.util.Map;
 import me.ele.lancet.weaver.internal.asm.ClassCollector;
 import me.ele.lancet.weaver.internal.asm.ClassTransform;
 import me.ele.lancet.weaver.internal.entity.CallInfo;
+import me.ele.lancet.weaver.internal.log.Log;
 import me.ele.lancet.weaver.internal.util.AopMethodAdjuster;
 
 /**
  * Created by Jude on 17/4/26.
  */
-public class CallMethodVisitor extends MethodNode {
+public class CallMethodVisitor extends MethodVisitor {
 
     private final Map<String, List<CallInfo>> matchMap;
-    private String targetClassName;
+    private String currentClassName;
     private ClassCollector classCollector;
 
-    public CallMethodVisitor(int api, int access, String name, String desc, String signature, String[] exceptions, MethodVisitor mv, Map<String, List<CallInfo>> matchMap, String targetClassName, ClassCollector classCollector) {
-        super(api, access, name, desc, signature, exceptions);
+    public CallMethodVisitor(MethodVisitor mv, Map<String, List<CallInfo>> matchMap, String currentClassName, ClassCollector classCollector) {
+        super(Opcodes.ASM5, mv);
         this.matchMap = matchMap;
-        this.targetClassName = targetClassName;
+        this.currentClassName = currentClassName;
         this.mv = mv;
         this.classCollector = classCollector;
     }
 
     @Override
-    public void visitEnd() {
-        transformCode();
-        super.visitEnd();
+    public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+        List<CallInfo> infos = matchMap.get(owner + " " + name + " " + desc);
+        if (infos != null) {
+            // begin hook this code.
+            MethodInsnNode node = new MethodInsnNode(opcode,owner,name,desc,itf);
+            proxy(infos, node);
+            node.accept(this);
+            return;
+        }
+        super.visitMethodInsn(opcode, owner, name, desc, itf);
     }
 
-    private void transformCode() {
-        AbstractInsnNode element = instructions.getFirst();
-        while (element != null) {
-            if (element instanceof MethodInsnNode) {
-                MethodInsnNode methodInsnNode = (MethodInsnNode) element;
-                // find matched code
-                List<CallInfo> infos = matchMap.get(methodInsnNode.owner + " " + methodInsnNode.name + " " + methodInsnNode.desc);
-                if (infos != null) {
-                    // begin hook this code.
-                    proxy(infos, methodInsnNode);
-                }
-            }
-            element = element.getNext();
-        }
-        try {
-            accept(mv);
-        }catch (RuntimeException e){
-            throw new RuntimeException("transform: " + name + " " + desc,e);
-        }
-    }
 
     private void proxy(List<CallInfo> infos, MethodInsnNode methodInsnNode){
         for (int i = 0; i < infos.size(); i++) {
+            Log.tag("transform").i("start weave Call method: "+currentClassName+".?"+" for "+infos.get(i).targetClass+"."+infos.get(i).targetMethod);
             proxyOne(infos.get(i),methodInsnNode,i);
         }
     }
@@ -107,7 +96,7 @@ public class CallMethodVisitor extends MethodNode {
             public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
 
                 if (opcode == AopMethodAdjuster.OP_FLAG){
-                    // invoke
+                    // invoke target method
                     opcode = methodInsnNode.getOpcode();
                     owner = methodInsnNode.owner;
                     name = methodInsnNode.name;
@@ -123,6 +112,11 @@ public class CallMethodVisitor extends MethodNode {
                     }
                 }
                 super.visitMethodInsn(opcode, owner, name, desc, itf);
+            }
+
+            @Override
+            public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+                return null;
             }
 
             /**
