@@ -1,48 +1,43 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor.methodvisitor;
 
-import me.ele.lancet.weaver.internal.entity.CallInfo;
-import me.ele.lancet.weaver.internal.log.Log;
-import me.ele.lancet.weaver.internal.util.AopMethodAdjuster;
-import me.ele.lancet.weaver.internal.util.AsmUtil;
-import me.ele.lancet.weaver.internal.util.PrimitiveUtil;
-import me.ele.lancet.weaver.internal.util.TypeUtil;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.commons.JSRInlinerAdapter;
-import org.objectweb.asm.commons.TryCatchBlockSorter;
-import org.objectweb.asm.tree.*;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import me.ele.lancet.weaver.internal.asm.ClassCollector;
+import me.ele.lancet.weaver.internal.asm.ClassTransform;
+import me.ele.lancet.weaver.internal.entity.CallInfo;
+import me.ele.lancet.weaver.internal.util.AopMethodAdjuster;
 
 /**
- * Created by gengwanpeng on 17/4/1.
+ * Created by Jude on 17/4/26.
  */
-public class CallMethodVisitor extends //MethodNode {
-        TryCatchBlockSorter {
+public class CallMethodVisitor extends MethodNode {
 
     private final Map<String, List<CallInfo>> matchMap;
     private String targetClassName;
+    private ClassCollector classCollector;
 
-
-    public CallMethodVisitor(int api, int access, String name, String desc, String signature, String[] exceptions, MethodVisitor mv, Map<String, List<CallInfo>> matchMap, String targetClassName) {
-        super(api, mv, access, name, desc, signature, exceptions);
+    public CallMethodVisitor(int api, int access, String name, String desc, String signature, String[] exceptions, MethodVisitor mv, Map<String, List<CallInfo>> matchMap, String targetClassName, ClassCollector classCollector) {
+        super(api, access, name, desc, signature, exceptions);
         this.matchMap = matchMap;
         this.targetClassName = targetClassName;
-        //this.mv = mv;
+        this.mv = mv;
+        this.classCollector = classCollector;
     }
 
     @Override
     public void visitEnd() {
-        Log.tag("transform").i("start Call transform method: " + targetClassName + "." + name + " " + desc);
-        try {
-            transformCode();
-            super.visitEnd();
-        } catch (RuntimeException e) {
-            throw new RuntimeException("transform: " + targetClassName + " " + name + " " + desc, e);
-        }
+        transformCode();
+        super.visitEnd();
     }
 
     private void transformCode() {
@@ -50,142 +45,122 @@ public class CallMethodVisitor extends //MethodNode {
         while (element != null) {
             if (element instanceof MethodInsnNode) {
                 MethodInsnNode methodInsnNode = (MethodInsnNode) element;
+                // find matched code
                 List<CallInfo> infos = matchMap.get(methodInsnNode.owner + " " + methodInsnNode.name + " " + methodInsnNode.desc);
                 if (infos != null) {
-                    element = addCall(infos, methodInsnNode);
+                    // begin hook this code.
+                    proxy(infos, methodInsnNode);
                 }
             }
-            if (element == null) {
-                element = instructions.getFirst();
-            } else {
-                element = element.getNext();
-            }
+            element = element.getNext();
+        }
+        try {
+            accept(mv);
+        }catch (RuntimeException e){
+            throw new RuntimeException("transform: " + name + " " + desc,e);
         }
     }
 
-    private AbstractInsnNode addCall(List<CallInfo> infos, MethodInsnNode methodInsnNode) {
-        Log.tag("addCall").d(methodInsnNode.owner + " " + methodInsnNode.name + " " + methodInsnNode.desc);
-        Log.tag("added").d(
-                infos.stream()
-                        .map(i -> i.myClass + " " + i.myMethod + i.methodDescriptor)
-                        .collect(Collectors.joining("\n")));
-        int nowLocal = maxLocals;
-        for (CallInfo callInfo : infos) {
-            MethodNode clone = AsmUtil.clone(callInfo.node);
-            // insert pop to local
-            popToLocal(nowLocal, methodInsnNode);
+    private void proxy(List<CallInfo> infos, MethodInsnNode methodInsnNode){
+        for (int i = 0; i < infos.size(); i++) {
+            proxyOne(infos.get(i),methodInsnNode,i);
+        }
+    }
 
-            //try catch
-            tryCatchBlocks.addAll(clone.tryCatchBlocks);
-            // local var
-            /*for(LocalVariableNode l : (List<LocalVariableNode>)clone.localVariables){
-                l.index += nowLocal;
-            }
-            localVariables.addAll(clone.localVariables);*/
+    /**
+     * This method will handle a CallInfo.
+     * first, generate a innerClass,just like this.
+     * copy the method from Hook class to the innerClass:
+     *
+     *    private static class _lancet {
+     *        public static void com_sample_hook_call_Hook2_putCoffee(Cup cup, String coffee) {
+     *            System.out.println("replace " + coffee + " with Cappuccino before add to cup");
+     *            coffee = "Cappuccino";
+     *            cup.putCoffee(coffee);
+     *        }
+     *    }
+     *
+     * and then,change the invoke code to invoke the innerClass method,like this:
+     *
+     *    public Cup brew(Cup cup) {
+     *        CoffeeMaker._lancet.com.sample.hook.call.Hook2_putCoffee(cup, this.coffeeBox.getLatte());
+     *        return cup;
+     *    }
+     *
+     *
+     * @param info hook info entry
+     * @param methodInsnNode the code to invoke target method
+     * @param index index of CallInfo in CallInfo List
+     */
+    private void proxyOne(CallInfo info, MethodInsnNode methodInsnNode,int index){
+        // all visitor will share the only one innerclass
+        ClassWriter writer = classCollector.getInnerClassWriter(ClassTransform.AID_INNER_CLASS_NAME);
 
-            // insert aop codes
-            for (AbstractInsnNode e : clone.instructions.toArray()) {
-                if (e instanceof VarInsnNode) {
-                    VarInsnNode varInsnNode = (VarInsnNode) e;
-                    if (varInsnNode.getOpcode() != Opcodes.RET) {
-                        varInsnNode.var += nowLocal;
-                    }
-                } else if (e instanceof MethodInsnNode) {
-                    MethodInsnNode m = (MethodInsnNode) e;
-                    if (m.getOpcode() == AopMethodAdjuster.OP_FLAG) {
-                        m.setOpcode(methodInsnNode.getOpcode());
-                        m.itf = m.getOpcode() == Opcodes.INVOKEINTERFACE;
+        String innerClassName = classCollector.getCanonicalName(ClassTransform.AID_INNER_CLASS_NAME);
+        // every method in innerclass will add source class name as prefix
+        String methodName = info.sourceClass.replace(".","_")+"_"+info.sourceMethod.name;
+
+        MethodNode proxyMethod = new MethodNode(Opcodes.ASM5, Opcodes.ACC_STATIC, methodName, info.sourceMethod.desc, info.sourceMethod.signature, info.sourceMethod.exceptions.toArray(new String[info.sourceMethod.exceptions.size()]));
+        // write origin method code to proxyMethod, and change the Origin.call() to invoke target method.
+        info.sourceMethod.accept(new MethodVisitor(Opcodes.ASM5,proxyMethod) {
+            @Override
+            public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+
+                if (opcode == AopMethodAdjuster.OP_FLAG){
+                    // invoke
+                    opcode = methodInsnNode.getOpcode();
+                    owner = methodInsnNode.owner;
+                    name = methodInsnNode.name;
+                    desc = methodInsnNode.desc;
+                    itf = methodInsnNode.itf;
+
+                    // load all arguments.
+                    Type[] types = Type.getMethodType(proxyMethod.desc).getArgumentTypes();
+                    int index = 0;
+                    for (int i = 0; i < types.length; i++) {
+                        super.visitVarInsn(types[i].getOpcode(Opcodes.ILOAD), index);
+                        index += types[i].getSize();
                     }
                 }
-                instructions.insertBefore(methodInsnNode, e);
+                super.visitMethodInsn(opcode, owner, name, desc, itf);
             }
-            nowLocal += clone.maxLocals;
-            maxStack = Math.max(maxStack, clone.maxStack);
-        }
-        maxLocals = nowLocal;
-        AbstractInsnNode tempNode = methodInsnNode.getPrevious();
-        instructions.remove(methodInsnNode);
-        return tempNode;
-    }
 
-    private void popToLocal(int nowLocal, MethodInsnNode methodInsnNode) {
-        InsnCollector insns = new InsnCollector();
-        if (methodInsnNode.getOpcode() != Opcodes.INVOKESTATIC) {
-            nowLocal = insns.storeRef(nowLocal);
-        }
-        int index = 1;
-        String desc = methodInsnNode.desc;
-        while (true) {
-            char c = desc.charAt(index);
-            switch (c) {
-                case ')':
-                    insns.reverseAddTo(instructions, methodInsnNode);
-                    return;
-                case '[':
-                    index = TypeUtil.parseArray(index, desc);
-                    nowLocal = insns.storeRef(nowLocal);
-                    break;
-                case 'L':
-                    index = TypeUtil.parseObject(index, desc);
-                    nowLocal = insns.storeRef(nowLocal);
-                    break;
-                case 'D':
-                    nowLocal = insns.storeDouble(nowLocal);
-                    break;
-                case 'J':
-                    nowLocal = insns.storeLong(nowLocal);
-                    break;
-                case 'F':
-                    nowLocal = insns.storeFloat(nowLocal);
-                    break;
-                default:
-                    nowLocal = insns.storeInt(nowLocal);
-                    if (!PrimitiveUtil.primitives().contains(c)) {
-                        throw new IllegalArgumentException("illegal type: " + c);
+            /**
+             * override this method to delete 'this' var in method when origin method is nor static.
+             * 'this' var is always at index 0 and length is 1.
+             * So minus 1 when origin method is nor static.
+             */
+            @Override
+            public void visitVarInsn(int opcode, int var) {
+                if ((info.sourceMethod.access & Opcodes.ACC_STATIC)==0){
+                    var--;
+                }
+                super.visitVarInsn(opcode, var);
+            }
+
+            /**
+             * edit the LocalVariable to delete 'this' var when origin method is nor static.
+             */
+            @Override
+            public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
+                if ((info.sourceMethod.access & Opcodes.ACC_STATIC)==0){
+                    if (name.equals("this")){
+                        return;
+                    }else {
+                        index--;
                     }
+                }
+                super.visitLocalVariable(name, desc, signature, start, end, index);
             }
-            index++;
-        }
+        });
+
+        proxyMethod.accept(writer);
+
+        // redirection the invoke code to proxy method in innerclass.
+        methodInsnNode.setOpcode(Opcodes.INVOKESTATIC);
+        methodInsnNode.owner = innerClassName;
+        methodInsnNode.name = proxyMethod.name;
+        methodInsnNode.desc = proxyMethod.desc;
     }
 
-    private class InsnCollector {
-
-        List<AbstractInsnNode> list = new ArrayList<>(4);
-
-        private int storeRef(int local) {
-            VarInsnNode varInsnNode = new VarInsnNode(Opcodes.ASTORE, local);
-            list.add(varInsnNode);
-            return local + 1;
-        }
-
-        private int storeDouble(int local) {
-            VarInsnNode varInsnNode = new VarInsnNode(Opcodes.DSTORE, local);
-            list.add(varInsnNode);
-            return local + 2;
-        }
-
-        private int storeInt(int local) {
-            VarInsnNode varInsnNode = new VarInsnNode(Opcodes.ISTORE, local);
-            list.add(varInsnNode);
-            return local + 1;
-        }
-
-        private int storeFloat(int local) {
-            VarInsnNode varInsnNode = new VarInsnNode(Opcodes.FSTORE, local);
-            list.add(varInsnNode);
-            return local + 1;
-        }
-
-        private int storeLong(int local) {
-            VarInsnNode varInsnNode = new VarInsnNode(Opcodes.LSTORE, local);
-            list.add(varInsnNode);
-            return local + 2;
-        }
-
-        private void reverseAddTo(InsnList insnList, AbstractInsnNode location) {
-            for (int i = list.size() - 1; i >= 0; i--) {
-                insnList.insertBefore(location, list.get(i));
-            }
-        }
-    }
 }

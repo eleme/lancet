@@ -21,4 +21,14 @@ public class LinkedClassVisitor extends ClassVisitor {
     void setNextClassVisitor(ClassVisitor classVisitor){
         cv = classVisitor;
     }
+
+    public ClassCollector getClassCollector() {
+        return mClassCollector;
+    }
+
+    @Override
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        super.visit(version, access, name, signature, superName, interfaces);
+        mClassCollector.setOriginClassName(name);
+    }
 }

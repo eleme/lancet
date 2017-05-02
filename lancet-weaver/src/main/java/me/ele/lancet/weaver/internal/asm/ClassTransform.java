@@ -15,6 +15,7 @@ import me.ele.lancet.weaver.internal.entity.TotalInfo;
 
 public class ClassTransform {
 
+    public static final String AID_INNER_CLASS_NAME = "_lancet";
 
     public static ClassData[] weave(ClassLoader classLoader, TotalInfo totalInfo, byte[] classByte) {
         ClassCollector classCollector = new ClassCollector(new ClassReader(classByte),classLoader);
@@ -25,7 +26,6 @@ public class ClassTransform {
         transform.connect(new ExecuteClassVisitor(totalInfo.executeInfos));
         transform.connect(new TryCatchInfoClassVisitor(totalInfo.tryCatchInfos));
         transform.startTransform();
-
         return classCollector.generateClassBytes();
     }
 
@@ -39,15 +39,16 @@ public class ClassTransform {
 
     void connect(LinkedClassVisitor visitor){
         if (mHeadVisitor == null){
-            mHeadVisitor = mTailVisitor = visitor;
+            mHeadVisitor = visitor;
         }else {
             mTailVisitor.setNextClassVisitor(visitor);
         }
+        mTailVisitor = visitor;
         visitor.setClassCollector(mClassCollector);
     }
 
     void startTransform(){
-        mTailVisitor.setNextClassVisitor(mClassCollector.newClassWriter(""));
+        mTailVisitor.setNextClassVisitor(mClassCollector.getOriginClassWriter());
         mClassCollector.mClassReader.accept(mHeadVisitor,0);
     }
 }

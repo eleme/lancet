@@ -11,14 +11,16 @@ public class ExecuteInfo {
     public String targetClass;
     public String targetMethod;
     public String targetDesc;
-    public MethodNode node;
+    public String sourceClass;
+    public MethodNode sourceMethod;
 
-    public ExecuteInfo(boolean createSuper, String targetClass, String targetMethod, String targetDesc, MethodNode node) {
+    public ExecuteInfo(boolean createSuper, String targetClass, String targetMethod, String targetDesc, String sourceClass,MethodNode sourceMethod) {
         this.createSuper = createSuper;
         this.targetClass = targetClass;
         this.targetMethod = targetMethod;
         this.targetDesc = targetDesc;
-        this.node = node;
+        this.sourceClass = sourceClass;
+        this.sourceMethod = sourceMethod;
     }
 
     @Override
@@ -28,7 +30,7 @@ public class ExecuteInfo {
                 ", targetClass='" + targetClass + '\'' +
                 ", targetMethod='" + targetMethod + '\'' +
                 ", targetDesc='" + targetDesc + '\'' +
-                ", node=" + node +
+                ", sourceMethod=" + sourceMethod +
                 ", targetDesc='" + targetDesc + '\'' +
                 '}';
     }

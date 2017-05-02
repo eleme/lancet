@@ -29,14 +29,16 @@ public class TryCatchInfoClassVisitor extends LinkedClassVisitor {
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         className = name;
-        matches = infos.stream().filter(t -> t.match(name)).collect(Collectors.toList());
+        if (infos != null){
+            matches = infos.stream().filter(t -> t.match(name)).collect(Collectors.toList());
+        }
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-        if (matches.size() > 0) {
+        if (matches != null && matches.size() > 0) {
             Log.tag("transform").i("visit TryCatch method: "+className+"."+name+" "+desc);
             mv = new TryCatchMethodVisitor(Opcodes.ASM5, mv, matches);
         }

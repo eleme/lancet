@@ -1,7 +1,5 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor;
 
-import me.ele.lancet.base.PlaceHolder;
-import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.FieldVisitor;
@@ -12,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import me.ele.lancet.base.PlaceHolder;
 import me.ele.lancet.weaver.internal.asm.LinkedClassVisitor;
 
 /**
@@ -39,7 +38,7 @@ public class ExcludeClassVisitor extends LinkedClassVisitor {
         this.excludes = excludes;
     }
 
-    public boolean isSupplierClass() {
+    public boolean isSupplierClass(){
         return PlaceHolder.SUPPLIER_CLASS_NAME.equals(name.replace('/', '.'));
     }
 
@@ -50,7 +49,7 @@ public class ExcludeClassVisitor extends LinkedClassVisitor {
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         this.name = name;
-        if (excludes.contains(name) || excludePackage.stream().anyMatch(name::startsWith)) {
+        if (excludes != null && excludes.contains(name) || excludePackage.stream().anyMatch(name::startsWith)){
             exclude = true;
         }
         if (!exclude) {
@@ -113,9 +112,7 @@ public class ExcludeClassVisitor extends LinkedClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         if (!exclude) {
-            MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-            return new JSRInlinerAdapter(mv,
-                    access, name, desc, signature, exceptions);
+            return super.visitMethod(access, name, desc, signature, exceptions);
         }
         return null;
     }

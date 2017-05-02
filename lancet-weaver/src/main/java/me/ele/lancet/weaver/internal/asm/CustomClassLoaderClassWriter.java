@@ -14,15 +14,12 @@ public class CustomClassLoaderClassWriter extends ClassWriter {
         super(flags);
     }
 
-    public CustomClassLoaderClassWriter(ClassReader classReader, int flags) {
+    public CustomClassLoaderClassWriter(ClassReader classReader, ClassLoader loader,int flags) {
         super(classReader, flags);
-    }
-
-    public void setCustomClassLoader(ClassLoader classLoader) {
-        if (classLoader == null) {
+        if (loader == null) {
             throw new NullPointerException("classloader == null");
         }
-        this.loader = classLoader;
+        this.loader = loader;
     }
 
     @Override
