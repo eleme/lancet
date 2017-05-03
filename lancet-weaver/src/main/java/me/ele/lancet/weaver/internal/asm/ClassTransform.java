@@ -4,7 +4,6 @@ import org.objectweb.asm.ClassReader;
 
 import me.ele.lancet.weaver.ClassData;
 import me.ele.lancet.weaver.internal.asm.classvisitor.CallClassVisitor;
-import me.ele.lancet.weaver.internal.asm.classvisitor.ExcludeClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.ExecuteClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.TryCatchInfoClassVisitor;
 import me.ele.lancet.weaver.internal.entity.TotalInfo;
@@ -21,7 +20,6 @@ public class ClassTransform {
         ClassCollector classCollector = new ClassCollector(new ClassReader(classByte),classLoader);
 
         ClassTransform transform = new ClassTransform(classCollector);
-        transform.connect(new ExcludeClassVisitor(totalInfo.excludes));
         transform.connect(new CallClassVisitor(totalInfo.callInfos));
         transform.connect(new ExecuteClassVisitor(totalInfo.executeInfos));
         transform.connect(new TryCatchInfoClassVisitor(totalInfo.tryCatchInfos));

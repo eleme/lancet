@@ -50,8 +50,6 @@ public class AsmWeaver implements Weaver {
         this.loader = loader;
         this.classes = classes;
         this.totalInfo = convertToAopInfo(list);
-        List<String> excludes = classes.stream().map(c -> c.getName().replace('.', '/')).collect(Collectors.toList());
-        this.totalInfo.setExcludes(excludes);
     }
 
     @Override

@@ -11,7 +11,6 @@ public class TotalInfo {
     public List<ExecuteInfo> executeInfos;
     public List<TryCatchInfo> tryCatchInfos;
     public List<CallInfo> callInfos;
-    public List<String> excludes;
 
     public TotalInfo() {
     }
@@ -34,9 +33,6 @@ public class TotalInfo {
         this.callInfos = callInfos;
     }
 
-    public void setExcludes(List<String> excludes) {
-        this.excludes = excludes;
-    }
 
     @Override
     public String toString() {
