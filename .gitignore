@@ -20,3 +20,5 @@ obj
 #MacOS
 .DS_Store
 local.properties
+lancet-weaver/src/test/sample/class/
+lancet-weaver/src/test/sample/product/
