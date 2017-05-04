@@ -34,7 +34,6 @@ public abstract class AOPBaseTest {
         totalInfo.setCallInfos(new ArrayList<>());
         totalInfo.setExecuteInfos(new ArrayList<>());
         totalInfo.setTryCatchInfos(new ArrayList<>());
-        totalInfo.setExcludes(new ArrayList<>());
         applyTotalInfo();
         System.out.println(totalInfo);
         TransformHelper.startTransform(totalInfo);
