@@ -1,6 +1,7 @@
 package me.ele.lancet.weaver.internal.entity;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,17 +9,19 @@ import java.util.List;
  */
 public class TotalInfo {
 
-    public List<ExecuteInfo> executeInfos;
-    public List<TryCatchInfo> tryCatchInfos;
-    public List<CallInfo> callInfos;
+    public List<ExecuteInfo> executeInfos = new ArrayList<>();
+    public List<TryCatchInfo> tryCatchInfos = new ArrayList<>();
+    public List<CallInfo> callInfos = new ArrayList<>();
+    public List<String> excludes = new ArrayList<>();
 
     public TotalInfo() {
     }
 
-    public TotalInfo(List<ExecuteInfo> executeInfos, List<TryCatchInfo> tryCatchInfos, List<CallInfo> callInfos) {
-        this.executeInfos = executeInfos;
-        this.tryCatchInfos = tryCatchInfos;
-        this.callInfos = callInfos;
+    public void combine(TotalInfo other) {
+        executeInfos.addAll(other.executeInfos);
+        tryCatchInfos.addAll(other.tryCatchInfos);
+        callInfos.addAll(other.callInfos);
+        excludes.addAll(other.excludes);
     }
 
     public void setExecuteInfos(List<ExecuteInfo> executeInfos) {
@@ -33,25 +36,28 @@ public class TotalInfo {
         this.callInfos = callInfos;
     }
 
+    public void setExcludes(List<String> excludes) {
+        this.excludes = excludes;
+    }
 
     @Override
     public String toString() {
-        String content = "";
-        if (executeInfos!=null){
+        StringBuilder content = new StringBuilder();
+        if (executeInfos != null) {
             for (ExecuteInfo executeInfo : executeInfos) {
-                content+=executeInfo+"\n";
+                content.append(executeInfo).append("\n");
             }
         }
-        if (callInfos!=null){
+        if (callInfos != null) {
             for (CallInfo callInfo : callInfos) {
-                content+=callInfo+"\n";
+                content.append(callInfo).append("\n");
             }
         }
-        if (tryCatchInfos!=null){
+        if (tryCatchInfos != null) {
             for (TryCatchInfo tryCatchInfo : tryCatchInfos) {
-                content+=tryCatchInfo+"\n";
+                content.append(tryCatchInfo).append("\n");
             }
         }
-        return content;
+        return content.toString();
     }
 }

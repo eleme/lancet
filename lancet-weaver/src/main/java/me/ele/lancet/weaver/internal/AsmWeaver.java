@@ -6,6 +6,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import me.ele.lancet.base.api.ClassSupplier;
@@ -14,8 +15,10 @@ import me.ele.lancet.weaver.MetaParser;
 import me.ele.lancet.weaver.Weaver;
 import me.ele.lancet.weaver.internal.asm.ClassTransform;
 import me.ele.lancet.weaver.internal.entity.TotalInfo;
+import me.ele.lancet.weaver.internal.graph.Graph;
+import me.ele.lancet.weaver.internal.graph.Node;
 import me.ele.lancet.weaver.internal.meta.ClassMetaInfo;
-import me.ele.lancet.weaver.internal.parser.ReflectiveMetaParser;
+import me.ele.lancet.weaver.internal.parser.AsmMetaParser;
 import me.ele.lancet.weaver.internal.supplier.ComponentSupplier;
 import me.ele.lancet.weaver.internal.supplier.DirCodeSupplier;
 import me.ele.lancet.weaver.internal.supplier.JarClassSupplier;
@@ -27,39 +30,22 @@ import me.ele.lancet.weaver.internal.supplier.JarClassSupplier;
 public class AsmWeaver implements Weaver {
 
 
-    public static AsmWeaver newInstance(Collection<File> jars, Collection<File> dirs) {
-        URLClassLoader dirLoader = URLClassLoader.newInstance(toUrls(dirs), Thread.currentThread().getContextClassLoader());
-        URLClassLoader loader = URLClassLoader.newInstance(toUrls(jars), dirLoader);
-
-        ClassSupplier dirSupplier = new DirCodeSupplier(dirLoader);
-        ClassSupplier jarSupplier = new JarClassSupplier(jars, loader);
-        ClassSupplier supplier = ComponentSupplier.newInstance(dirSupplier, jarSupplier);
-
-        MetaParser parser = new ReflectiveMetaParser(loader);
-        List<Class<?>> classes = supplier.get();
-        List<ClassMetaInfo> list = parser.parse(classes);
-
-        return new AsmWeaver(loader, classes, list);
+    public static Weaver newInstance(ClassLoader cl, Map<String, Node> nodesMap, List<String> classes) {
+        MetaParser parser = new AsmMetaParser(cl);
+        Graph graph = new Graph(nodesMap);
+        return new AsmWeaver(parser.parse(classes, graph));
     }
 
-    private final URLClassLoader loader;
-    private final List<Class<?>> classes;
     private final TotalInfo totalInfo;
 
-    public AsmWeaver(URLClassLoader loader, List<Class<?>> classes, List<ClassMetaInfo> list) {
-        this.loader = loader;
-        this.classes = classes;
-        this.totalInfo = convertToAopInfo(list);
+    public AsmWeaver(TotalInfo totalInfo) {
+        this.totalInfo = totalInfo;
     }
 
-    @Override
-    public List<String> getBuiltInNames() {
-        return classes.stream().map(Class::getName).collect(Collectors.toList());
-    }
 
     @Override
     public ClassData[] weave(byte[] input) {
-        return ClassTransform.weave(loader,totalInfo,input);
+        return ClassTransform.weave(totalInfo, input);
     }
 
     private static TotalInfo convertToAopInfo(List<ClassMetaInfo> list) {
@@ -97,4 +83,6 @@ public class AsmWeaver implements Weaver {
                 })
                 .toArray(URL[]::new);
     }
+
+
 }

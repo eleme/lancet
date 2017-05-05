@@ -13,7 +13,7 @@ buildscript {
             bintrayKey = properties.getProperty('bintrayKey')
         }
         lancet_group = 'me.ele'
-        lancet_version = '1.0.0-alpha3'
+        lancet_version = '0.0.0.9'
 
         asm_version = '5.1'
         android_tools_version = '2.3.1'
@@ -21,6 +21,7 @@ buildscript {
     }
     repositories {
         jcenter()
+        mavenCentral()
         maven {
             if (ele) {
                 url "http://maven.dev.elenet.me/nexus/content/groups/public"

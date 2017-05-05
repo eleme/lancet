@@ -1,6 +1,7 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor;
 
 import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -10,7 +11,9 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import me.ele.lancet.weaver.internal.asm.ClassTransform;
 import me.ele.lancet.weaver.internal.asm.LinkedClassVisitor;
@@ -20,7 +23,7 @@ import me.ele.lancet.weaver.internal.util.AopMethodAdjuster;
 import me.ele.lancet.weaver.internal.util.TypeUtil;
 
 /**
- * Created by Jude on 17/5/2.
+ * Created by gengwanpeng on 17/3/27.
  */
 public class ExecuteClassVisitor extends LinkedClassVisitor {
 
@@ -61,7 +64,7 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
             for (int i = 0; i < executeInfos.size(); i++) {
                 ExecuteInfo executeInfo = executeInfos.get(i);
                 if (executeInfo.targetMethod.equals(name) && executeInfo.targetDesc.equals(desc) && (access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) == 0){
-                    Log.tag("transform").i("start weave Execute method: "+className+"."+name);
+                    Log.tag("transform").i("visit Insert method: "+className+"."+name+" "+desc);
 
                     String originName = name+"$"+i;
                     String originDesc = TypeUtil.descToStatic(access,desc,className);
@@ -94,11 +97,11 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
         ClassWriter writer = getClassCollector().getInnerClassWriter(ClassTransform.AID_INNER_CLASS_NAME);
 
         String innerClassName = getClassCollector().getCanonicalName(ClassTransform.AID_INNER_CLASS_NAME);
-        // every method in innerclass will add hook class's name as prefix. to show invoke path when print error stack and debug.
+        // every method in innerclass will add suffix with aop type & index
         String methodName = executeInfo.sourceClass.replace(".","_")+"_"+fname;
 
-        MethodNode proxyMethod = new MethodNode(Opcodes.ASM5, Opcodes.ACC_STATIC, methodName, executeInfo.sourceMethod.desc, executeInfo.sourceMethod.signature, executeInfo.sourceMethod.exceptions.toArray(new String[executeInfo.sourceMethod.exceptions.size()]));
-        // copy the code from hook method to inner class and replace the "Origin.call"
+        MethodNode proxyMethod = new MethodNode(Opcodes.ASM5, Opcodes.ACC_STATIC, methodName, executeInfo.sourceMethod.desc, executeInfo.sourceMethod.signature, (String[]) executeInfo.sourceMethod.exceptions.toArray(new String[executeInfo.sourceMethod.exceptions.size()]));
+
         executeInfo.sourceMethod.accept(new MethodVisitor(Opcodes.ASM5,proxyMethod) {
 
             @Override
@@ -111,8 +114,8 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
                     name = originName;
                     desc = originDesc;
 
-                    // load all arguments and then invoke real origin method.
                     Type[] types = Type.getMethodType(desc).getArgumentTypes();
+
                     int index = 0;
                     for (int i = 0; i < types.length; i++) {
                         super.visitVarInsn(types[i].getOpcode(Opcodes.ILOAD),index);
@@ -125,7 +128,7 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
             /**
              * override this method to delete 'this' var in method when origin method is nor static.
              * 'this' var is always at index 0 and length is 1.
-             * So minus 1 when origin method is not static.
+             * So minus 1 when origin method is nor static.
              */
             @Override
             public void visitVarInsn(int opcode, int var) {
@@ -155,8 +158,17 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
 
 
         // because the target method has renamed,so there will generate a fake method use origin method name.
-        final MethodNode fakeMethod = new MethodNode(Opcodes.ASM5,faccess,fname,fdesc,fsignature,fexceptions);
-        GeneratorAdapter adapter = new GeneratorAdapter(faccess, new Method(fname, fdesc), fakeMethod);
+        final MethodNode[] fakeMethod = new MethodNode[1];
+        Type[] exceptions = null;
+        if (fexceptions != null){
+            exceptions = Arrays.stream(fexceptions).map(Type::getType).collect(Collectors.toList()).toArray(new Type[0]);
+        }
+        GeneratorAdapter adapter = new GeneratorAdapter(faccess, new Method(fname, fdesc), fsignature, exceptions, new ClassVisitor(Opcodes.ASM5) {
+            @Override
+            public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+                return fakeMethod[0] =  new MethodNode(Opcodes.ASM5,access,name,desc,signature,exceptions);
+            }
+        });
         if ((faccess & Opcodes.ACC_STATIC)==0){
             adapter.loadThis();
         }
@@ -164,14 +176,12 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
         adapter.invokeStatic(Type.getObjectType(innerClassName),new Method(proxyMethod.name,proxyMethod.desc));
         adapter.returnValue();
 
-        // count the stack&local
         int stack = Type.getArgumentsAndReturnSizes(fdesc) >> 2;
         int local = (stack == 1 && (fdesc.endsWith("D") || fdesc.endsWith("J"))) ? 2 : stack;
         adapter.visitMaxs(stack, local);
         adapter.visitEnd();
 
-        // return the fake origin method but accept the method, because we may rename this method again.
-        return fakeMethod;
+        return fakeMethod[0];
     }
 
     @Override
@@ -179,16 +189,13 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
         if (classBingo){
             for (ExecuteInfo executeInfo : executeInfos) {
                 if (executeInfo.targetClass.equals(className) && executeInfo.createSuper){
-                    Log.tag("transform").i("start weave Execute method: "+className+"."+executeInfo.targetMethod);
-
                     MethodVisitor mv = super.visitMethod(
                             executeInfo.sourceMethod.access,
                             executeInfo.targetMethod,
                             executeInfo.targetDesc,
                             executeInfo.sourceMethod.signature,
-                            executeInfo.sourceMethod.exceptions.toArray(new String[0])
+                            (String[]) executeInfo.sourceMethod.exceptions.toArray(new String[0])
                     );
-                    // copy name from hook class to target class and replace the "Origin.call"
                     executeInfo.sourceMethod.accept(new MethodVisitor(Opcodes.ASM5,mv) {
 
                         @Override
@@ -224,4 +231,70 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
         super.visitEnd();
     }
 
+
+    //    private void createLostMethod() {
+//        if (methodContainer!=null){
+//            methodContainer.stream()
+//                    .filter(m -> !m.used && m.createSuper)
+//                    .forEach(this::createMethod);
+//        }
+//    }
+//
+//    private void createMethod(TargetMethodInfo m) {
+//        MethodNode executeNode = m.executes.generate(0).sourceMethod;
+//        String[] exceptions = new String[executeNode.exceptions.size()];
+//        executeNode.exceptions.toArray(exceptions);
+//
+//        String desc = m.myDescriptor;
+//
+//        MethodVisitor mv = visitMethod(Opcodes.ACC_PUBLIC, m.name, desc, null, exceptions);
+//        GeneratorAdapter mg = new GeneratorAdapter(mv,
+//                Opcodes.ACC_PUBLIC, m.name, desc);
+//
+//        // invoke super
+//        mg.visitCode();
+//        mg.loadThis();
+//        mg.loadArgs();
+//        mg.visitMethodInsn(Opcodes.INVOKESPECIAL, superClassName, m.name, desc, false);
+//        mg.returnValue();
+//        int stack = Type.getArgumentsAndReturnSizes(desc) >> 2;
+//        int local = (stack == 1 && (desc.endsWith("D") || desc.endsWith("J"))) ? 2 : stack;
+//        mg.visitMaxs(stack, local);
+//        mg.visitEnd();
+//    }
+//
+//    private static class MethodContainer {
+//        Map<String, TargetMethodInfo> map = new HashMap<>();
+//
+//        public MethodContainer addExecute(ExecuteInfo executeInfo) {
+//            String key = executeInfo.targetMethod + " " + executeInfo.targetDesc;
+//            TargetMethodInfo methodInfo = map.generate(key);
+//            if (methodInfo == null) {
+//                methodInfo = new TargetMethodInfo();
+//                methodInfo.myDescriptor = executeInfo.targetDesc;
+//                methodInfo.name = executeInfo.targetMethod;
+//                map.put(key, methodInfo);
+//            }
+//            methodInfo.addExecute(executeInfo);
+//            return this;
+//        }
+//
+//        public MethodContainer combine(MethodContainer other) {
+//            if (other != this) {
+//                map.putAll(other.map);
+//            }
+//            return this;
+//        }
+//
+//        public Stream<TargetMethodInfo> stream() {
+//            return map.values().stream();
+//        }
+//
+//        public TargetMethodInfo generate(String name, String desc) {
+//            if (map.size() >= 0) {
+//                return map.generate(name + " " + desc);
+//            }
+//            return null;
+//        }
+//    }
 }

@@ -16,8 +16,8 @@ public class ClassTransform {
 
     public static final String AID_INNER_CLASS_NAME = "_lancet";
 
-    public static ClassData[] weave(ClassLoader classLoader, TotalInfo totalInfo, byte[] classByte) {
-        ClassCollector classCollector = new ClassCollector(new ClassReader(classByte),classLoader);
+    public static ClassData[] weave(TotalInfo totalInfo, byte[] classByte) {
+        ClassCollector classCollector = new ClassCollector(new ClassReader(classByte));
 
         ClassTransform transform = new ClassTransform(classCollector);
         transform.connect(new CallClassVisitor(totalInfo.callInfos));

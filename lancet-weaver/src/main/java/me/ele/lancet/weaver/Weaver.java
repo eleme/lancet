@@ -7,7 +7,6 @@ import java.util.List;
  */
 public interface Weaver{
 
-    List<String> getBuiltInNames();
 
     ClassData[] weave(byte[] input);
 }

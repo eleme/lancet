@@ -2,7 +2,8 @@ package me.ele.lancet.weaver;
 
 import java.util.List;
 
-import me.ele.lancet.weaver.internal.meta.ClassMetaInfo;
+import me.ele.lancet.weaver.internal.entity.TotalInfo;
+import me.ele.lancet.weaver.internal.graph.Graph;
 
 
 /**
@@ -11,5 +12,5 @@ import me.ele.lancet.weaver.internal.meta.ClassMetaInfo;
  */
 public interface MetaParser {
 
-    List<ClassMetaInfo> parse(List<Class<?>> classes);
+    TotalInfo parse(List<String> classes, Graph graph);
 }

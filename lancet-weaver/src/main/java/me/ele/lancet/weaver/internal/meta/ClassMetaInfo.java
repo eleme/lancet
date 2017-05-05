@@ -1,72 +1,44 @@
 package me.ele.lancet.weaver.internal.meta;
 
+import me.ele.lancet.weaver.internal.graph.Graph;
+import me.ele.lancet.weaver.internal.parser.AnnotationMeta;
 
-import com.google.common.io.ByteStreams;
-
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.tree.ClassNode;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import me.ele.lancet.weaver.internal.util.AopMethodAdjuster;
-
+import java.util.stream.Collectors;
 
 /**
- * Created by gengwanpeng on 17/3/21.
+ * Created by gengwanpeng on 17/5/3.
  */
 public class ClassMetaInfo {
 
-    public String myClassName;
-    public String targetClassName;
-    public String targetSuperClassName;
-    public String[] targetInterfaces;
+    public String className;
+    public List<AnnotationMeta> annotationMetas = new ArrayList<>();
 
-    public List<MethodMetaInfo> infos;
-    public ClassNode node;
+    public List<MethodMetaInfo> methods = new ArrayList<>(4);
 
-    private Class<?> clazz;
-    private ClassLoader loader;
-
-    public ClassMetaInfo(Class<?> clazz, ClassLoader loader) {
-        this.clazz = clazz;
-        this.loader = loader;
-        infos = new ArrayList<>(4);
-        initNode();
+    public ClassMetaInfo(String className) {
+        this.className = className;
     }
 
-    public void addMethod(MethodMetaInfo methodMetaInfo) {
-        methodMetaInfo.setMyClass(clazz.getName());
-        methodMetaInfo.setIfEmpty(targetClassName, targetSuperClassName, targetInterfaces);
-        infos.add(methodMetaInfo);
+    public List<HookInfoLocator> toLocators(Graph nodeMap) {
+        return methods.stream()
+                .map(m -> {
 
-        if (methodMetaInfo.getType() != MethodMetaInfo.TYPE_HANDLER) {
-            adjustMethodCode(methodMetaInfo);
-        }
-    }
+                    HookInfoLocator locator = new HookInfoLocator(nodeMap);
+                    locator.setSourceNode(className, m.sourceNode);
 
-    private void initNode() {
-        try {
-            InputStream is = loader.getResourceAsStream(clazz.getName().replace('.', '/') + ".class");
-            ClassReader classReader = new ClassReader(ByteStreams.toByteArray(is));
-            ClassNode cn = new ClassNode();
-            classReader.accept(cn, ClassReader.SKIP_DEBUG);
-            this.node = cn;
-        } catch (IOException e) {
-            throw new IllegalStateException("Can't read class file " + clazz.getName(), e);
-        }
-    }
+                    annotationMetas.forEach(i -> {
+                        i.accept(locator);
+                    });
 
-    private void adjustMethodCode(MethodMetaInfo methodMetaInfo) {
-        new AopMethodAdjuster(methodMetaInfo.getNode(), methodMetaInfo).adjust();
-    }
+                    locator.goMethod();
 
-    @Override
-    public String toString() {
-        return "ClassMetaInfo{" +
-                "infos=" + infos +
-                '}';
+                    m.metaList.forEach(i -> {
+                        i.accept(locator);
+                    });
+
+                    return locator;
+                }).collect(Collectors.toList());
     }
 }

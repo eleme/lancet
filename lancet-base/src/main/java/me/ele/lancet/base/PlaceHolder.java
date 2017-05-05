@@ -1,5 +1,7 @@
 package me.ele.lancet.base;
 
+import me.ele.lancet.base.other.Proxy;
+
 /**
  * Created by gengwanpeng on 17/3/20.
  */

@@ -5,6 +5,7 @@ dependencies {
     compile localGroovy()
     compile gradleApi()
     compile "com.android.tools.build:gradle:$android_tools_version"
+    compile "com.google.code.gson:gson:2.8.0"
     compile project(':lancet-weaver')
 }
 
