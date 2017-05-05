@@ -44,10 +44,10 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
         super.visit(version, access, name, signature, superName, interfaces);
         this.className = name;
         this.superClassName = superName;
-        if (executeInfos!= null){
+        if (executeInfos != null) {
             for (ExecuteInfo executeInfo : executeInfos) {
-                executeInfo.targetClass = executeInfo.targetClass.replace(".","/");
-                if (executeInfo.targetClass.equals(className)){
+                executeInfo.targetClass = executeInfo.targetClass.replace(".", "/");
+                if (executeInfo.targetClass.equals(className)) {
                     classBingo = true;
                     return;
                 }
@@ -58,32 +58,32 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        if (classBingo){
+        if (classBingo) {
             MethodVisitor tailMV = null;
             MethodNode headMN = null;
             for (int i = 0; i < executeInfos.size(); i++) {
                 ExecuteInfo executeInfo = executeInfos.get(i);
-                if (executeInfo.targetMethod.equals(name) && executeInfo.targetDesc.equals(desc) && (access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) == 0){
-                    Log.tag("transform").i("visit Insert method: "+className+"."+name+" "+desc);
+                if (executeInfo.targetMethod.equals(name) && executeInfo.targetDesc.equals(desc) && (access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) == 0) {
+                    Log.tag("transform").i("visit Insert method: " + className + "." + name + " " + desc);
 
-                    String originName = name+"$"+i;
-                    String originDesc = TypeUtil.descToStatic(access,desc,className);
-                    if (tailMV == null){
+                    String originName = name + "$" + i;
+                    String originDesc = TypeUtil.descToStatic(access, desc, className);
+                    if (tailMV == null) {
                         // change origin method name.mark as tail of invoke link.
-                        int originAccess = access|Opcodes.ACC_STATIC;
+                        int originAccess = access | Opcodes.ACC_STATIC;
                         tailMV = super.visitMethod(originAccess, originName, originDesc, signature, exceptions);
                     }
-                    if (headMN != null){
+                    if (headMN != null) {
                         // if head exist, push head and create a new head
                         headMN.name = originName;
                         headMN.accept(cv);
                     }
-                    headMN = createFakeMethod(access,name,desc,signature,exceptions,i,executeInfo,originName,originDesc);
+                    headMN = createFakeMethod(access, name, desc, signature, exceptions, i, executeInfo, originName, originDesc);
                     // cancel the createSuper flag if this info has applied.
                     executeInfo.createSuper = false;
                 }
             }
-            if (tailMV != null){
+            if (tailMV != null) {
                 headMN.accept(cv);
                 return tailMV;
             }
@@ -92,22 +92,22 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
     }
 
 
-    private MethodNode createFakeMethod(int faccess, String fname, String fdesc, String fsignature, String[] fexceptions, int index, ExecuteInfo executeInfo, String originName,String originDesc){
+    private MethodNode createFakeMethod(int faccess, String fname, String fdesc, String fsignature, String[] fexceptions, int index, ExecuteInfo executeInfo, String originName, String originDesc) {
         // all visitor will share the only one innerclass
         ClassWriter writer = getClassCollector().getInnerClassWriter(ClassTransform.AID_INNER_CLASS_NAME);
 
         String innerClassName = getClassCollector().getCanonicalName(ClassTransform.AID_INNER_CLASS_NAME);
         // every method in innerclass will add suffix with aop type & index
-        String methodName = executeInfo.sourceClass.replace(".","_")+"_"+fname;
+        String methodName = executeInfo.sourceClass.replace(".", "_") + "_" + fname;
 
         MethodNode proxyMethod = new MethodNode(Opcodes.ASM5, Opcodes.ACC_STATIC, methodName, executeInfo.sourceMethod.desc, executeInfo.sourceMethod.signature, (String[]) executeInfo.sourceMethod.exceptions.toArray(new String[executeInfo.sourceMethod.exceptions.size()]));
 
-        executeInfo.sourceMethod.accept(new MethodVisitor(Opcodes.ASM5,proxyMethod) {
+        executeInfo.sourceMethod.accept(new MethodVisitor(Opcodes.ASM5, proxyMethod) {
 
             @Override
             public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
 
-                if (opcode == AopMethodAdjuster.OP_FLAG){
+                if (opcode == AopMethodAdjuster.OP_FLAG) {
 
                     opcode = Opcodes.INVOKESTATIC;
                     owner = className;
@@ -118,7 +118,7 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
 
                     int index = 0;
                     for (int i = 0; i < types.length; i++) {
-                        super.visitVarInsn(types[i].getOpcode(Opcodes.ILOAD),index);
+                        super.visitVarInsn(types[i].getOpcode(Opcodes.ILOAD), index);
                         index += types[i].getSize();
                     }
                 }
@@ -132,7 +132,7 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
              */
             @Override
             public void visitVarInsn(int opcode, int var) {
-                if ((executeInfo.sourceMethod.access & Opcodes.ACC_STATIC)==0){
+                if ((executeInfo.sourceMethod.access & Opcodes.ACC_STATIC) == 0) {
                     var--;
                 }
                 super.visitVarInsn(opcode, var);
@@ -143,10 +143,10 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
              */
             @Override
             public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
-                if ((executeInfo.sourceMethod.access & Opcodes.ACC_STATIC)==0){
-                    if (name.equals("this")){
+                if ((executeInfo.sourceMethod.access & Opcodes.ACC_STATIC) == 0) {
+                    if (name.equals("this")) {
                         return;
-                    }else {
+                    } else {
                         index--;
                     }
                 }
@@ -158,22 +158,18 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
 
 
         // because the target method has renamed,so there will generate a fake method use origin method name.
-        final MethodNode[] fakeMethod = new MethodNode[1];
-        Type[] exceptions = null;
-        if (fexceptions != null){
+        /*Type[] exceptions = null;
+        if (fexceptions != null) {
             exceptions = Arrays.stream(fexceptions).map(Type::getType).collect(Collectors.toList()).toArray(new Type[0]);
-        }
-        GeneratorAdapter adapter = new GeneratorAdapter(faccess, new Method(fname, fdesc), fsignature, exceptions, new ClassVisitor(Opcodes.ASM5) {
-            @Override
-            public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-                return fakeMethod[0] =  new MethodNode(Opcodes.ASM5,access,name,desc,signature,exceptions);
-            }
-        });
-        if ((faccess & Opcodes.ACC_STATIC)==0){
+        }*/
+
+        MethodNode fakeMethod = new MethodNode(Opcodes.ASM5, faccess, fname, fdesc, fsignature, fexceptions);
+        GeneratorAdapter adapter = new GeneratorAdapter(fakeMethod, faccess, fname, fdesc);
+        if ((faccess & Opcodes.ACC_STATIC) == 0) {
             adapter.loadThis();
         }
         adapter.loadArgs();
-        adapter.invokeStatic(Type.getObjectType(innerClassName),new Method(proxyMethod.name,proxyMethod.desc));
+        adapter.invokeStatic(Type.getObjectType(innerClassName), new Method(proxyMethod.name, proxyMethod.desc));
         adapter.returnValue();
 
         int stack = Type.getArgumentsAndReturnSizes(fdesc) >> 2;
@@ -181,14 +177,14 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
         adapter.visitMaxs(stack, local);
         adapter.visitEnd();
 
-        return fakeMethod[0];
+        return fakeMethod;
     }
 
     @Override
     public void visitEnd() {
-        if (classBingo){
+        if (classBingo) {
             for (ExecuteInfo executeInfo : executeInfos) {
-                if (executeInfo.targetClass.equals(className) && executeInfo.createSuper){
+                if (executeInfo.targetClass.equals(className) && executeInfo.createSuper) {
                     MethodVisitor mv = super.visitMethod(
                             executeInfo.sourceMethod.access,
                             executeInfo.targetMethod,
@@ -196,7 +192,7 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
                             executeInfo.sourceMethod.signature,
                             (String[]) executeInfo.sourceMethod.exceptions.toArray(new String[0])
                     );
-                    executeInfo.sourceMethod.accept(new MethodVisitor(Opcodes.ASM5,mv) {
+                    executeInfo.sourceMethod.accept(new MethodVisitor(Opcodes.ASM5, mv) {
 
                         @Override
                         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
@@ -206,9 +202,9 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
                         @Override
                         public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
 
-                            if (opcode == AopMethodAdjuster.OP_FLAG){
+                            if (opcode == AopMethodAdjuster.OP_FLAG) {
                                 // load this
-                                super.visitVarInsn(Opcodes.ALOAD,0);
+                                super.visitVarInsn(Opcodes.ALOAD, 0);
                                 // invoke super's method
                                 opcode = Opcodes.INVOKESPECIAL;
                                 owner = superClassName;
@@ -218,7 +214,7 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
                                 Type[] types = Type.getMethodType(desc).getArgumentTypes();
                                 int index = 0;
                                 for (int i = 0; i < types.length; i++) {
-                                    super.visitVarInsn(types[i].getOpcode(Opcodes.ILOAD),index);
+                                    super.visitVarInsn(types[i].getOpcode(Opcodes.ILOAD), index);
                                     index += types[i].getSize();
                                 }
                             }
