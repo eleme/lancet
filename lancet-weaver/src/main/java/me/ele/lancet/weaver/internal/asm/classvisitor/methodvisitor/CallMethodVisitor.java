@@ -89,7 +89,7 @@ public class CallMethodVisitor extends MethodVisitor {
         // every method in innerclass will add source class name as prefix
         String methodName = info.sourceClass.replace(".","_")+"_"+info.sourceMethod.name;
 
-        MethodNode proxyMethod = new MethodNode(Opcodes.ASM5, Opcodes.ACC_STATIC, methodName, info.sourceMethod.desc, info.sourceMethod.signature, info.sourceMethod.exceptions.toArray(new String[info.sourceMethod.exceptions.size()]));
+        MethodNode proxyMethod = new MethodNode(Opcodes.ASM5, Opcodes.ACC_STATIC, methodName, info.sourceMethod.desc, info.sourceMethod.signature, ((List<String>)info.sourceMethod.exceptions).toArray(new String[0]));
         // write origin method code to proxyMethod, and change the Origin.call() to invoke target method.
         info.sourceMethod.accept(new MethodVisitor(Opcodes.ASM5,proxyMethod) {
             @Override

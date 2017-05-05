@@ -3,7 +3,7 @@ apply plugin: 'java'
 dependencies {
     testCompile "junit:junit:4.12"
     testCompile 'com.squareup.okio:okio:1.11.0'
-    testCompile 'com.squareup.assertj:assertj-android:1.1.1'
+    testCompile 'org.assertj:assertj-core:3.6.2'
 
     compile project(':lancet-base')
     compile gradleApi()

@@ -1,3 +1,3 @@
-include ':lancet-base', ':lancet-weaver', ':lancet-plugin', ':lancet-processor', ':lancet-parser'
+include ':lancet-base', ':lancet-weaver', ':lancet-plugin', ':lancet-processor', ':lancet-parser', ':testsample'
 rootProject.name = "Lancet"
 

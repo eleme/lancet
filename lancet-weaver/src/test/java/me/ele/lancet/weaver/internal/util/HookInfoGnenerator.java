@@ -56,7 +56,7 @@ public class HookInfoGnenerator {
             if ((node.access & Opcodes.ACC_STATIC) == 0){
                 targetDesc = TypeUtil.removeFirstParam(targetDesc);
             }
-            AnnotationNode annotationNode = node.visibleAnnotations.get(0);
+            AnnotationNode annotationNode = (AnnotationNode) node.visibleAnnotations.get(0);
             infos.add(new CallInfo("",(String)annotationNode.values.get(1),node.name,targetDesc,className,node));
         }
         return infos;
@@ -69,7 +69,7 @@ public class HookInfoGnenerator {
             if ((node.access & Opcodes.ACC_STATIC) == 0){
                 targetDesc = TypeUtil.removeFirstParam(targetDesc);
             }
-            AnnotationNode annotationNode = node.visibleAnnotations.get(0);
+            AnnotationNode annotationNode = (AnnotationNode) node.visibleAnnotations.get(0);
             boolean createSuper = false;
             if (annotationNode.values.size() > 2){
                 createSuper = (Boolean) annotationNode.values.get(3);

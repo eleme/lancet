@@ -44,6 +44,8 @@ buildscript {
 
 subprojects { pro ->
 
+    if (pro.name == 'testsample')return
+
     version = lancet_version
     group = lancet_group
 
@@ -119,7 +121,6 @@ subprojects { pro ->
             }
         }
     }
-
     repositories {
         jcenter()
         mavenCentral()
@@ -136,7 +137,7 @@ task uploadAll { task ->
         project.tasks.build.mustRunAfter project.tasks.clean
 
         project.subprojects {
-            if (it.name != 'lancet-demo') {
+            if (it.name != 'testsample') {
                 Task upload = !ele ? it.tasks.bintrayUpload : it.tasks.uploadArchives;
                 task.dependsOn upload
                 upload.mustRunAfter project.tasks.build
