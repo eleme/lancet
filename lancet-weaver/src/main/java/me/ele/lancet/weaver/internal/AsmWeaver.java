@@ -10,6 +10,7 @@ import me.ele.lancet.weaver.internal.asm.ClassTransform;
 import me.ele.lancet.weaver.internal.entity.TotalInfo;
 import me.ele.lancet.weaver.internal.graph.Graph;
 import me.ele.lancet.weaver.internal.graph.Node;
+import me.ele.lancet.weaver.internal.log.Log;
 import me.ele.lancet.weaver.internal.parser.AsmMetaParser;
 
 
@@ -27,17 +28,14 @@ public class AsmWeaver implements Weaver {
 
     private final TotalInfo totalInfo;
 
-    public AsmWeaver(TotalInfo totalInfo) {
+    private AsmWeaver(TotalInfo totalInfo) {
+        Log.d(totalInfo.toString());
         this.totalInfo = totalInfo;
     }
-
 
     @Override
     public ClassData[] weave(byte[] input) {
         return ClassTransform.weave(totalInfo, input);
     }
-
-
-
 
 }

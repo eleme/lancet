@@ -1,14 +1,17 @@
-package me.ele.lancet.base.other;
+package me.ele.lancet.base.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Created by gengwanpeng on 17/3/21.
+ * Created by gengwanpeng on 17/5/4.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@java.lang.annotation.Target(ElementType.METHOD)
-public @interface NameRegex {
+@java.lang.annotation.Target(ElementType.PARAMETER)
+public @interface ClassOf {
+
     String value();
+
+    String INDEX = "index";
 }

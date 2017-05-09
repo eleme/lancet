@@ -1,5 +1,7 @@
 package me.ele.lancet.base.annotations;
 
+import me.ele.lancet.base.Scope;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -10,9 +12,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 @java.lang.annotation.Target({ElementType.TYPE, ElementType.METHOD})
 public @interface TargetClass {
-    String value() default "";
+    String value() ;
 
-    String superName() default "";
-
-    String[] interfaces() default {};
+    Scope scope() default Scope.SELF;
 }

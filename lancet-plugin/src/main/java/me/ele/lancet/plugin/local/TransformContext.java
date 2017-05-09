@@ -116,4 +116,15 @@ public class TransformContext {
     public Map<String, Node> getNodesMap() {
         return nodesMap;
     }
+
+    @Override
+    public String toString() {
+        return "TransformContext{" +
+                "allJars=" + allJars +
+                ", addedJars=" + addedJars +
+                ", removedJars=" + removedJars +
+                ", changedJars=" + changedJars +
+                ", allDirs=" + allDirs +
+                '}';
+    }
 }

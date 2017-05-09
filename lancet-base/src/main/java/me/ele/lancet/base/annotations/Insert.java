@@ -1,13 +1,16 @@
-package me.ele.lancet.base.other;
+package me.ele.lancet.base.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Created by gengwanpeng on 17/3/21.
+ * Created by gengwanpeng on 17/3/20.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @java.lang.annotation.Target(ElementType.METHOD)
-public @interface TryCatchHandler {
+public @interface Insert {
+    String value();
+
+    boolean mayCreateSuper() default false;
 }

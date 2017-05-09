@@ -1,9 +1,11 @@
 package me.ele.lancet.weaver.internal.parser;
 
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InnerClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.io.IOException;
@@ -16,13 +18,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import me.ele.lancet.base.other.ClassOf;
-import me.ele.lancet.base.other.ImplementedInterface;
-import me.ele.lancet.base.other.Insert;
-import me.ele.lancet.base.other.NameRegex;
-import me.ele.lancet.base.other.Proxy;
-import me.ele.lancet.base.other.TargetClass;
-import me.ele.lancet.base.other.TryCatchHandler;
+import me.ele.lancet.base.annotations.ClassOf;
+import me.ele.lancet.base.annotations.ImplementedInterface;
+import me.ele.lancet.base.annotations.Insert;
+import me.ele.lancet.base.annotations.NameRegex;
+import me.ele.lancet.base.annotations.Proxy;
+import me.ele.lancet.base.annotations.TargetClass;
+import me.ele.lancet.base.annotations.TryCatchHandler;
 import me.ele.lancet.weaver.MetaParser;
 import me.ele.lancet.weaver.internal.entity.TotalInfo;
 import me.ele.lancet.weaver.internal.exception.LoadClassException;
@@ -88,45 +90,46 @@ public class AsmMetaParser implements MetaParser {
         @SuppressWarnings("unchecked")
         public ClassMetaInfo parse(String className) {
             ClassNode cn = loadClassNode(className);
-            ClassMetaInfo metaInfo2 = new ClassMetaInfo(className);
-            metaInfo2.annotationMetas = nodesToMetas(cn.visibleAnnotations);
-            metaInfo2.methods = ((List<MethodNode>) cn.methods).stream().map(mn -> {
-
-
-                List<AnnotationMeta> methodMetas = nodesToMetas(mn.visibleAnnotations);
-                if (methodMetas.stream().noneMatch(m -> m instanceof InsertAnnoParser.InsertAnnoMeta
-                        || m instanceof ProxyAnnoParser.ProxyAnnoMeta
-                        || m instanceof TryCatchAnnoParser.TryCatchAnnoMeta)) {
-                    return null;
-                }
-
-                MethodMetaInfo mm = new MethodMetaInfo(mn);
-                mm.metaList = methodMetas;
-
-                if (mn.visibleParameterAnnotations != null) {
-                    int size = Arrays.stream(mn.visibleParameterAnnotations)
-                            .filter(Objects::nonNull)
-                            .mapToInt(List::size)
-                            .sum();
-                    List<AnnotationMeta> paramAnnoMetas = new ArrayList<>(size);
-                    for (int i = 0; i < mn.visibleParameterAnnotations.length; i++) {
-                        List<AnnotationNode> list = (List<AnnotationNode>) mn.visibleParameterAnnotations[i];
-                        if (list != null) {
-                            for (AnnotationNode a : list) {
-                                a.visit(ClassOf.INDEX, i);
-                            }
-                            paramAnnoMetas.addAll(nodesToMetas(list));
+            ClassMetaInfo meta = new ClassMetaInfo(className);
+            meta.annotationMetas = nodesToMetas(cn.visibleAnnotations);
+            meta.methods = ((List<MethodNode>) cn.methods).stream()
+                    //.filter(m -> !m.desc.equals("<clinit>") && !m.desc.equals("<init>"))
+                    .map(mn -> {
+                        List<AnnotationMeta> methodMetas = nodesToMetas(mn.visibleAnnotations);
+                        if (methodMetas.stream().noneMatch(m -> m instanceof InsertAnnoParser.InsertAnnoMeta
+                                || m instanceof ProxyAnnoParser.ProxyAnnoMeta
+                                || m instanceof TryCatchAnnoParser.TryCatchAnnoMeta)) {
+                            return null;
                         }
-                    }
 
-                    paramAnnoMetas.addAll(methodMetas);
-                    mm.metaList = paramAnnoMetas;
-                }
+                        MethodMetaInfo mm = new MethodMetaInfo(mn);
+                        mm.metaList = methodMetas;
 
-                return mm;
-            }).filter(Objects::nonNull).collect(Collectors.toList());
+                        if (mn.visibleParameterAnnotations != null) {
+                            int size = Arrays.stream(mn.visibleParameterAnnotations)
+                                    .filter(Objects::nonNull)
+                                    .mapToInt(List::size)
+                                    .sum();
+                            List<AnnotationMeta> paramAnnoMetas = new ArrayList<>(size);
+                            for (int i = 0; i < mn.visibleParameterAnnotations.length; i++) {
+                                List<AnnotationNode> list = (List<AnnotationNode>) mn.visibleParameterAnnotations[i];
+                                if (list != null) {
+                                    for (AnnotationNode a : list) {
+                                        a.visit(ClassOf.INDEX, i);
+                                    }
+                                    paramAnnoMetas.addAll(nodesToMetas(list));
+                                }
+                            }
 
-            return metaInfo2;
+                            paramAnnoMetas.addAll(methodMetas);
+                            mm.metaList = paramAnnoMetas;
+                        }
+
+                        return mm;
+                    })
+                    .filter(Objects::nonNull).collect(Collectors.toList());
+
+            return meta;
         }
 
         private List<AnnotationMeta> nodesToMetas(List<AnnotationNode> nodes) {
@@ -147,10 +150,25 @@ public class AsmMetaParser implements MetaParser {
                 ClassReader cr = new ClassReader(is);
                 ClassNode cn = new ClassNode();
                 cr.accept(cn, ClassReader.SKIP_DEBUG);
+                checkNode(cn);
                 return cn;
             } catch (IOException e) {
                 throw new LoadClassException();
             }
+        }
+
+        @SuppressWarnings("unchecked")
+        private void checkNode(ClassNode cn) {
+            if (cn.fields.size() > 0) {
+                throw new IllegalStateException("can't declare fields in hook class");
+            }
+            int ac = Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC;
+            cn.innerClasses.forEach(c -> {
+                InnerClassNode n = (InnerClassNode) c;
+                if ((n.access & ac) != ac) {
+                    throw new IllegalStateException("inner class in hook class must be public static");
+                }
+            });
         }
     }
 }

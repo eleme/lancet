@@ -36,7 +36,7 @@ public class ContextThreadPoolProcessor {
     }
 
     public void process(boolean incremental, QualifiedContentProvider.SingleClassProcessor processor) throws IOException, InterruptedException {
-        Collection<JarInput> jars = incremental ? context.getAllJars() :
+        Collection<JarInput> jars = !incremental ? context.getAllJars() :
                 ImmutableList.<JarInput>builder().addAll(context.getAddedJars())
                         .addAll(context.getRemovedJars())
                         .addAll(context.getChangedJars())

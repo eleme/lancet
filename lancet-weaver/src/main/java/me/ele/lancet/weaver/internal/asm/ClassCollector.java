@@ -1,10 +1,7 @@
 package me.ele.lancet.weaver.internal.asm;
 
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.*;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import java.util.HashMap;
@@ -45,10 +42,21 @@ public class ClassCollector {
         ClassWriter writer = mClassWriters.get(classSimpleName);
         if (writer == null) {
             writer = new ClassWriter(mClassReader, 0);
-            writer.visit(Opcodes.V1_7, Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, getCanonicalName(classSimpleName), null, "java/lang/Object", null);
+            initForWriter(writer, classSimpleName);
             mClassWriters.put(classSimpleName, writer);
         }
         return writer;
+    }
+
+    private void initForWriter(ClassWriter writer, String classSimpleName) {
+        writer.visit(Opcodes.V1_7, Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, getCanonicalName(classSimpleName), null, "java/lang/Object", null);
+        MethodVisitor mv = writer.visitMethod(Opcodes.ACC_PRIVATE, "<init>", "()V", null, null);
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
+        mv.visitInsn(Opcodes.RETURN);
+        mv.visitMaxs(1, 1);
+        mv.visitEnd();
     }
 
     public ClassData[] generateClassBytes() {

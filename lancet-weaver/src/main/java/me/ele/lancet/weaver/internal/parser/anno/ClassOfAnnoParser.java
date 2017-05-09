@@ -1,7 +1,7 @@
 package me.ele.lancet.weaver.internal.parser.anno;
 
 import com.google.common.base.Strings;
-import me.ele.lancet.base.other.ClassOf;
+import me.ele.lancet.base.annotations.ClassOf;
 import me.ele.lancet.weaver.internal.exception.IllegalAnnotationException;
 import me.ele.lancet.weaver.internal.graph.Graph;
 import me.ele.lancet.weaver.internal.meta.HookInfoLocator;

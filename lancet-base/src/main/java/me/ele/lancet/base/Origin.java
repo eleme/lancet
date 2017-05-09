@@ -1,10 +1,15 @@
-package me.ele.lancet.testsample.hook;
+package me.ele.lancet.base;
 
+/**
+ * Created by gengwanpeng on 17/3/20.
+ */
+public final class Origin {
 
+    public static final String CLASS_NAME = Origin.class.getName().replace('.', '/');
 
-public class Origin{
-
-
+    private Origin() {
+        throw new AssertionError();
+    }
 
     public static void callVoid() {
     }
@@ -31,6 +36,10 @@ public class Origin{
     }
 
     public static <V extends Throwable, U extends Throwable, W extends Throwable> Object callThrowThree() throws U, V, W {
+        return new Object();
+    }
+
+    public static Object loadThis() {
         return new Object();
     }
 }

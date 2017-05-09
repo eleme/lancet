@@ -1,13 +1,9 @@
 package me.ele.lancet.weaver.internal.util;
 
+import me.ele.lancet.base.Origin;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.TypeInsnNode;
-
-import me.ele.lancet.base.PlaceHolder;
-import me.ele.lancet.weaver.internal.meta.MethodMetaInfo;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.*;
 
 /**
  * Created by gengwanpeng on 17/3/28.
@@ -20,17 +16,17 @@ public class AopMethodAdjuster {
     private static final int REFERENCE = 2;
     private static final int PRIMITIVE = 3;
 
+    private final String sourceClass;
     private final MethodNode methodNode;
-    private final MethodMetaInfo methodMetaInfo;
 
 
     private int type;
     //private char primitive;
     private String returnType;
 
-    public AopMethodAdjuster(MethodNode methodNode, MethodMetaInfo methodMetaInfo) {
+    public AopMethodAdjuster(String sourceClass, MethodNode methodNode) {
+        this.sourceClass = sourceClass;
         this.methodNode = methodNode;
-        this.methodMetaInfo = methodMetaInfo;
         init();
     }
 
@@ -51,6 +47,14 @@ public class AopMethodAdjuster {
             char primitive = desc.charAt(desc.lastIndexOf(')') + 1);
             returnType = PrimitiveUtil.box(primitive);
         }
+
+        // update max locals
+        int size = Type.getArgumentsAndReturnSizes(desc);
+        if (AsmUtil.isStatic(methodNode.access)) {
+            size -= 4;
+        }
+        size = Math.max(size & 3, size >> 2);
+        methodNode.maxStack = Math.max(size, methodNode.maxStack);
     }
 
     public void adjust() {
@@ -59,13 +63,16 @@ public class AopMethodAdjuster {
         while (element != null) {
             if (step == 0 && element instanceof MethodInsnNode) { //MethodInsnNode
                 MethodInsnNode methodInsnNode = (MethodInsnNode) element;
-                if (methodInsnNode.owner.equals(PlaceHolder.CLASS_NAME)
-                        && methodInsnNode.name.startsWith("call")) { //start with PlaceHolder's function
-                    element = replaceToCallTargetFunction(element);
+                if (methodInsnNode.owner.equals(Origin.CLASS_NAME)
+                        && methodInsnNode.name.startsWith("call")) { //start with Origin's function
+                    element = replaceToCallTargetFunction(methodInsnNode);
                     if (type != VOID) {
                         step++;
                     }
-                }else{
+                } else if (methodInsnNode.owner.equals(Origin.CLASS_NAME)
+                        && methodInsnNode.name.equals("loadThis")) {
+                    element = replaceToAload(methodInsnNode);
+                } else {
                     element = element.getNext();
                 }
             } else if (step == 1) {
@@ -85,14 +92,30 @@ public class AopMethodAdjuster {
                 element = checkUnbox(element);
             } else {
                 if (step != 0) {
-                    throw new IllegalStateException("called function in PlaceHolder don't match your function signature.");
+                    throw new IllegalStateException("called function in Origin don't match your function signature.");
                 }
                 element = element.getNext();
             }
         }
     }
 
-    private AbstractInsnNode replaceToCallTargetFunction(AbstractInsnNode insnNode) {
+    private AbstractInsnNode replaceToAload(MethodInsnNode methodInsnNode) {
+        if(AsmUtil.isStatic(methodNode.access)){
+            illegalState("Static method shouldn't call loadThis().");
+        }
+
+        VarInsnNode varInsnNode = new VarInsnNode(Opcodes.ALOAD, 0);
+        methodNode.instructions.set(methodInsnNode, varInsnNode);
+        return varInsnNode.getNext();
+    }
+
+    private AbstractInsnNode replaceToCallTargetFunction(MethodInsnNode insnNode) {
+        boolean has = !insnNode.name.startsWith("callVoid");
+        boolean hasInDesc = !methodNode.desc.endsWith("V");
+        if (has != hasInDesc) {
+            illegalState("Called function " + insnNode.owner + "." + insnNode.name + "is illegal.");
+        }
+
         MethodInsnNode placeHolder = new MethodInsnNode(OP_FLAG, null, null, null, false);
         //VarInsnNode varInsnNode = new VarInsnNode(Opcodes.ASTORE, 5);
         methodNode.instructions.set(insnNode, placeHolder);
@@ -101,14 +124,14 @@ public class AopMethodAdjuster {
 
     private AbstractInsnNode checkCast(AbstractInsnNode insnNode) {
         if (!(insnNode instanceof TypeInsnNode)) {
-            throw new IllegalStateException("Returned Object type be cast to origin type immediately.");
+            illegalState("Returned Object type should be cast to origin type immediately.");
         }
         TypeInsnNode typeInsnNode = (TypeInsnNode) insnNode;
         if (typeInsnNode.getOpcode() != Opcodes.CHECKCAST) {
-            throw new IllegalStateException("Returned Object type be cast to origin type immediately.");
+            illegalState("Returned Object type should be cast to origin type immediately.");
         }
         if (!typeInsnNode.desc.equals(returnType)) {
-            throw new IllegalStateException("Casted type is expected to be " + returnType + " , but is " + typeInsnNode.desc);
+            illegalState("Casted type is expected to be " + returnType + " , but is " + typeInsnNode.desc);
         }
 
         // asm bug: sometimes checkcast will appear one more
@@ -135,17 +158,22 @@ public class AopMethodAdjuster {
 
     private AbstractInsnNode checkUnbox(AbstractInsnNode insnNode) {
         if (!(insnNode instanceof MethodInsnNode)) {
-            throw new IllegalStateException("Please don't unbox by your self.");
+            illegalState("Please don't unbox by your self.");
         }
         MethodInsnNode methodInsnNode = (MethodInsnNode) insnNode;
         if (!methodInsnNode.owner.equals(returnType)) {
-            throw new IllegalStateException("Please don't unbox by your self.");
+            illegalState("Please don't unbox by your self.");
         }
         if (!methodInsnNode.name.equals(PrimitiveUtil.unboxMethod(returnType))) {
-            throw new IllegalStateException("Please don't unbox by your self.");
+            illegalState("Please don't unbox by your self.");
         }
         insnNode = methodInsnNode.getNext();
         methodNode.instructions.remove(methodInsnNode);
         return insnNode;
+    }
+
+
+    private void illegalState(String msg) {
+        throw new IllegalStateException("error in " + sourceClass + "." + methodNode.name + "." + msg);
     }
 }

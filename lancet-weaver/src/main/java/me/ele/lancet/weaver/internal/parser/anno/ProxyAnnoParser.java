@@ -1,12 +1,10 @@
 package me.ele.lancet.weaver.internal.parser.anno;
 
 import com.google.common.base.Strings;
-import me.ele.lancet.base.other.ClassOf;
 import me.ele.lancet.weaver.internal.exception.IllegalAnnotationException;
 import me.ele.lancet.weaver.internal.meta.HookInfoLocator;
 import me.ele.lancet.weaver.internal.parser.AnnoParser;
 import me.ele.lancet.weaver.internal.parser.AnnotationMeta;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 
 import java.util.List;

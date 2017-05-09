@@ -10,12 +10,11 @@ import me.ele.lancet.plugin.local.content.QualifiedContentProvider;
 import me.ele.lancet.plugin.local.preprocess.AsmClassProcessorImpl;
 import me.ele.lancet.plugin.local.preprocess.ParseFailureException;
 import me.ele.lancet.plugin.local.preprocess.PreClassProcessor;
+import me.ele.lancet.weaver.internal.log.Log;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by gengwanpeng on 17/4/26.
@@ -38,6 +37,7 @@ public class PreClassParser {
     }
 
     public boolean execute(TransformContext context) throws IOException, InterruptedException {
+        Log.d(context.toString());
         contextProcessor = new ContextThreadPoolProcessor(context);
         if (context.isIncremental() && cache.canBeIncremental(context) && tryPartialParse(context)) {
             onComplete(null, context);
@@ -62,7 +62,7 @@ public class PreClassParser {
         if (partial) {
             cache.savePartially(graph.toLocalNodes());
         } else {
-            cache.saveFully(graph.toLocalNodes(), singleProcessor.classes, singleProcessor.classesInDirs, singleProcessor.jarWithHookClasses);
+            cache.saveFully(graph.toLocalNodes(), singleProcessor.classes, singleProcessor.classesInDirs, new ArrayList<>(singleProcessor.jarWithHookClasses));
         }
 
         context.setNodesMap(graph.generate());
@@ -89,7 +89,7 @@ public class PreClassParser {
 
         List<String> classes = new ArrayList<>(4);
         List<String> classesInDirs = new ArrayList<>(4);
-        List<String> jarWithHookClasses = new ArrayList<>(4);
+        Set<String> jarWithHookClasses = new HashSet<>();
 
         @Override
         public boolean onStart(QualifiedContent content) {

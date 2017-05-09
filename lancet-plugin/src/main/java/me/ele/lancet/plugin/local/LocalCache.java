@@ -80,6 +80,7 @@ public class LocalCache {
 
     public void save() {
         try {
+            Files.createParentDirs(localCache);
             Writer writer = Files.newWriter(localCache, Charsets.UTF_8);
             gson.toJson(metas, Metas.class, writer);
             writer.close();

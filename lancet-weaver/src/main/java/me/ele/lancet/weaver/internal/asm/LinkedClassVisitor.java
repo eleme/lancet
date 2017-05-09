@@ -8,17 +8,21 @@ import org.objectweb.asm.Opcodes;
  */
 
 public class LinkedClassVisitor extends ClassVisitor {
-    ClassCollector mClassCollector;
+
+
+    private ClassCollector mClassCollector;
+    protected String className;
+    protected String superClassName;
 
     public LinkedClassVisitor() {
         super(Opcodes.ASM5);
     }
 
-    void setClassCollector(ClassCollector classCollector){
+    void setClassCollector(ClassCollector classCollector) {
         this.mClassCollector = classCollector;
     }
 
-    void setNextClassVisitor(ClassVisitor classVisitor){
+    void setNextClassVisitor(ClassVisitor classVisitor) {
         cv = classVisitor;
     }
 
@@ -30,5 +34,7 @@ public class LinkedClassVisitor extends ClassVisitor {
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
         mClassCollector.setOriginClassName(name);
+        this.className = name;
+        this.superClassName = superName;
     }
 }

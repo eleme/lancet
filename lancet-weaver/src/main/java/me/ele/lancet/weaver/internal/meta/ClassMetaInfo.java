@@ -38,6 +38,9 @@ public class ClassMetaInfo {
                         i.accept(locator);
                     });
 
+                    if (locator.satisfied()) {
+                        locator.transformNode();
+                    }
                     return locator;
                 }).collect(Collectors.toList());
     }

@@ -66,7 +66,7 @@ public class MetaGraphGeneratorImpl implements MetaGraphGenerator {
 
 
     List<Metas.NodeLike> toLocalNodes() {
-        return nodeMap.values().stream().filter(it -> it.parent == null).map(it -> {
+        return nodeMap.values().stream().filter(it -> it.parent != null).map(it -> {
             Metas.NodeLike nodeLike = new Metas.NodeLike();
             nodeLike.access = it.access;
             nodeLike.name = it.className;

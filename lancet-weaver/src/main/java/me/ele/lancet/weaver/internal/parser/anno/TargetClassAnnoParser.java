@@ -1,9 +1,9 @@
 package me.ele.lancet.weaver.internal.parser.anno;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import me.ele.lancet.base.Scope;
 import me.ele.lancet.weaver.internal.exception.IllegalAnnotationException;
-import me.ele.lancet.weaver.internal.graph.Node;
 import me.ele.lancet.weaver.internal.meta.HookInfoLocator;
 import me.ele.lancet.weaver.internal.parser.AnnoParser;
 import me.ele.lancet.weaver.internal.parser.AnnotationMeta;
@@ -14,7 +14,6 @@ import org.objectweb.asm.tree.AnnotationNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Created by gengwanpeng on 17/5/3.
@@ -66,11 +65,11 @@ public class TargetClassAnnoParser implements AnnoParser {
 
     private void computeClass(HookInfoLocator locator, String className, Scope scope) {
         if (scope == Scope.SELF) {
-            locator.intersectClasses(Collections.singletonList(className));
+            locator.intersectClasses(Lists.newArrayList(className));
         } else {
             List<String> classes = new ArrayList<>();
             locator.graphs()
-                    .childOf(className, scope)
+                    .childrenOf(className, scope)
                     .forEach(node -> {
                         classes.add(node.className);
                     });

@@ -60,10 +60,11 @@ public class ImplementedInterfaceAnnoParser implements AnnoParser {
 
     private static String[] contentNonNull(String[] interfaces) {
         if (interfaces != null) {
-            for (String i : interfaces) {
-                if (Strings.isNullOrEmpty(i)) {
+            for (int i = 0; i < interfaces.length; i++) {
+                if (Strings.isNullOrEmpty(interfaces[i])) {
                     throw new IllegalAnnotationException("@ImplementedInterface's value can't be null");
                 }
+                interfaces[i] = interfaces[i].replace('.', '/');
             }
         }
         return interfaces;

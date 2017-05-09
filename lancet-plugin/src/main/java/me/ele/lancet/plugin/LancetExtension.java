@@ -7,7 +7,7 @@ import me.ele.lancet.weaver.internal.log.Log;
 import java.io.File;
 import java.util.Objects;
 
-class LancetExtension {
+public class LancetExtension {
     private Log.Level level = Log.Level.INFO;
     private String fileName = null;
 

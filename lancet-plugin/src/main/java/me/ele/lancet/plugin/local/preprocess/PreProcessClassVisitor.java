@@ -12,6 +12,8 @@ import org.objectweb.asm.Type;
  */
 public class PreProcessClassVisitor extends ClassVisitor {
 
+
+    //TODO
     private static String TARGET_CLASS = Type.getDescriptor(TargetClass.class);
 
     private int access;

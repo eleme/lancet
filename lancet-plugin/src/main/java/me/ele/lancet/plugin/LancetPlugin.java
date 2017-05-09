@@ -22,7 +22,7 @@ public class LancetPlugin implements Plugin<Project> {
 
             @Override
             public void run() {
-                appExtension.getPackagingOptions().exclude("/" + PlaceHolder.RESOURCE_DIR + "**");
+                appExtension.getPackagingOptions().exclude("/" + Origin.RESOURCE_DIR + "**");
             }
         });*/
     }

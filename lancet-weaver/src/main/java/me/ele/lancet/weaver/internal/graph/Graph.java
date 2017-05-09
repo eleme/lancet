@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Created by gengwanpeng on 17/5/5.
@@ -62,10 +61,13 @@ public class Graph {
     /**
      * assert class always in nodeMap, if not, it's our code error.
      */
-    public NodeVisitor childOf(String className, Scope scope) {
+    public NodeVisitor childrenOf(String className, Scope scope) {
         return visitor -> {
-            ClassNode node = (ClassNode) nodeMap.get(className);
-            visitClasses(node, scope, visitor);
+            Node node = nodeMap.get(className);
+            if (node instanceof InterfaceNode) {
+                throw new IllegalArgumentException(className + " is a interface");
+            }
+            visitClasses((ClassNode) node, scope, visitor);
         };
     }
 
@@ -96,8 +98,38 @@ public class Graph {
     }
 
     public NodeVisitor implementsOf(String[] interfaces, Scope scope) {
-        // TODO visit Interfaces
-        return null;
+        return visitor -> {
+            for (String it : interfaces) {
+                Node node = nodeMap.get(it);
+                if (node instanceof ClassNode) {
+                    throw new IllegalArgumentException(it + " is a class");
+                }
+                visitImplements((InterfaceNode) node, scope, visitor);
+            }
+        };
+    }
+
+    private void visitImplements(InterfaceNode node, Scope scope, Consumer<Node> visitor) {
+        List<ClassNode> classes = node.implementedClasses;
+        List<InterfaceNode> children = node.children;
+        switch (scope) {
+            case ALL:
+                children.forEach(c -> visitImplements(c, scope, visitor));
+            case DIRECT:
+                classes.forEach(visitor);
+                break;
+            case LEAF:
+                children.forEach(c -> visitImplements(c, scope, visitor));
+                classes.stream()
+                        .filter(c -> {
+                            if (c.children.size() <= 0) {
+                                visitor.accept(c);
+                                return false;
+                            }
+                            return true;
+                        })
+                        .forEach(c -> visitClasses(c, scope, visitor));
+        }
     }
 
 

@@ -18,6 +18,7 @@ import java.io.StringWriter;
  */
 public class TraceUtil {
 
+
     public static ClassVisitor dump(ClassVisitor next) {
         return new ClassNode(Opcodes.ASM5) {
             @Override

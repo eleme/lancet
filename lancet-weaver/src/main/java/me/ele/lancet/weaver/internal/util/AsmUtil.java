@@ -34,4 +34,8 @@ public class AsmUtil {
         }
     }
 
+    public static boolean isStatic(int access){
+        return (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC;
+    }
+
 }

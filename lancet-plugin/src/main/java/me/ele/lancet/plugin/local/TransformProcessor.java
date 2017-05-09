@@ -43,6 +43,7 @@ public class TransformProcessor implements QualifiedContentProvider.SingleClassP
                 case CHANGED:
                     FileUtils.deleteIfExists(targetFile);
                 default:
+                    Files.createParentDirs(targetFile);
                     map.put(content, new JarRunner(new JarOutputStream(
                             new BufferedOutputStream(new FileOutputStream(targetFile)))));
             }
@@ -112,6 +113,7 @@ public class TransformProcessor implements QualifiedContentProvider.SingleClassP
         void run(File relativeRoot, String relativePath, byte[] bytes) throws IOException {
             for (ClassData data : weaver.weave(bytes)) {
                 File target = Util.toSystemDependentFile(relativeRoot, data.getClassName() + ".class");
+                Files.createParentDirs(target);
                 Files.write(data.getClassBytes(), target);
             }
         }
