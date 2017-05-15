@@ -85,6 +85,7 @@ class LancetTransform extends Transform {
     public void transform(TransformInvocation transformInvocation) throws TransformException, InterruptedException, IOException {
         initLog();
         TransformContext context = new TransformContext(transformInvocation, global);
+        Log.i("android plugin increamental: " + context.isIncremental());
         PreClassParser preClassParser = new PreClassParser(cache);
         boolean incremental = preClassParser.execute(context);
         Log.i("incremental build: " + incremental);

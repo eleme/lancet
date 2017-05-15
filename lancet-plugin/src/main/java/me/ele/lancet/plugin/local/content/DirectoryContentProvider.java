@@ -4,6 +4,7 @@ import com.android.build.api.transform.DirectoryInput;
 import com.android.build.api.transform.QualifiedContent;
 import com.android.build.api.transform.Status;
 import com.google.common.io.Files;
+import me.ele.lancet.weaver.internal.log.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,14 +18,9 @@ public class DirectoryContentProvider extends TargetedQualifiedContentProvider {
 
     private final boolean incremental;
 
-    public DirectoryContentProvider() {
-        this(false);
-    }
-
     public DirectoryContentProvider(boolean incremental) {
         this.incremental = incremental;
     }
-
 
     @Override
     public void forEach(QualifiedContent content, SingleClassProcessor processor) throws IOException {
@@ -41,6 +37,7 @@ public class DirectoryContentProvider extends TargetedQualifiedContentProvider {
                 }
             } else {
                 for (Map.Entry<File, Status> entry : ((DirectoryInput) content).getChangedFiles().entrySet()) {
+                    Log.d(entry.getKey() + " " + entry.getValue());
                     File f = entry.getKey();
                     if (f.isFile() && f.getName().endsWith(".class")) {
                         byte[] data = Files.toByteArray(f);

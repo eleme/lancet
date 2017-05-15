@@ -38,6 +38,8 @@ public class PreClassParser {
 
     public boolean execute(TransformContext context) throws IOException, InterruptedException {
         Log.d(context.toString());
+        long duration = System.currentTimeMillis();
+
         contextProcessor = new ContextThreadPoolProcessor(context);
         if (context.isIncremental() && cache.canBeIncremental(context) && tryPartialParse(context)) {
             onComplete(null, context);
@@ -49,6 +51,9 @@ public class PreClassParser {
         context.clear();
 
         onComplete(fullyParse(context), context);
+
+        duration = System.currentTimeMillis() - duration;
+        Log.tag("timer").i("pre parse cost: " + duration);
         return false;
     }
 
@@ -93,20 +98,22 @@ public class PreClassParser {
 
         @Override
         public boolean onStart(QualifiedContent content) {
+            Log.tag(content.getName()).i(content.getFile().getAbsolutePath());
             return true;
         }
 
         @Override
         public void onProcess(QualifiedContent content, Status status, String relativePath, byte[] bytes) {
-            if(relativePath.endsWith(".class")) {
+            if (relativePath.endsWith(".class")) {
+                Log.tag(content.getName()).i(status + " " + relativePath);
                 PreClassProcessor.ProcessResult result = classProcessor.process(bytes);
                 if (partial && result.isHookClass) {
                     partial = false;
-                    throw new ParseFailureException();
+                    throw new ParseFailureException(result.toString());
                 }
                 if (result.isHookClass) {
                     synchronized (this) {
-                        classes.add(result.className);
+                        classes.add(result.entity.name);
                         if (content instanceof JarInput) {
                             jarWithHookClasses.add(content.getFile().getAbsolutePath());
                         } else {
@@ -115,9 +122,9 @@ public class PreClassParser {
                     }
                 }
                 if (status != Status.REMOVED) {
-                    graph.add(result.access, result.className, result.superName, result.interfaces);
+                    graph.add(result.entity);
                 } else {
-                    graph.remove(result.className);
+                    graph.remove(result.entity.name);
                 }
             }
         }

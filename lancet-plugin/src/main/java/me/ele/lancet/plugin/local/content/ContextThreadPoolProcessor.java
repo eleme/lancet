@@ -24,7 +24,7 @@ public class ContextThreadPoolProcessor {
 
     private AtomicBoolean lock = new AtomicBoolean(false);
     private TransformContext context;
-    private ClassifiedContentProvider provider = ClassifiedContentProvider.newInstance(new JarContentProvider(), new DirectoryContentProvider());
+    private ClassifiedContentProvider provider;
     private ExecutorService service = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(), (r, executor) -> {
@@ -36,6 +36,9 @@ public class ContextThreadPoolProcessor {
     }
 
     public void process(boolean incremental, QualifiedContentProvider.SingleClassProcessor processor) throws IOException, InterruptedException {
+        long duration = System.currentTimeMillis();
+
+        provider = ClassifiedContentProvider.newInstance(new JarContentProvider(), new DirectoryContentProvider(incremental));
         Collection<JarInput> jars = !incremental ? context.getAllJars() :
                 ImmutableList.<JarInput>builder().addAll(context.getAddedJars())
                         .addAll(context.getRemovedJars())
@@ -63,6 +66,7 @@ public class ContextThreadPoolProcessor {
                 }
             }
         }
+
     }
 
     private void shutDownAndRestart() {

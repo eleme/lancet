@@ -1,5 +1,11 @@
 package me.ele.lancet.plugin.local.preprocess;
 
+
+import me.ele.lancet.weaver.internal.graph.ClassEntity;
+
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by gengwanpeng on 17/4/27.
  */
@@ -9,18 +15,21 @@ public interface PreClassProcessor {
 
     class ProcessResult {
 
-        public ProcessResult(boolean isHookClass, int access, String className, String superName, String[] interfaces) {
+
+        public ProcessResult(boolean isHookClass, ClassEntity entity) {
             this.isHookClass = isHookClass;
-            this.access = access;
-            this.className = className;
-            this.superName = superName;
-            this.interfaces = interfaces;
+            this.entity = entity;
         }
 
         public boolean isHookClass;
-        public int access;
-        public String className;
-        public String superName;
-        public String[] interfaces;
+        public ClassEntity entity;
+
+        @Override
+        public String toString() {
+            return "ProcessResult{" +
+                    "isHookClass=" + isHookClass +
+                    ", entity=" + entity +
+                    '}';
+        }
     }
 }

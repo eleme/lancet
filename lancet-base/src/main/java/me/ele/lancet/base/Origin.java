@@ -38,8 +38,4 @@ public final class Origin {
     public static <V extends Throwable, U extends Throwable, W extends Throwable> Object callThrowThree() throws U, V, W {
         return new Object();
     }
-
-    public static Object loadThis() {
-        return new Object();
-    }
 }

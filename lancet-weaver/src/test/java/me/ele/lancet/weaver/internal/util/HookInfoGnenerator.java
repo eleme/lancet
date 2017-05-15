@@ -1,5 +1,6 @@
 package me.ele.lancet.weaver.internal.util;
 
+import me.ele.lancet.weaver.internal.parser.AopMethodAdjuster;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -37,7 +38,7 @@ public class HookInfoGnenerator {
                     @Override
                     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
                         if (owner.equals("com/sample/hook/Origin")){
-                            opcode = AopMethodAdjuster.OP_FLAG;
+                            opcode = AopMethodAdjuster.OP_CALL;
                         }
                         super.visitMethodInsn(opcode, owner, name, desc, itf);
                     }

@@ -15,27 +15,4 @@ public class AsmUtil {
         node.accept(clone);
         return clone;
     }
-
-    public static int getVarInsnOpCode(Type type){
-        if (type == Type.BYTE_TYPE
-                || type == Type.BOOLEAN_TYPE
-                || type == Type.CHAR_TYPE
-                || type == Type.SHORT_TYPE
-                || type == Type.INT_TYPE){
-            return Opcodes.ILOAD;
-        }else if (type == Type.LONG_TYPE){
-            return Opcodes.LLOAD;
-        }else if (type == Type.FLOAT_TYPE){
-            return Opcodes.FLOAD;
-        }else if (type == Type.DOUBLE_TYPE){
-            return Opcodes.DLOAD;
-        }else {
-            return Opcodes.ALOAD;
-        }
-    }
-
-    public static boolean isStatic(int access){
-        return (access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC;
-    }
-
 }

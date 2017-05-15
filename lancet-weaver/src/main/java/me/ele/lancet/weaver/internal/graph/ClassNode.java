@@ -11,6 +11,6 @@ public class ClassNode extends Node {
     public List<Node> children = Collections.emptyList();
 
     public ClassNode(String className) {
-        super(0, className, null, Collections.emptyList());
+        super(new ClassEntity(className), null, Collections.emptyList());
     }
 }

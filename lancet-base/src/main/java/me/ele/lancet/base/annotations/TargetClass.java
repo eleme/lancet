@@ -12,7 +12,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 @java.lang.annotation.Target({ElementType.TYPE, ElementType.METHOD})
 public @interface TargetClass {
-    String value() ;
+    String value();
 
     Scope scope() default Scope.SELF;
 }

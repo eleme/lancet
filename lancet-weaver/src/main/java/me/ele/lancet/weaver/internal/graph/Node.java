@@ -7,9 +7,8 @@ import java.util.List;
  */
 public abstract class Node {
 
-    public Node(int access, String className, ClassNode parent, List<InterfaceNode> interfaces) {
-        this.access = access;
-        this.className = className;
+    public Node(ClassEntity entity, ClassNode parent, List<InterfaceNode> interfaces) {
+        this.entity = entity;
         this.parent = parent;
         this.interfaces = interfaces;
     }
@@ -17,6 +16,5 @@ public abstract class Node {
     public ClassNode parent; // null means it doesn't exists actually, it's a virtual class node
     public List<InterfaceNode> interfaces;
 
-    public int access;
-    public String className;
+    public ClassEntity entity;
 }

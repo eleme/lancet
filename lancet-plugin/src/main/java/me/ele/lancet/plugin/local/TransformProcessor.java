@@ -95,7 +95,7 @@ public class TransformProcessor implements QualifiedContentProvider.SingleClassP
                 jos.putNextEntry(entry);
                 jos.write(bytes);
             } else {
-                for (ClassData classData : weaver.weave(bytes)) {
+                for (ClassData classData : weaver.weave(bytes, relativePath)) {
                     ZipEntry entry = new ZipEntry(classData.getClassName() + ".class");
                     jos.putNextEntry(entry);
                     jos.write(classData.getClassBytes());
@@ -111,7 +111,7 @@ public class TransformProcessor implements QualifiedContentProvider.SingleClassP
     class DirectoryRunner {
 
         void run(File relativeRoot, String relativePath, byte[] bytes) throws IOException {
-            for (ClassData data : weaver.weave(bytes)) {
+            for (ClassData data : weaver.weave(bytes, relativePath)) {
                 File target = Util.toSystemDependentFile(relativeRoot, data.getClassName() + ".class");
                 Files.createParentDirs(target);
                 Files.write(data.getClassBytes(), target);

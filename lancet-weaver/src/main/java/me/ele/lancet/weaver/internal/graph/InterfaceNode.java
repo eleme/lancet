@@ -12,6 +12,6 @@ public class InterfaceNode extends Node {
     public List<ClassNode> implementedClasses = Collections.emptyList();
 
     public InterfaceNode(String className) {
-        super(0, className, null, Collections.emptyList());
+        super(new ClassEntity(className), null, Collections.emptyList());
     }
 }

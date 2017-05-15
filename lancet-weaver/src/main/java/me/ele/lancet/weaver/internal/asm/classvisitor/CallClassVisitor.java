@@ -1,9 +1,7 @@
 package me.ele.lancet.weaver.internal.asm.classvisitor;
 
 import me.ele.lancet.weaver.internal.asm.MethodChain;
-import me.ele.lancet.weaver.internal.util.AsmUtil;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +36,7 @@ public class CallClassVisitor extends LinkedClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
         if (matches.size() > 0) {
-            mv = new CallMethodVisitor(new MethodChain(cv), mv, matches, className, name, getClassCollector());
+            mv = new CallMethodVisitor(getContext().getChain(), mv, matches, getContext().name, name, getClassCollector());
         }
         return mv;
     }

@@ -10,9 +10,7 @@ import me.ele.lancet.weaver.internal.util.RefHolder;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by gengwanpeng on 17/5/3.
@@ -74,11 +72,11 @@ public class ImplementedInterfaceAnnoParser implements AnnoParser {
         if (scope == Scope.SELF) {
             scope = Scope.DIRECT;
         }
-        List<String> classes = new ArrayList<>();
+        Set<String> classes = new HashSet<>();
         locator.graphs()
                 .implementsOf(interfaces, scope)
                 .forEach(node -> {
-                    classes.add(node.className);
+                    classes.add(node.entity.name);
                 });
         locator.intersectClasses(classes);
     }

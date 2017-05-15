@@ -19,7 +19,7 @@ public class TransformHelper {
     public static void startTransform(TotalInfo totalInfo) throws IOException {
         List<File> files = ClassFileUtil.getClassPackageFiles("com.sample.playground");
         for (File file : files) {
-            ClassData[] datas = ClassTransform.weave(totalInfo, Okio.buffer(Okio.source(file)).readByteArray());
+            ClassData[] datas = ClassTransform.weave(totalInfo, graph, Okio.buffer(Okio.source(file)).readByteArray(), relativePath);
             for (ClassData data : datas) {
                 Buffer buffer = new Buffer();
                 buffer.write(data.getClassBytes());

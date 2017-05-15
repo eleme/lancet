@@ -30,4 +30,15 @@ public class TryCatchInfo {
     public boolean match(String className) {
         return pattern == null || pattern.matcher(className).matches();
     }
+
+    @Override
+    public String toString() {
+        return "TryCatchInfo{" +
+                "regex='" + regex + '\'' +
+                ", myClass='" + myClass + '\'' +
+                ", myMethod='" + myMethod + '\'' +
+                ", methodDescriptor='" + methodDescriptor + '\'' +
+                ", pattern=" + pattern +
+                '}';
+    }
 }

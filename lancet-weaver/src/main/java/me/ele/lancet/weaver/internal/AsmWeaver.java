@@ -19,23 +19,24 @@ import me.ele.lancet.weaver.internal.parser.AsmMetaParser;
  */
 public class AsmWeaver implements Weaver {
 
-
     public static Weaver newInstance(ClassLoader cl, Map<String, Node> nodesMap, List<String> classes) {
         MetaParser parser = new AsmMetaParser(cl);
         Graph graph = new Graph(nodesMap);
-        return new AsmWeaver(parser.parse(classes, graph));
+        return new AsmWeaver(parser.parse(classes, graph), graph);
     }
 
     private final TotalInfo totalInfo;
+    private final Graph graph;
 
-    private AsmWeaver(TotalInfo totalInfo) {
+    private AsmWeaver(TotalInfo totalInfo, Graph graph) {
         Log.d(totalInfo.toString());
+        this.graph = graph;
         this.totalInfo = totalInfo;
     }
 
     @Override
-    public ClassData[] weave(byte[] input) {
-        return ClassTransform.weave(totalInfo, input);
+    public ClassData[] weave(byte[] input, String relativePath) {
+        return ClassTransform.weave(totalInfo, graph, input, relativePath);
     }
 
 }

@@ -1,6 +1,7 @@
 package me.ele.lancet.weaver.internal.asm;
 
 
+import me.ele.lancet.weaver.internal.graph.Graph;
 import org.objectweb.asm.*;
 import org.objectweb.asm.util.CheckClassAdapter;
 
@@ -20,37 +21,40 @@ public class ClassCollector {
     ClassWriter originClassWriter;
 
     ClassReader mClassReader;
+    Graph graph;
 
     // simple name of innerClass
     Map<String, ClassWriter> mClassWriters = new HashMap<>();
 
-    public ClassCollector(ClassReader mClassReader) {
+    public ClassCollector(ClassReader mClassReader, Graph graph) {
         this.mClassReader = mClassReader;
+        this.graph = graph;
     }
 
     void setOriginClassName(String originClassName) {
         this.originClassName = originClassName;
     }
 
-    public ClassVisitor getOriginClassWriter() {
-        originClassWriter = new ClassWriter(mClassReader, 0);
-        return new CheckClassAdapter(originClassWriter);
-//        return originClassWriter;
+    public ClassVisitor getOriginClassVisitor() {
+        if(originClassWriter ==null){
+            originClassWriter = new ClassWriter(mClassReader, 0);
+        }
+        return originClassWriter;
     }
 
-    public ClassWriter getInnerClassWriter(String classSimpleName) {
+    public ClassVisitor getInnerClassVisitor(String classSimpleName) {
         ClassWriter writer = mClassWriters.get(classSimpleName);
         if (writer == null) {
-            writer = new ClassWriter(mClassReader, 0);
+            writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
             initForWriter(writer, classSimpleName);
             mClassWriters.put(classSimpleName, writer);
         }
         return writer;
     }
 
-    private void initForWriter(ClassWriter writer, String classSimpleName) {
-        writer.visit(Opcodes.V1_7, Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, getCanonicalName(classSimpleName), null, "java/lang/Object", null);
-        MethodVisitor mv = writer.visitMethod(Opcodes.ACC_PRIVATE, "<init>", "()V", null, null);
+    private void initForWriter(ClassVisitor visitor, String classSimpleName) {
+        visitor.visit(Opcodes.V1_7, Opcodes.ACC_SUPER, getCanonicalName(classSimpleName), null, "java/lang/Object", null);
+        MethodVisitor mv = visitor.visitMethod(Opcodes.ACC_PRIVATE, "<init>", "()V", null, null);
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);

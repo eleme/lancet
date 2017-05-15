@@ -1,11 +1,14 @@
 package me.ele.lancet.plugin.local.preprocess;
 
+import me.ele.lancet.base.annotations.ImplementedInterface;
 import me.ele.lancet.base.annotations.TargetClass;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import me.ele.lancet.weaver.internal.graph.ClassEntity;
+import me.ele.lancet.weaver.internal.graph.FieldEntity;
+import me.ele.lancet.weaver.internal.graph.MethodEntity;
+import org.objectweb.asm.*;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Created by gengwanpeng on 17/4/27.
@@ -13,29 +16,23 @@ import org.objectweb.asm.Type;
 public class PreProcessClassVisitor extends ClassVisitor {
 
 
-    //TODO
     private static String TARGET_CLASS = Type.getDescriptor(TargetClass.class);
+    private static String IMPLEMENTED_INTERFACE = Type.getDescriptor(ImplementedInterface.class);
 
-    private int access;
-    private String name;
-    private String superName;
-    private String[] interfaces;
     private boolean isHookClass;
+    private ClassEntity entity;
 
     PreProcessClassVisitor(int api) {
         super(api, null);
     }
 
     public PreClassProcessor.ProcessResult getProcessResult() {
-        return new PreClassProcessor.ProcessResult(isHookClass, access, name, superName, interfaces);
+        return new PreClassProcessor.ProcessResult(isHookClass, entity);
     }
 
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        this.access = access;
-        this.name = name;
-        this.superName = superName;
-        this.interfaces = interfaces;
+        entity = new ClassEntity(access, name, superName, interfaces == null ? Collections.emptyList() : Arrays.asList(interfaces));
     }
 
     @Override
@@ -45,18 +42,28 @@ public class PreProcessClassVisitor extends ClassVisitor {
     }
 
     @Override
+    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+        entity.fields.add(new FieldEntity(access, name, desc));
+        return null;
+    }
+
+    @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-        return new MethodVisitor(Opcodes.ASM5) {
-            @Override
-            public AnnotationVisitor visitAnnotation(String annoDesc, boolean visible) {
-                judge(annoDesc);
-                return null;
-            }
-        };
+        entity.methods.add(new MethodEntity(access, name, desc));
+        if (!isHookClass) {
+            return new MethodVisitor(Opcodes.ASM5) {
+                @Override
+                public AnnotationVisitor visitAnnotation(String annoDesc, boolean visible) {
+                    judge(annoDesc);
+                    return null;
+                }
+            };
+        }
+        return null;
     }
 
     private void judge(String desc) {
-        if (!isHookClass && TARGET_CLASS.equals(desc)) {
+        if (!isHookClass && (TARGET_CLASS.equals(desc) || IMPLEMENTED_INTERFACE.equals(desc))) {
             isHookClass = true;
         }
     }

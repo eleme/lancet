@@ -1,6 +1,9 @@
 package me.ele.lancet.weaver.internal.asm;
 
+import me.ele.lancet.weaver.internal.graph.Graph;
+import me.ele.lancet.weaver.internal.util.Bitset;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 /**
@@ -10,31 +13,33 @@ import org.objectweb.asm.Opcodes;
 public class LinkedClassVisitor extends ClassVisitor {
 
 
+    private ClassContext context;
     private ClassCollector mClassCollector;
-    protected String className;
-    protected String superClassName;
+
 
     public LinkedClassVisitor() {
         super(Opcodes.ASM5);
+    }
+
+    public void setContext(ClassContext context) {
+        this.context = context;
     }
 
     void setClassCollector(ClassCollector classCollector) {
         this.mClassCollector = classCollector;
     }
 
-    void setNextClassVisitor(ClassVisitor classVisitor) {
-        cv = classVisitor;
+    public ClassContext getContext() {
+        return context;
     }
 
-    public ClassCollector getClassCollector() {
+    protected ClassCollector getClassCollector() {
         return mClassCollector;
     }
 
-    @Override
-    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        super.visit(version, access, name, signature, superName, interfaces);
-        mClassCollector.setOriginClassName(name);
-        this.className = name;
-        this.superClassName = superName;
+    public void setNextClassVisitor(ClassVisitor classVisitor) {
+        cv = classVisitor;
     }
+
+
 }

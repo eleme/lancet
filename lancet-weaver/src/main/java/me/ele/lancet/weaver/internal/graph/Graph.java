@@ -26,13 +26,13 @@ public class Graph {
                     if (n.parent != null) {
                         me.ele.lancet.weaver.internal.graph.ClassNode parent = n.parent;
                         if (parent.children == Collections.EMPTY_LIST) {
-                            if (parent.className.equals("java/lang/Object")) {
+                            if (parent.entity.name.equals("java/lang/Object")) {
                                 parent.children = new ArrayList<>(nodeMap.size() >> 1);
                             } else {
                                 parent.children = new ArrayList<>();
                             }
-                            parent.children.add(n);
                         }
+                        parent.children.add(n);
                     }
                     n.interfaces.forEach(i -> {
                         if (n instanceof InterfaceNode) {
@@ -52,7 +52,7 @@ public class Graph {
 
     public boolean inherit(String child, String parent) {
         Node node = nodeMap.get(child);
-        while (node != null && !parent.equals(node.className)) {
+        while (node != null && !parent.equals(node.entity.name)) {
             node = node.parent;
         }
         return node != null;
@@ -130,6 +130,10 @@ public class Graph {
                         })
                         .forEach(c -> visitClasses(c, scope, visitor));
         }
+    }
+
+    public Node get(String className) {
+        return nodeMap.get(className);
     }
 
 

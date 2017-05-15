@@ -2,7 +2,9 @@ package me.ele.lancet.plugin.local;
 
 import com.google.common.io.Files;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
+import me.ele.lancet.weaver.internal.graph.ClassEntity;
 import org.apache.commons.io.Charsets;
 
 import java.io.*;
@@ -17,7 +19,7 @@ public class LocalCache {
 
     private File localCache;
     private Metas metas;
-    private Gson gson = new Gson();
+    private Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     public LocalCache(File dir) {
         localCache = new File(dir, "buildCache.json");
@@ -36,7 +38,7 @@ public class LocalCache {
                     throw new RuntimeException("cache file has been modified, but can't delete.", e);
                 }
             }
-        }else{
+        } else {
             metas = new Metas();
         }
     }
@@ -54,18 +56,6 @@ public class LocalCache {
         return notModifiedAndRemoved(context); // && notAdded(context);
     }
 
-   /* private static boolean notAdded(TransformContext transformContext) throws IOException {
-        QualifiedContentProvider provider = ClassifiedContentProvider.newInstance(new JarContentProvider(), new DirectoryContentProvider());
-        PreClassProcessor processor = new AsmClassProcessorImpl();
-        boolean[] added = {false};
-        for (JarInput jarInput : transformContext.getAddedJars()) {
-            provider.forEach(jarInput, (content, status, relativePath, classBytes) -> {
-                added[0] |= processor.process(classBytes).isHookClass;
-            });
-        }
-        return !added[0];
-    }*/
-
     private boolean notModifiedAndRemoved(TransformContext context) {
         List<String> targetJars = metas.jarsWithHookClasses;
         return Stream.concat(context.getRemovedJars().stream(), context.getChangedJars().stream())
@@ -73,9 +63,7 @@ public class LocalCache {
     }
 
     public void accept(MetaGraphGeneratorImpl graph) {
-        metas.nodeLikes.forEach(n -> {
-            graph.add(n.access, n.name, n.superName, n.interfaces);
-        });
+        metas.classMetas.forEach(graph::add);
     }
 
     public void save() {
@@ -96,8 +84,8 @@ public class LocalCache {
         metas = new Metas();
     }
 
-    public void savePartially(List<Metas.NodeLike> nodeLikes) {
-        metas.nodeLikes = nodeLikes;
+    public void savePartially(List<ClassEntity> classMetas) {
+        metas.classMetas = classMetas;
         if (metas.classes == null) {
             metas.classes = Collections.emptyList();
         }
@@ -110,8 +98,8 @@ public class LocalCache {
         save();
     }
 
-    public void saveFully(List<Metas.NodeLike> nodeLikes, List<String> classes, List<String> classesInDirs, List<String> jarWithHookClasses) {
-        metas.nodeLikes = nodeLikes;
+    public void saveFully(List<ClassEntity> classMetas, List<String> classes, List<String> classesInDirs, List<String> jarWithHookClasses) {
+        metas.classMetas = classMetas;
         metas.classes = classes;
         metas.classesInDirs = classesInDirs;
         metas.jarsWithHookClasses = jarWithHookClasses;

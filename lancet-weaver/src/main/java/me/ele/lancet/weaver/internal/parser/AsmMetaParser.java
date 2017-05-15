@@ -1,5 +1,6 @@
 package me.ele.lancet.weaver.internal.parser;
 
+import me.ele.lancet.weaver.internal.util.TypeUtil;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -93,7 +94,7 @@ public class AsmMetaParser implements MetaParser {
             ClassMetaInfo meta = new ClassMetaInfo(className);
             meta.annotationMetas = nodesToMetas(cn.visibleAnnotations);
             meta.methods = ((List<MethodNode>) cn.methods).stream()
-                    //.filter(m -> !m.desc.equals("<clinit>") && !m.desc.equals("<init>"))
+                    .filter(m -> !m.desc.equals("<clinit>") && !m.desc.equals("<init>") && !TypeUtil.isAbstract(m.access))
                     .map(mn -> {
                         List<AnnotationMeta> methodMetas = nodesToMetas(mn.visibleAnnotations);
                         if (methodMetas.stream().noneMatch(m -> m instanceof InsertAnnoParser.InsertAnnoMeta

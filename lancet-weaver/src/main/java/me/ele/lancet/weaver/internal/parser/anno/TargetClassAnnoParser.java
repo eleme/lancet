@@ -71,7 +71,7 @@ public class TargetClassAnnoParser implements AnnoParser {
             locator.graphs()
                     .childrenOf(className, scope)
                     .forEach(node -> {
-                        classes.add(node.className);
+                        classes.add(node.entity.name);
                     });
             locator.intersectClasses(classes);
         }
