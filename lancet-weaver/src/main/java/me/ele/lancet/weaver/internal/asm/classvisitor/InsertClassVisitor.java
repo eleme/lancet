@@ -16,13 +16,13 @@ import me.ele.lancet.weaver.internal.util.TypeUtil;
 /**
  * Created by gengwanpeng on 17/3/27.
  */
-public class ExecuteClassVisitor extends LinkedClassVisitor {
+public class InsertClassVisitor extends LinkedClassVisitor {
 
     private Map<String, List<ExecuteInfo>> executeInfos;
     private List<ExecuteInfo> matched;
 
 
-    public ExecuteClassVisitor(Map<String, List<ExecuteInfo>> executeInfos) {
+    public InsertClassVisitor(Map<String, List<ExecuteInfo>> executeInfos) {
         this.executeInfos = executeInfos;
     }
 
@@ -59,7 +59,7 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
                 int newAccess = (access & ~(Opcodes.ACC_PROTECTED | Opcodes.ACC_PUBLIC)) | Opcodes.ACC_PRIVATE;
 
                 MethodChain chain = getContext().getChain();
-                chain.headByAccess(newAccess, getContext().name, newName, desc);
+                chain.headFromInsert(newAccess, getContext().name, newName, desc);
 
                 methodsMatched.forEach(e -> {
                     Log.tag("transform").i(
@@ -95,6 +95,7 @@ public class ExecuteClassVisitor extends LinkedClassVisitor {
                     adapter.visitEnd();
                 }
             });
+
         }
         super.visitEnd();
     }

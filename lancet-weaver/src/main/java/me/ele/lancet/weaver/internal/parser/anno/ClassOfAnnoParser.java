@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  */
 public class ClassOfAnnoParser implements AnnoParser {
 
-    private Pattern pattern = Pattern.compile("^((?![0-9])\\w+(\\.(?![0-9])\\w+)*)((\\[])*)$");
+    private Pattern pattern = Pattern.compile("^(((?![0-9])\\w+\\.)*((?![0-9])\\w+\\$)?(?![0-9])\\w+)((\\[])*)$");
 
     @SuppressWarnings("unchecked")
     @Override
@@ -57,14 +57,15 @@ public class ClassOfAnnoParser implements AnnoParser {
         if (!matcher.find()) {
             throw new IllegalAnnotationException("value in @ClassOf is not a legal type: " + className);
         }
-        String bracket = matcher.group(3);
-        StringBuilder sb = new StringBuilder(matcher.group(1).length() + 10);
+        String clazz = matcher.group(1);
+        String bracket = matcher.group(4);
+        StringBuilder sb = new StringBuilder(clazz.length() + 10);
         if (bracket != null) {
             for (int i = 0, j = bracket.length() >> 1; i < j; i++) {
                 sb.append('[');
             }
         }
-        return sb.append('L').append(matcher.group(1).replace('.', '/')).append(';').toString();
+        return sb.append('L').append(clazz.replace('.', '/')).append(';').toString();
     }
 
     private static class ClassOfAnnoMeta extends AnnotationMeta {

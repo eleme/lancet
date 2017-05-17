@@ -1,5 +1,6 @@
 package me.ele.lancet.weaver.internal.meta;
 
+import com.google.common.collect.Sets;
 import me.ele.lancet.weaver.internal.entity.CallInfo;
 import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
 import me.ele.lancet.weaver.internal.entity.TotalInfo;
@@ -8,13 +9,12 @@ import me.ele.lancet.weaver.internal.exception.IllegalAnnotationException;
 import me.ele.lancet.weaver.internal.graph.Graph;
 import me.ele.lancet.weaver.internal.log.Log;
 import me.ele.lancet.weaver.internal.parser.AopMethodAdjuster;
-import me.ele.lancet.weaver.internal.util.CollectionUtil;
 import me.ele.lancet.weaver.internal.util.TypeUtil;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 /**
  * Created by gengwanpeng on 17/5/3.
@@ -25,10 +25,12 @@ public class HookInfoLocator {
     private static final int PROXY = 2;
     private static final int TRY_CATCH = 4;
 
+    private static final int PUBLIC_STATIC = Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC;
+
     private int flag = 0;
 
-    private Collection<String> classes;
-    private Collection<String> tempClasses;
+    private Set<String> classes;
+    private Set<String> tempClasses;
 
     private String targetDesc;
     private String targetMethod;
@@ -60,11 +62,11 @@ public class HookInfoLocator {
         tempClasses = null;
     }
 
-    public void intersectClasses(Collection<String> classes) {
+    public void intersectClasses(Set<String> classes) {
         if (tempClasses == null) {
             this.tempClasses = classes;
         } else {
-            tempClasses = CollectionUtil.intersection(tempClasses, classes);
+            tempClasses = Sets.intersection(tempClasses, classes);
         }
         this.classes = tempClasses;
     }
@@ -132,7 +134,7 @@ public class HookInfoLocator {
         }
         if (flag <= 0) {
             throw new IllegalAnnotationException("no @Proxy, @Insert or @TryCatchHandler on " + sourceClass + "." + sourceNode.name);
-        }else if(Integer.bitCount(flag) > 1){
+        } else if (Integer.bitCount(flag) > 1) {
             throw new IllegalAnnotationException("@Proxy @Insert or @TryCatchHandler can only appear once");
         }
         if (classes.size() <= 0) {
@@ -141,6 +143,12 @@ public class HookInfoLocator {
 
         if (mayCreateSuper && TypeUtil.isStatic(sourceNode.access)) {
             throw new IllegalAnnotationException("can't use mayCreateSuper while method is static, " + sourceClass + "." + sourceNode.name);
+        }
+
+        if (flag == TRY_CATCH && (!targetDesc.equals("(Ljava/lang/Throwable;)Ljava/lang/Throwable;") ||
+                (sourceNode.access & PUBLIC_STATIC) != PUBLIC_STATIC)) {
+            throw new IllegalAnnotationException("method annotated with @TryCatchHandler should be like this: " +
+                    "public static Throwable method_name(Throwable)");
         }
     }
 

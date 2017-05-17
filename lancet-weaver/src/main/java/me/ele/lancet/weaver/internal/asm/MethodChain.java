@@ -1,6 +1,7 @@
 package me.ele.lancet.weaver.internal.asm;
 
 import com.google.common.base.Preconditions;
+import me.ele.lancet.base.annotations.ClassOf;
 import me.ele.lancet.weaver.internal.graph.ClassEntity;
 import me.ele.lancet.weaver.internal.graph.FieldEntity;
 import me.ele.lancet.weaver.internal.graph.Graph;
@@ -9,10 +10,7 @@ import me.ele.lancet.weaver.internal.parser.AopMethodAdjuster;
 import me.ele.lancet.weaver.internal.util.Bitset;
 import me.ele.lancet.weaver.internal.util.PrimitiveUtil;
 import me.ele.lancet.weaver.internal.util.TypeUtil;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -31,19 +29,15 @@ public class MethodChain {
 
     private static final String ACCESS = "access$";
     private static final String FORMAT = "access$%03d";
+    private static final String CLASS_OF = Type.getDescriptor(ClassOf.class);
 
     private final String className;
     private final ClassVisitor base;
     private final Graph graph;
     private Bitset bitset;
 
-
-    private int access;
-
     private Invoker head;
 
-
-    private String[] exceptions;
     private Map<String, FieldEntity> fieldMap;
     private Map<String, Invoker> invokerMap = new HashMap<>();
 
@@ -64,7 +58,7 @@ public class MethodChain {
         });
     }
 
-    public void head(int access, int opcode, String owner, String name, String desc) {
+    private void head(int access, int opcode, String owner, String name, String desc) {
         this.head = Invoker.forMethod(
                 new MethodInsnNode(opcode, owner, name, desc, opcode == Opcodes.INVOKEINTERFACE)
                 , !hasPermission(access, owner), className);
@@ -74,7 +68,7 @@ public class MethodChain {
         return TypeUtil.isPublic(access) || !TypeUtil.isPrivate(access) && owner.equals(className);
     }
 
-    public void headByOpcode(int opcode, String owner, String name, String desc) {
+    public void headFromProxy(int opcode, String owner, String name, String desc) {
         int access = Opcodes.ACC_PRIVATE;
         if (opcode == Opcodes.INVOKEINTERFACE || opcode == Opcodes.INVOKEVIRTUAL) {
             access = Opcodes.ACC_PUBLIC;
@@ -82,7 +76,7 @@ public class MethodChain {
         head(access, opcode, owner, name, desc);
     }
 
-    public void headByAccess(int access, String owner, String name, String desc) {
+    public void headFromInsert(int access, String owner, String name, String desc) {
         head(access, TypeUtil.isStatic(access) ? Opcodes.INVOKESTATIC : Opcodes.INVOKESPECIAL, owner, name, desc);
     }
 
@@ -106,9 +100,18 @@ public class MethodChain {
                     super.visitMethodInsn(opcode, owner, name, desc, itf);
                 }
             }
+
+            @Override
+            public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+                if (CLASS_OF.equals(desc)) {
+                    return null;
+                }
+                return super.visitParameterAnnotation(parameter, desc, visible);
+            }
+
         });
 
-        headByAccess(access, className, name, desc);
+        headFromInsert(access, className, name, desc);
     }
 
     private void dealField(int opcode, String name, MethodVisitor mv) {
@@ -119,7 +122,7 @@ public class MethodChain {
 
         FieldEntity entity = fieldMap.get(name);
         if (entity == null) {
-            base.visitField( Opcodes.ACC_PRIVATE, name, obj, null, null);
+            base.visitField(Opcodes.ACC_PRIVATE, name, obj, null, null);
             fieldMap.put(name, entity = new FieldEntity(Opcodes.ACC_PRIVATE, name, obj));
         }
 
@@ -148,7 +151,7 @@ public class MethodChain {
 
         createMethod(access, desc, head.action()).accept(mv);
 
-        headByAccess(access, className, name, desc);
+        headFromInsert(access, className, name, desc);
     }
 
     public void visitHead(MethodVisitor mv) {

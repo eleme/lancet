@@ -69,15 +69,15 @@ public class ImplementedInterfaceAnnoParser implements AnnoParser {
     }
 
     private void computeInterface(HookInfoLocator locator, String[] interfaces, Scope scope) {
-        if (scope == Scope.SELF) {
-            scope = Scope.DIRECT;
-        }
-        Set<String> classes = new HashSet<>();
-        locator.graphs()
-                .implementsOf(interfaces, scope)
-                .forEach(node -> {
-                    classes.add(node.entity.name);
+        Arrays.stream(interfaces)
+                .forEach(it -> {
+                    Set<String> classes = new HashSet<>();
+                    locator.graphs()
+                            .implementsOf(it, scope)
+                            .forEach(node -> {
+                                classes.add(node.entity.name);
+                            });
+                    locator.intersectClasses(classes);
                 });
-        locator.intersectClasses(classes);
     }
 }

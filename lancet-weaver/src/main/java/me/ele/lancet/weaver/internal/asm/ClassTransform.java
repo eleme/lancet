@@ -5,8 +5,8 @@ import me.ele.lancet.weaver.internal.graph.Graph;
 import org.objectweb.asm.ClassReader;
 
 import me.ele.lancet.weaver.ClassData;
-import me.ele.lancet.weaver.internal.asm.classvisitor.CallClassVisitor;
-import me.ele.lancet.weaver.internal.asm.classvisitor.ExecuteClassVisitor;
+import me.ele.lancet.weaver.internal.asm.classvisitor.ProxyClassVisitor;
+import me.ele.lancet.weaver.internal.asm.classvisitor.InsertClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.TryCatchInfoClassVisitor;
 import me.ele.lancet.weaver.internal.entity.TotalInfo;
 
@@ -30,8 +30,8 @@ public class ClassTransform {
 
         ClassTransform transform = new ClassTransform(classCollector, context);
         transform.connect(new ContextClassVisitor());
-        transform.connect(new CallClassVisitor(totalInfo.callInfos));
-        transform.connect(new ExecuteClassVisitor(totalInfo.executeInfos));
+        transform.connect(new ProxyClassVisitor(totalInfo.callInfos));
+        transform.connect(new InsertClassVisitor(totalInfo.executeInfos));
         transform.connect(new TryCatchInfoClassVisitor(totalInfo.tryCatchInfos));
         transform.startTransform();
         return classCollector.generateClassBytes();

@@ -32,7 +32,6 @@ import me.ele.lancet.weaver.internal.log.Impl.SystemLoggerImpl;
 public class Log {
     private static ILogger logger = new SystemLoggerImpl();
     private static Level level = Level.INFO;
-    private static HashMap<String,Tag> tagMap = new HashMap<>();
     public static final String DEFAULT_TAG = "Lancet";
 
     public static void setLevel(Level l) {
@@ -43,14 +42,8 @@ public class Log {
         logger = l;
     }
 
-    public static Tag tag(String tag){
-        if (tagMap.containsKey(tag)){
-            return tagMap.get(tag);
-        }else {
-            Tag t = new Tag(tag);
-            tagMap.put(tag,t);
-            return t;
-        }
+    public static Tag tag(String tag) {
+        return new Tag(tag);
     }
 
     public static void d(String msg) {
@@ -81,44 +74,47 @@ public class Log {
         DEBUG, INFO, WARN, ERROR
     }
 
-    public static class Tag{
+    public static class Tag {
         private final String tag;
 
         Tag(String tag) {
             this.tag = tag;
         }
 
-        public  void d(String msg) {
+        public Tag d(String msg) {
             if (level.compareTo(Level.DEBUG) <= 0) {
-                logger.d(tag,msg);
+                logger.d(tag, msg);
             }
+            return this;
         }
 
-        public  void i(String msg) {
+        public Tag i(String msg) {
             if (level.compareTo(Level.INFO) <= 0) {
-                logger.i(tag,msg);
+                logger.i(tag, msg);
             }
+            return this;
         }
 
-        public  void w(String msg) {
-            w(msg, null);
+        public Tag w(String msg) {
+            return w(msg, null);
         }
 
-        public  void w(String msg, Throwable t) {
+        public Tag w(String msg, Throwable t) {
             if (level.compareTo(Level.WARN) <= 0) {
-                logger.w(tag,msg, t);
+                logger.w(tag, msg, t);
             }
+            return this;
         }
 
-        public  void e(String msg) {
-            e(msg, null);
+        public Tag e(String msg) {
+            return e(msg, null);
         }
 
-        public  void e(String msg, Throwable t) {
+        public Tag e(String msg, Throwable t) {
             if (level.compareTo(Level.ERROR) <= 0) {
-                logger.e(tag,msg, t);
+                logger.e(tag, msg, t);
             }
+            return this;
         }
-
     }
 }

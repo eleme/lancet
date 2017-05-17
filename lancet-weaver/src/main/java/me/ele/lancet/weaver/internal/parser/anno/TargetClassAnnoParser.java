@@ -11,9 +11,7 @@ import me.ele.lancet.weaver.internal.util.RefHolder;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by gengwanpeng on 17/5/3.
@@ -64,16 +62,12 @@ public class TargetClassAnnoParser implements AnnoParser {
     }
 
     private void computeClass(HookInfoLocator locator, String className, Scope scope) {
-        if (scope == Scope.SELF) {
-            locator.intersectClasses(Lists.newArrayList(className));
-        } else {
-            List<String> classes = new ArrayList<>();
-            locator.graphs()
-                    .childrenOf(className, scope)
-                    .forEach(node -> {
-                        classes.add(node.entity.name);
-                    });
-            locator.intersectClasses(classes);
-        }
+        Set<String> classes = new HashSet<>();
+        locator.graphs()
+                .childrenOf(className, scope)
+                .forEach(node -> {
+                    classes.add(node.entity.name);
+                });
+        locator.intersectClasses(classes);
     }
 }

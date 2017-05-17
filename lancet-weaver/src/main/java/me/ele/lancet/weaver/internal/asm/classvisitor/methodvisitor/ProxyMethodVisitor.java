@@ -17,7 +17,7 @@ import me.ele.lancet.weaver.internal.log.Log;
 /**
  * Created by Jude on 17/4/26.
  */
-public class CallMethodVisitor extends MethodVisitor {
+public class ProxyMethodVisitor extends MethodVisitor {
 
     private final Map<String, List<CallInfo>> matchMap;
     private final String className;
@@ -25,7 +25,7 @@ public class CallMethodVisitor extends MethodVisitor {
     private final ClassCollector classCollector;
     private final MethodChain chain;
 
-    public CallMethodVisitor(MethodChain chain, MethodVisitor mv, Map<String, List<CallInfo>> matchMap, String className, String name, ClassCollector classCollector) {
+    public ProxyMethodVisitor(MethodChain chain, MethodVisitor mv, Map<String, List<CallInfo>> matchMap, String className, String name, ClassCollector classCollector) {
         super(Opcodes.ASM5, mv);
         this.chain = chain;
         this.matchMap = matchMap;
@@ -42,7 +42,7 @@ public class CallMethodVisitor extends MethodVisitor {
 
             String staticDesc = TypeUtil.descToStatic(opcode == Opcodes.INVOKESTATIC ? Opcodes.ACC_STATIC : 0, desc, owner);
             // begin hook this code.
-            chain.headByOpcode(opcode, owner, name, desc);
+            chain.headFromProxy(opcode, owner, name, desc);
 
             String artificialClassname = classCollector.getCanonicalName(ClassTransform.AID_INNER_CLASS_NAME);
             ClassVisitor cv = classCollector.getInnerClassVisitor(ClassTransform.AID_INNER_CLASS_NAME);
@@ -61,6 +61,8 @@ public class CallMethodVisitor extends MethodVisitor {
                 String methodName = c.sourceClass.replace("/", "_") + "_" + c.sourceMethod.name;
                 chain.next(artificialClassname, Opcodes.ACC_STATIC, methodName, staticDesc, c.sourceMethod, cv);
             });
+
+            infos.clear();
 
             chain.visitHead(mv);
         } else {

@@ -14,8 +14,6 @@ pom.xml.*
 release.properties
 # Idea
 .idea
-*.iml
-classes
 obj
 #MacOS
 .DS_Store

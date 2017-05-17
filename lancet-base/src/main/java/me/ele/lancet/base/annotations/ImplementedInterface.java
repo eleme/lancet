@@ -15,5 +15,5 @@ public @interface ImplementedInterface {
 
     String[] value();
 
-    Scope scope() default Scope.DIRECT;
+    Scope scope() default Scope.SELF;
 }

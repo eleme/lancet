@@ -35,7 +35,6 @@ public class TryCatchMethodVisitor extends MethodVisitor {
         super.visitLabel(label);
         if (label != null && handlers.contains(label)) {
             for (TryCatchInfo info : matches) {
-                mv.visitInsn(Opcodes.DUP);
                 mv.visitMethodInsn(Opcodes.INVOKESTATIC, info.myClass, info.myMethod, info.methodDescriptor, false);
             }
         }

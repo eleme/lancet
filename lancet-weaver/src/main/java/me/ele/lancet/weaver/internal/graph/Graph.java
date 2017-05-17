@@ -32,7 +32,11 @@ public class Graph {
                                 parent.children = new ArrayList<>();
                             }
                         }
-                        parent.children.add(n);
+                        // all interfaces extends java.lang.Object
+                        // make java.lang.Object subclasses purely
+                        if (n instanceof ClassNode) {
+                            parent.children.add((ClassNode) n);
+                        }
                     }
                     n.interfaces.forEach(i -> {
                         if (n instanceof InterfaceNode) {
@@ -44,6 +48,7 @@ public class Graph {
                             if (i.implementedClasses == Collections.EMPTY_LIST) {
                                 i.implementedClasses = new ArrayList<>();
                             }
+                            //noinspection ConstantConditions
                             i.implementedClasses.add((me.ele.lancet.weaver.internal.graph.ClassNode) n);
                         }
                     });
@@ -64,48 +69,45 @@ public class Graph {
     public NodeVisitor childrenOf(String className, Scope scope) {
         return visitor -> {
             Node node = nodeMap.get(className);
-            if (node instanceof InterfaceNode) {
-                throw new IllegalArgumentException(className + " is a interface");
+            if (!(node instanceof ClassNode)) {
+                throw new IllegalArgumentException(className + " is not a class");
             }
             visitClasses((ClassNode) node, scope, visitor);
         };
     }
 
     private void visitClasses(ClassNode parent, Scope scope, Consumer<Node> visitor) {
-        List<Node> children = parent.children;
+        List<ClassNode> children = parent.children;
         switch (scope) {
-            case ALL:
-                children.stream()
-                        .peek(visitor)
-                        .filter(s -> s instanceof ClassNode)
-                        .forEach(n -> visitClasses((ClassNode) n, scope, visitor));
+            case SELF:
+                visitor.accept(parent);
                 break;
+            case ALL:
+                children.forEach(n -> visitClasses(n, scope, visitor));
             case DIRECT:
                 children.forEach(visitor);
                 break;
             case LEAF:
                 children.stream()
                         .filter(n -> {
-                            if (n instanceof InterfaceNode || ((ClassNode) n).children.size() == 0) {
+                            if (n.children.size() == 0) {
                                 visitor.accept(n);
                                 return false;
                             }
                             return true;
                         })
-                        .forEach(n -> visitClasses((ClassNode) n, scope, visitor));
+                        .forEach(n -> visitClasses(n, scope, visitor));
                 break;
         }
     }
 
-    public NodeVisitor implementsOf(String[] interfaces, Scope scope) {
+    public NodeVisitor implementsOf(String interfaceName, Scope scope) {
         return visitor -> {
-            for (String it : interfaces) {
-                Node node = nodeMap.get(it);
-                if (node instanceof ClassNode) {
-                    throw new IllegalArgumentException(it + " is a class");
-                }
-                visitImplements((InterfaceNode) node, scope, visitor);
+            Node node = nodeMap.get(interfaceName);
+            if (!(node instanceof InterfaceNode)) {
+                throw new IllegalArgumentException(interfaceName + " is not a interface");
             }
+            visitImplements((InterfaceNode) node, scope, visitor);
         };
     }
 
@@ -114,8 +116,10 @@ public class Graph {
         List<InterfaceNode> children = node.children;
         switch (scope) {
             case ALL:
-                children.forEach(c -> visitImplements(c, scope, visitor));
+                classes.forEach(c -> visitClasses(c, scope, visitor));
             case DIRECT:
+                children.forEach(c -> visitImplements(c, scope, visitor));
+            case SELF:
                 classes.forEach(visitor);
                 break;
             case LEAF:

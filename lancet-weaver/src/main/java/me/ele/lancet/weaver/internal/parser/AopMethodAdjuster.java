@@ -25,14 +25,15 @@ public class AopMethodAdjuster {
     private final MethodNode methodNode;
 
 
-    private final CallReplacer callReplacer;
+    private final CallReplacer CALL_REPLACER;
+    private final ThisReplacer THIS_REPLACER = new ThisReplacer();
 
 
     public AopMethodAdjuster(boolean allowField, String sourceClass, MethodNode methodNode) {
         this.allowField = allowField;
         this.sourceClass = sourceClass;
         this.methodNode = methodNode;
-        this.callReplacer = new CallReplacer(methodNode.desc);
+        this.CALL_REPLACER = new CallReplacer(methodNode.desc);
         init();
     }
 
@@ -65,10 +66,10 @@ public class AopMethodAdjuster {
         NodeReplacer replacer = NodeReplacer.IDENTITY;
         if (owner.equals(Origin.CLASS_NAME)) {
             if (name.startsWith("call")) {
-                replacer = this.callReplacer;
+                replacer = this.CALL_REPLACER;
             }
         } else if (owner.equals(This.CLASS_NAME)) {
-            replacer = new ThisReplacer();
+            replacer = THIS_REPLACER;
         }
         return replacer.replace(node);
     }
@@ -167,7 +168,8 @@ public class AopMethodAdjuster {
             switch (node.name) {
                 case "get":
                     VarInsnNode varInsnNode = new VarInsnNode(Opcodes.ALOAD, 0);
-                    getType(node.getNext());
+                    //TODO: Should us remove checkcast ?
+                    // getType(node.getNext());
                     methodNode.instructions.set(node, varInsnNode);
                     return varInsnNode;
 
@@ -187,7 +189,7 @@ public class AopMethodAdjuster {
         }
 
         private void checkAllow(String name) {
-            if(!allowField){
+            if (!allowField) {
                 illegalState("This." + name + " only allow in @Insert");
             }
         }

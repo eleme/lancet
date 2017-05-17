@@ -32,7 +32,7 @@ import me.ele.lancet.weaver.internal.log.ILogger;
 /**
  * Created by gengwanpeng on 16/7/6.
  */
-public class FileLoggerImpl implements ILogger {
+public class FileLoggerImpl extends BaseLogger {
 
     public static FileLoggerImpl of(String fileName) throws FileNotFoundException {
         PrintWriter pr = new PrintWriter(new FileOutputStream(fileName), true);
@@ -45,39 +45,8 @@ public class FileLoggerImpl implements ILogger {
         this.pr = pr;
     }
 
-
     @Override
-    public void d(String tag,String msg) {
-        write("D "+tag, msg, null);
-    }
-
-    @Override
-    public void i(String tag,String msg) {
-        write("I "+tag, msg, null);
-    }
-
-    @Override
-    public void w(String tag,String msg) {
-        w(tag,msg, null);
-    }
-
-    @Override
-    public void w(String tag,String msg, Throwable t) {
-        write("W "+tag, msg, t);
-    }
-
-    @Override
-    public void e(String tag,String msg) {
-        e(tag,msg, null);
-    }
-
-    @Override
-    public void e(String tag,String msg, Throwable t) {
-        write("E "+tag, msg, t);
-    }
-
-
-    synchronized protected void write(String prefix, String msg, Throwable t) {
+    protected synchronized void write(String prefix, String msg, Throwable t) {
         pr.println(String.format("[%-10s] %s", prefix, msg));
         if (t != null) {
             t.printStackTrace(pr);
