@@ -2,7 +2,6 @@ package me.ele.lancet.weaver.internal.entity;
 
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by gengwanpeng on 17/3/27.
@@ -12,9 +11,10 @@ public class TotalInfo {
     public Map<String, List<ExecuteInfo>> executeInfos = new HashMap<>();
     public List<TryCatchInfo> tryCatchInfos = new ArrayList<>();
     public List<CallInfo> callInfos = new ArrayList<>();
-    public List<String> excludes = new ArrayList<>();
+    public Set<String> excludes = new HashSet<>();
 
-    public TotalInfo() {
+    public TotalInfo(List<String> classes) {
+        excludes.addAll(classes);
     }
 
     public void combine(TotalInfo other) {
@@ -51,7 +51,7 @@ public class TotalInfo {
         this.callInfos = callInfos;
     }
 
-    public void setExcludes(List<String> excludes) {
+    public void setExcludes(Set<String> excludes) {
         this.excludes = excludes;
     }
 

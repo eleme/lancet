@@ -30,7 +30,7 @@ public abstract class AOPBaseTest {
 
     @Test
     public void testTransform() throws IOException {
-        totalInfo = new TotalInfo();
+        totalInfo = new TotalInfo(classes);
         totalInfo.setCallInfos(new ArrayList<>());
         totalInfo.setExecuteInfos(new ArrayList<>());
         totalInfo.setTryCatchInfos(new ArrayList<>());

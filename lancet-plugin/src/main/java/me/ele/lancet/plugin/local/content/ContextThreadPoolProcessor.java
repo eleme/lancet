@@ -1,17 +1,24 @@
 package me.ele.lancet.plugin.local.content;
 
+import com.android.annotations.NonNull;
 import com.android.build.api.transform.DirectoryInput;
 import com.android.build.api.transform.JarInput;
 import com.android.build.api.transform.QualifiedContent;
+import com.android.build.api.transform.Status;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import com.google.common.hash.Hashing;
 import me.ele.lancet.plugin.local.TransformContext;
+import me.ele.lancet.plugin.local.extend.BindingJarInput;
 import me.ele.lancet.plugin.local.preprocess.ParseFailureException;
 import me.ele.lancet.weaver.internal.log.Log;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -36,13 +43,12 @@ public class ContextThreadPoolProcessor {
     }
 
     public void process(boolean incremental, QualifiedContentProvider.SingleClassProcessor processor) throws IOException, InterruptedException {
-        long duration = System.currentTimeMillis();
 
         provider = ClassifiedContentProvider.newInstance(new JarContentProvider(), new DirectoryContentProvider(incremental));
         Collection<JarInput> jars = !incremental ? context.getAllJars() :
                 ImmutableList.<JarInput>builder().addAll(context.getAddedJars())
                         .addAll(context.getRemovedJars())
-                        .addAll(context.getChangedJars())
+                        .addAll(changedJars())
                         .build();
         List<Future<Void>> tasks = Stream.concat(jars.stream(), context.getAllDirs().stream())
                 .map(q -> new QualifiedContentTask(q, processor))
@@ -61,12 +67,46 @@ public class ContextThreadPoolProcessor {
                     throw (IOException) cause;
                 } else if (cause instanceof InterruptedException) {
                     throw (InterruptedException) cause;
-                }else {
+                } else {
                     throw new RuntimeException(e.getCause());
                 }
             }
         }
 
+    }
+
+    private Collection<? extends JarInput> changedJars() {
+        return context.getChangedJars()
+                .stream().map(c -> new BindingJarInput(new JarInput() {
+
+                            private File jar = context.getRelativeFile(c);
+
+                            @Override
+                            public Status getStatus() {
+                                return Status.REMOVED;
+                            }
+
+                            @Override
+                            public String getName() {
+                                return Hashing.sha1().hashString(jar.getPath(), Charsets.UTF_16LE).toString();
+                            }
+
+                            @Override
+                            public File getFile() {
+                                return jar;
+                            }
+
+                            @Override
+                            public Set<ContentType> getContentTypes() {
+                                return c.getContentTypes();
+                            }
+
+                            @Override
+                            public Set<? super Scope> getScopes() {
+                                return c.getScopes();
+                            }
+                        }, c)
+                ).collect(Collectors.toList());
     }
 
     private void shutDownAndRestart() {

@@ -20,6 +20,7 @@ public class ClassEntity {
     // placeholder
     public ClassEntity(String name) {
         this.name = name;
+        this.interfaces = Collections.emptyList();
         this.fields = Collections.emptyList();
         this.methods = Collections.emptyList();
     }

@@ -22,7 +22,8 @@ public class AsmWeaver implements Weaver {
     public static Weaver newInstance(ClassLoader cl, Map<String, Node> nodesMap, List<String> classes) {
         MetaParser parser = new AsmMetaParser(cl);
         Graph graph = new Graph(nodesMap);
-        return new AsmWeaver(parser.parse(classes, graph), graph);
+        TotalInfo totalInfo = parser.parse(classes, graph);
+        return new AsmWeaver(totalInfo, graph);
     }
 
     private final TotalInfo totalInfo;

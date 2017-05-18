@@ -66,7 +66,7 @@ public class AsmMetaParser implements MetaParser {
         return classes.stream().map(s -> new AsmClassParser(loader).parse(s))
                 .map(c -> c.toLocators(graph))
                 .flatMap(Collection::stream)
-                .collect(TotalInfo::new, (t, l) -> l.appendTo(t), TotalInfo::combine);
+                .collect(() -> new TotalInfo(classes), (t, l) -> l.appendTo(t), TotalInfo::combine);
     }
 
     private class AsmClassParser {

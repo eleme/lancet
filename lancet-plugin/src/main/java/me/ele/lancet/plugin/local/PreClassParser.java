@@ -7,6 +7,7 @@ import me.ele.lancet.plugin.Util;
 import me.ele.lancet.plugin.local.content.JarContentProvider;
 import me.ele.lancet.plugin.local.content.ContextThreadPoolProcessor;
 import me.ele.lancet.plugin.local.content.QualifiedContentProvider;
+import me.ele.lancet.plugin.local.extend.BindingJarInput;
 import me.ele.lancet.plugin.local.preprocess.AsmClassProcessorImpl;
 import me.ele.lancet.plugin.local.preprocess.ParseFailureException;
 import me.ele.lancet.plugin.local.preprocess.PreClassProcessor;
@@ -41,20 +42,26 @@ public class PreClassParser {
         long duration = System.currentTimeMillis();
 
         contextProcessor = new ContextThreadPoolProcessor(context);
-        if (context.isIncremental() && cache.canBeIncremental(context) && tryPartialParse(context)) {
+        if (context.isIncremental()
+                && cache.canBeIncremental(context)
+                && tryPartialParse(context)) {
             onComplete(null, context);
             return true;
         }
 
-        partial = false;
-        cache.clear();
+        clear();
         context.clear();
 
         onComplete(fullyParse(context), context);
 
         duration = System.currentTimeMillis() - duration;
-        Log.tag("timer").i("pre parse cost: " + duration);
+        Log.tag("Timer").i("pre parse cost: " + duration);
         return false;
+    }
+
+    private void clear() throws IOException {
+        partial = false;
+        cache.clear();
     }
 
     private boolean tryPartialParse(TransformContext context) throws IOException, InterruptedException {
@@ -74,15 +81,6 @@ public class PreClassParser {
         context.setClasses(cache.classes());
     }
 
-    private void removeClasses(Collection<JarInput> removedJars) throws IOException {
-        QualifiedContentProvider contentProvider = new JarContentProvider();
-        SingleProcessor processor = new SingleProcessor();
-        for (JarInput jarInput : removedJars) {
-            contentProvider.forEach(jarInput, processor);
-        }
-    }
-
-
     private SingleProcessor fullyParse(TransformContext context) throws IOException, InterruptedException {
         SingleProcessor singleProcessor = new SingleProcessor();
 
@@ -98,7 +96,9 @@ public class PreClassParser {
 
         @Override
         public boolean onStart(QualifiedContent content) {
-            Log.tag(content.getName()).i(content.getFile().getAbsolutePath());
+            if (!(content instanceof BindingJarInput)) {
+                Log.tag(content.getName()).i(content.getFile().getAbsolutePath());
+            }
             return true;
         }
 

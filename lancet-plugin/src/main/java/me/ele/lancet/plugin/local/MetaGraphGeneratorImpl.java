@@ -21,25 +21,23 @@ public class MetaGraphGeneratorImpl implements MetaGraphGenerator {
     // thread safe
     public void add(ClassEntity entity) {
         Node current = getOrPutEmpty((entity.access & Opcodes.ACC_INTERFACE) != 0, entity.name);
+
         ClassNode superNode = null;
-        List<InterfaceNode> nodeList = Collections.emptyList();
+        List<InterfaceNode> interfaceNodes = Collections.emptyList();
         if (entity.superName != null) {
             superNode = (ClassNode) getOrPutEmpty(false, entity.superName);
-            if (entity.interfaces != null && entity.interfaces.size() > 0) {
-                nodeList = entity.interfaces.stream().map(i -> (InterfaceNode) getOrPutEmpty(true, i)).collect(Collectors.toList());
-            }
         }
+        if (entity.interfaces.size() > 0) {
+            interfaceNodes = entity.interfaces.stream().map(i -> (InterfaceNode) getOrPutEmpty(true, i)).collect(Collectors.toList());
+        }
+
         current.entity = entity;
         current.parent = superNode;
-        current.interfaces = nodeList;
+        current.interfaces = interfaceNodes;
     }
 
     public void remove(String className) {
-        Node node = nodeMap.get(className);
-        if (node != null) {
-            node.parent = null;
-            node.interfaces = Collections.emptyList();
-        }
+        nodeMap.remove(className);
     }
 
     private Node getOrPutEmpty(boolean isInterface, String className) {
@@ -50,7 +48,7 @@ public class MetaGraphGeneratorImpl implements MetaGraphGenerator {
 
 
     List<ClassEntity> toLocalNodes() {
-        return nodeMap.values().stream().filter(it -> it.parent != null).map(it -> it.entity).collect(Collectors.toList());
+        return nodeMap.values().stream().map(it -> it.entity).collect(Collectors.toList());
     }
 
     @Override

@@ -26,10 +26,10 @@ public class ClassTransform {
         classCollector.setOriginClassName(internalName);
 
         MethodChain chain = new MethodChain(internalName, classCollector.getOriginClassVisitor(), graph);
-        ClassContext context = new ClassContext(graph, chain);
+        ClassContext context = new ClassContext(graph, chain, classCollector.getOriginClassVisitor());
 
         ClassTransform transform = new ClassTransform(classCollector, context);
-        transform.connect(new ContextClassVisitor());
+        transform.connect(new ContextClassVisitor(totalInfo.excludes));
         transform.connect(new ProxyClassVisitor(totalInfo.callInfos));
         transform.connect(new InsertClassVisitor(totalInfo.executeInfos));
         transform.connect(new TryCatchInfoClassVisitor(totalInfo.tryCatchInfos));
