@@ -1,6 +1,7 @@
 package me.ele.lancet.weaver.internal.meta;
 
 import me.ele.lancet.weaver.internal.graph.Graph;
+import me.ele.lancet.weaver.internal.log.Log;
 import me.ele.lancet.weaver.internal.parser.AnnotationMeta;
 
 import java.util.ArrayList;

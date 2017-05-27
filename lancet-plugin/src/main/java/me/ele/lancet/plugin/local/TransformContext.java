@@ -5,6 +5,7 @@ import com.android.build.api.transform.Format;
 import com.android.build.api.transform.JarInput;
 import com.android.build.api.transform.QualifiedContent;
 import com.android.build.api.transform.TransformInvocation;
+import me.ele.lancet.weaver.internal.graph.Graph;
 import me.ele.lancet.weaver.internal.graph.Node;
 import me.ele.lancet.weaver.internal.log.Log;
 
@@ -27,7 +28,7 @@ public class TransformContext {
 
     private GlobalContext global;
     private List<String> classes;
-    private Map<String, Node> nodesMap;
+    private Graph graph;
 
     public TransformContext(TransformInvocation invocation, GlobalContext global) {
         this.global = global;
@@ -109,12 +110,12 @@ public class TransformContext {
         return classes;
     }
 
-    public void setNodesMap(Map<String, Node> nodesMap) {
-        this.nodesMap = nodesMap;
+    public Graph getGraph() {
+        return graph;
     }
 
-    public Map<String, Node> getNodesMap() {
-        return nodesMap;
+    public void setGraph(Graph graph) {
+        this.graph = graph;
     }
 
     @Override

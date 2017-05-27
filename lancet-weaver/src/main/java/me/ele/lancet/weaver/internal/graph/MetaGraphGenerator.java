@@ -7,5 +7,5 @@ import java.util.Map;
  */
 public interface MetaGraphGenerator {
 
-    Map<String, Node> generate();
+    Graph generate();
 }

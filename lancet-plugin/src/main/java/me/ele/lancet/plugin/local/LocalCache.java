@@ -1,14 +1,15 @@
 package me.ele.lancet.plugin.local;
 
+import com.android.build.api.transform.Status;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import me.ele.lancet.weaver.internal.graph.ClassEntity;
+import me.ele.lancet.weaver.internal.graph.CheckFlow;
 import org.apache.commons.io.Charsets;
 
 import java.io.*;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -18,19 +19,19 @@ import java.util.stream.Stream;
 public class LocalCache {
 
     private File localCache;
-    private Metas metas;
+    private final Metas metas;
     private Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     public LocalCache(File dir) {
         localCache = new File(dir, "buildCache.json");
-        loadCache();
+        metas = loadCache();
     }
 
-    private void loadCache() {
+    private Metas loadCache() {
         if (localCache.exists() && localCache.isFile()) {
             try {
                 Reader reader = Files.newReader(localCache, Charsets.UTF_8);
-                metas = gson.fromJson(reader, Metas.class);
+                return gson.fromJson(reader, Metas.class).withoutNull();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (JsonParseException e) {
@@ -38,9 +39,8 @@ public class LocalCache {
                     throw new RuntimeException("cache file has been modified, but can't delete.", e);
                 }
             }
-        } else {
-            metas = new Metas();
         }
+        return new Metas();
     }
 
 
@@ -50,6 +50,10 @@ public class LocalCache {
 
     public List<String> classesInDirs() {
         return metas.classesInDirs;
+    }
+
+    public CheckFlow hookFlow() {
+        return metas.flow;
     }
 
     public boolean canBeIncremental(TransformContext context) throws IOException {
@@ -63,14 +67,14 @@ public class LocalCache {
     }
 
     public void accept(MetaGraphGeneratorImpl graph) {
-        metas.classMetas.forEach(graph::add);
+        metas.classMetas.forEach(m -> graph.add(m, Status.NOTCHANGED));
     }
 
-    public void save() {
+    public void saveToLocal() {
         try {
             Files.createParentDirs(localCache);
             Writer writer = Files.newWriter(localCache, Charsets.UTF_8);
-            gson.toJson(metas, Metas.class, writer);
+            gson.toJson(metas.withoutNull(), Metas.class, writer);
             writer.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -81,21 +85,11 @@ public class LocalCache {
         if (localCache.exists() && localCache.isFile() && !localCache.delete()) {
             throw new IOException("can't delete cache file");
         }
-        metas = new Metas();
     }
 
     public void savePartially(List<ClassEntity> classMetas) {
         metas.classMetas = classMetas;
-        if (metas.classes == null) {
-            metas.classes = Collections.emptyList();
-        }
-        if (metas.classesInDirs == null) {
-            metas.classesInDirs = Collections.emptyList();
-        }
-        if (metas.jarsWithHookClasses == null) {
-            metas.jarsWithHookClasses = Collections.emptyList();
-        }
-        save();
+        saveToLocal();
     }
 
     public void saveFully(List<ClassEntity> classMetas, List<String> classes, List<String> classesInDirs, List<String> jarWithHookClasses) {
@@ -103,6 +97,6 @@ public class LocalCache {
         metas.classes = classes;
         metas.classesInDirs = classesInDirs;
         metas.jarsWithHookClasses = jarWithHookClasses;
-        save();
+        saveToLocal();
     }
 }

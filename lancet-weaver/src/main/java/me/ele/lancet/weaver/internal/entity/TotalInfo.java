@@ -59,21 +59,30 @@ public class TotalInfo {
     public String toString() {
         StringBuilder content = new StringBuilder();
         if (executeInfos != null) {
+            content.append("\nInsert:\n");
             for (Map.Entry<String, List<ExecuteInfo>> executeList : executeInfos.entrySet()) {
-                content.append(executeList.getKey()).append(":\n");
+                content.append(' ').append(executeList.getKey()).append(":\n");
                 executeList.getValue().forEach(e -> {
-                    content.append(e).append("\n");
+                    content.append("  ").append(e).append("\n");
                 });
             }
         }
         if (callInfos != null) {
+            content.append("Proxy:\n");
             for (CallInfo callInfo : callInfos) {
-                content.append(callInfo).append("\n");
+                content.append(' ').append(callInfo).append("\n");
             }
         }
         if (tryCatchInfos != null) {
+            content.append("TryCatch:\n");
             for (TryCatchInfo tryCatchInfo : tryCatchInfos) {
-                content.append(tryCatchInfo).append("\n");
+                content.append(' ').append(tryCatchInfo).append("\n");
+            }
+        }
+        if (excludes != null) {
+            content.append("Excludes:\n");
+            for (String exclude : excludes) {
+                content.append(' ').append(exclude).append("\n");
             }
         }
         return content.toString();

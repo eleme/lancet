@@ -1,12 +1,16 @@
 package me.ele.lancet.weaver.internal.meta;
 
 import com.google.common.collect.Sets;
+import me.ele.lancet.base.Scope;
 import me.ele.lancet.weaver.internal.entity.CallInfo;
 import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
 import me.ele.lancet.weaver.internal.entity.TotalInfo;
 import me.ele.lancet.weaver.internal.entity.TryCatchInfo;
 import me.ele.lancet.weaver.internal.exception.IllegalAnnotationException;
+import me.ele.lancet.weaver.internal.graph.ClassNode;
 import me.ele.lancet.weaver.internal.graph.Graph;
+import me.ele.lancet.weaver.internal.graph.InterfaceNode;
+import me.ele.lancet.weaver.internal.graph.Node;
 import me.ele.lancet.weaver.internal.log.Log;
 import me.ele.lancet.weaver.internal.parser.AopMethodAdjuster;
 import me.ele.lancet.weaver.internal.util.TypeUtil;
@@ -14,6 +18,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.util.Arrays;
 import java.util.Set;
 
 /**
@@ -43,14 +48,14 @@ public class HookInfoLocator {
     private MethodNode sourceNode;
     private String sourceClass;
 
-
+    private String flowClassName;
     private final Graph graph;
 
     public HookInfoLocator(Graph graph) {
         this.graph = graph;
     }
 
-    public Graph graphs() {
+    public Graph graph() {
         return graph;
     }
 
@@ -85,6 +90,10 @@ public class HookInfoLocator {
     public void setProxy(String targetMethod) {
         this.flag |= PROXY;
         this.targetMethod = targetMethod;
+        if (flowClassName != null) {
+            this.graph.flow()
+                    .exactlyMatch(flowClassName);
+        }
     }
 
     public void setTryCatch() {
@@ -107,48 +116,45 @@ public class HookInfoLocator {
 
     public void appendTo(TotalInfo totalInfo) {
         check();
-        if (classes.size() > 0) {
-            switch (flag) {
-                case INSERT:
-                    classes.stream()
-                            .map(c -> new ExecuteInfo(mayCreateSuper, c, targetMethod, targetDesc, sourceClass, sourceNode))
-                            .forEach(totalInfo::addExecute);
-                    break;
-                case PROXY:
-                    classes.stream()
-                            .map(c -> new CallInfo(nameRegex, c, targetMethod, targetDesc, sourceClass, sourceNode))
-                            .forEach(totalInfo::addCall);
-                    break;
-                case TRY_CATCH:
-                    classes.stream()
-                            .map(c -> new TryCatchInfo(nameRegex, sourceClass, sourceNode.name, targetDesc))
-                            .forEach(totalInfo::addTryCatch);
-                    break;
-            }
+        switch (flag) {
+            case INSERT:
+                classes.stream()
+                        .map(c -> new ExecuteInfo(mayCreateSuper, c, targetMethod, targetDesc, sourceClass, sourceNode))
+                        .forEach(totalInfo::addExecute);
+                break;
+            case PROXY:
+                classes.stream()
+                        .map(c -> new CallInfo(nameRegex, c, targetMethod, targetDesc, sourceClass, sourceNode))
+                        .forEach(totalInfo::addCall);
+                break;
+            case TRY_CATCH:
+                totalInfo.addTryCatch(new TryCatchInfo(nameRegex, sourceClass, sourceNode.name, targetDesc));
+                break;
         }
     }
 
     private void check() {
-        if (classes == null) {
-            throw new IllegalAnnotationException("no @targetClass or @ImplementedInterface on " + sourceClass + "." + sourceNode.name);
-        }
         if (flag <= 0) {
             throw new IllegalAnnotationException("no @Proxy, @Insert or @TryCatchHandler on " + sourceClass + "." + sourceNode.name);
         } else if (Integer.bitCount(flag) > 1) {
             throw new IllegalAnnotationException("@Proxy @Insert or @TryCatchHandler can only appear once");
         }
-        if (classes.size() <= 0) {
-            Log.w("can't find satisfied class with " + sourceClass + "." + sourceNode.name);
+        if (flag != TRY_CATCH) {
+            if (classes == null) {
+                throw new IllegalAnnotationException("no @targetClass or @ImplementedInterface on " + sourceClass + "." + sourceNode.name);
+            }
+            if (classes.size() <= 0) {
+                Log.w("can't find satisfied class with " + sourceClass + "." + sourceNode.name);
+            }
+        } else {
+            if (!targetDesc.equals("(Ljava/lang/Throwable;)Ljava/lang/Throwable;") ||
+                    (sourceNode.access & PUBLIC_STATIC) != PUBLIC_STATIC) {
+                throw new IllegalAnnotationException("method annotated with @TryCatchHandler should be like this: " +
+                        "public static Throwable method_name(Throwable)");
+            }
         }
-
         if (mayCreateSuper && TypeUtil.isStatic(sourceNode.access)) {
             throw new IllegalAnnotationException("can't use mayCreateSuper while method is static, " + sourceClass + "." + sourceNode.name);
-        }
-
-        if (flag == TRY_CATCH && (!targetDesc.equals("(Ljava/lang/Throwable;)Ljava/lang/Throwable;") ||
-                (sourceNode.access & PUBLIC_STATIC) != PUBLIC_STATIC)) {
-            throw new IllegalAnnotationException("method annotated with @TryCatchHandler should be like this: " +
-                    "public static Throwable method_name(Throwable)");
         }
     }
 
@@ -158,5 +164,35 @@ public class HookInfoLocator {
 
     public void transformNode() {
         new AopMethodAdjuster(flag == INSERT, sourceClass, sourceNode).adjust();
+    }
+
+    public void mayAddCheckFlow(String className, Scope scope) {
+        Node node = graph.get(className);
+        if (node instanceof ClassNode) {
+            if (scope == Scope.ALL || scope == Scope.LEAF) {
+                this.flowClassName = className;
+                graph.flow().add(graph, className, scope);
+            }
+        } else if (node instanceof InterfaceNode) {
+            if (scope != Scope.DIRECT) {
+                this.flowClassName = className;
+                graph.flow().add(graph, className, scope);
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "HookInfoLocator{" +
+                "flag=" + flag +
+                ", classes=" + classes +
+                ", targetDesc='" + targetDesc + '\'' +
+                ", targetMethod='" + targetMethod + '\'' +
+                ", mayCreateSuper=" + mayCreateSuper +
+                ", nameRegex='" + nameRegex + '\'' +
+                ", argsType=" + Arrays.toString(argsType) +
+                ", returnType=" + returnType +
+                ", sourceClass='" + sourceClass + '\'' +
+                '}';
     }
 }

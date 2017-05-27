@@ -1,6 +1,7 @@
 package me.ele.lancet.weaver.internal.graph;
 
 import me.ele.lancet.base.Scope;
+import me.ele.lancet.weaver.internal.log.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,9 +16,15 @@ public class Graph {
 
 
     private final Map<String, Node> nodeMap;
+    private final CheckFlow checkFlow;
 
-    public Graph(Map<String, Node> nodesMap) {
+    public Graph(Map<String, Node> nodesMap, CheckFlow checkFlow) {
         this.nodeMap = nodesMap;
+        this.checkFlow = checkFlow;
+    }
+
+    public CheckFlow flow() {
+        return checkFlow;
     }
 
     public void prepare() {
@@ -26,6 +33,8 @@ public class Graph {
                     if (n.parent != null) {
                         me.ele.lancet.weaver.internal.graph.ClassNode parent = n.parent;
                         if (parent.children == Collections.EMPTY_LIST) {
+
+                            // optimize for Object
                             if (parent.entity.name.equals("java/lang/Object")) {
                                 parent.children = new ArrayList<>(nodeMap.size() >> 1);
                             } else {
@@ -69,7 +78,11 @@ public class Graph {
     public NodeVisitor childrenOf(String className, Scope scope) {
         return visitor -> {
             Node node = nodeMap.get(className);
-            if (!(node instanceof ClassNode)) {
+            if (node == null) {
+                visitor.accept(Node.newPlaceHolder(className));
+                Log.w("Class named " + className + " with scope '" + scope + "' is not exists in apk.");
+                return;
+            } else if (!(node instanceof ClassNode)) {
                 throw new IllegalArgumentException(className + " is not a class");
             }
             visitClasses((ClassNode) node, scope, visitor);
@@ -104,7 +117,11 @@ public class Graph {
     public NodeVisitor implementsOf(String interfaceName, Scope scope) {
         return visitor -> {
             Node node = nodeMap.get(interfaceName);
-            if (!(node instanceof InterfaceNode)) {
+            if (node == null) {
+                visitor.accept(Node.newPlaceHolder(interfaceName));
+                Log.w("Interface named " + interfaceName + " with scope '" + scope + "' is not exists in apk.");
+                return;
+            } else if (!(node instanceof InterfaceNode)) {
                 throw new IllegalArgumentException(interfaceName + " is not a interface");
             }
             visitImplements((InterfaceNode) node, scope, visitor);
@@ -138,6 +155,10 @@ public class Graph {
 
     public Node get(String className) {
         return nodeMap.get(className);
+    }
+
+    public boolean checkFlow() {
+        return checkFlow.isIncremental(this);
     }
 
 

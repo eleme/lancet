@@ -1,5 +1,6 @@
 package me.ele.lancet.weaver.internal.parser.anno;
 
+import me.ele.lancet.weaver.internal.log.Log;
 import me.ele.lancet.weaver.internal.parser.AcceptableAnnoParser;
 import me.ele.lancet.weaver.internal.parser.AnnotationMeta;
 import org.objectweb.asm.tree.AnnotationNode;

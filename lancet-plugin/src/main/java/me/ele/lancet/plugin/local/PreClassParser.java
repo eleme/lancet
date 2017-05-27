@@ -34,7 +34,7 @@ public class PreClassParser {
 
     public PreClassParser(LocalCache cache) {
         this.cache = cache;
-        this.graph = new MetaGraphGeneratorImpl();
+        this.graph = new MetaGraphGeneratorImpl(cache.hookFlow());
     }
 
     public boolean execute(TransformContext context) throws IOException, InterruptedException {
@@ -77,7 +77,7 @@ public class PreClassParser {
             cache.saveFully(graph.toLocalNodes(), singleProcessor.classes, singleProcessor.classesInDirs, new ArrayList<>(singleProcessor.jarWithHookClasses));
         }
 
-        context.setNodesMap(graph.generate());
+        context.setGraph(graph.generate());
         context.setClasses(cache.classes());
     }
 
@@ -97,7 +97,7 @@ public class PreClassParser {
         @Override
         public boolean onStart(QualifiedContent content) {
             if (!(content instanceof BindingJarInput)) {
-                Log.tag(content.getName()).i(content.getFile().getAbsolutePath());
+                Log.tag("OnStart").i(content.getName() + " " + content.getFile().getAbsolutePath());
             }
             return true;
         }
@@ -105,7 +105,7 @@ public class PreClassParser {
         @Override
         public void onProcess(QualifiedContent content, Status status, String relativePath, byte[] bytes) {
             if (relativePath.endsWith(".class")) {
-                Log.tag(content.getName()).i(status + " " + relativePath);
+                //Log.tag(content.getName()).i(status + " " + relativePath);
                 PreClassProcessor.ProcessResult result = classProcessor.process(bytes);
                 if (partial && result.isHookClass) {
                     partial = false;
@@ -122,7 +122,7 @@ public class PreClassParser {
                     }
                 }
                 if (status != Status.REMOVED) {
-                    graph.add(result.entity);
+                    graph.add(result.entity, status);
                 } else {
                     graph.remove(result.entity.name);
                 }

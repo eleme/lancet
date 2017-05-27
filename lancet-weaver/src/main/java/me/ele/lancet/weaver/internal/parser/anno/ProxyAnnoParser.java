@@ -26,7 +26,7 @@ public class ProxyAnnoParser implements AnnoParser {
                     case "value":
                         targetMethod = (String) values.get(i + 1);
                         if (Strings.isNullOrEmpty(targetMethod)) {
-                            throw new IllegalAnnotationException("@ProxyAnnoParser value can't be empty or null");
+                            throw new IllegalAnnotationException("@Proxy value can't be empty or null");
                         }
 
                         break;
@@ -37,7 +37,7 @@ public class ProxyAnnoParser implements AnnoParser {
             return new ProxyAnnoMeta(annotationNode.desc, targetMethod);
         }
 
-        throw new IllegalAnnotationException("@ProxyAnnoParser is illegal, must specify value field");
+        throw new IllegalAnnotationException("@Proxy is illegal, must specify value field");
     }
 
     public static class ProxyAnnoMeta extends AnnotationMeta {

@@ -80,7 +80,7 @@ public class ClassOfAnnoParser implements AnnoParser {
 
         @Override
         public void accept(HookInfoLocator locator) {
-            Graph graph = locator.graphs();
+            Graph graph = locator.graph();
             Type origin = locator.getArgsType()[index];
             if (origin.getSort() != Type.OBJECT && origin.getSort() != Type.ARRAY) {
                 throw new IllegalArgumentException("@ClassOf 's origin type should be parent in value");

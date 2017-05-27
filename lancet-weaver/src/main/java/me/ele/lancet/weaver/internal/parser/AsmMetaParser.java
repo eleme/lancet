@@ -1,7 +1,15 @@
 package me.ele.lancet.weaver.internal.parser;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
+import me.ele.lancet.weaver.internal.util.AsmUtil;
+import me.ele.lancet.weaver.internal.util.TraceUtil;
 import me.ele.lancet.weaver.internal.util.TypeUtil;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -9,8 +17,13 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InnerClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,7 +75,6 @@ public class AsmMetaParser implements MetaParser {
     public TotalInfo parse(List<String> classes, Graph graph) {
         Log.i("aop classes: \n" + classes.stream().collect(Collectors.joining("\n")));
 
-        graph.prepare();
         return classes.stream().map(s -> new AsmClassParser(loader).parse(s))
                 .map(c -> c.toLocators(graph))
                 .flatMap(Collection::stream)
@@ -94,14 +106,9 @@ public class AsmMetaParser implements MetaParser {
             ClassMetaInfo meta = new ClassMetaInfo(className);
             meta.annotationMetas = nodesToMetas(cn.visibleAnnotations);
             meta.methods = ((List<MethodNode>) cn.methods).stream()
-                    .filter(m -> !m.desc.equals("<clinit>") && !m.desc.equals("<init>") && !TypeUtil.isAbstract(m.access))
+                    .filter(m -> !m.name.equals("<clinit>") && !m.name.equals("<init>") && !TypeUtil.isAbstract(m.access))
                     .map(mn -> {
                         List<AnnotationMeta> methodMetas = nodesToMetas(mn.visibleAnnotations);
-                        if (methodMetas.stream().noneMatch(m -> m instanceof InsertAnnoParser.InsertAnnoMeta
-                                || m instanceof ProxyAnnoParser.ProxyAnnoMeta
-                                || m instanceof TryCatchAnnoParser.TryCatchAnnoMeta)) {
-                            return null;
-                        }
 
                         MethodMetaInfo mm = new MethodMetaInfo(mn);
                         mm.metaList = methodMetas;
@@ -110,7 +117,7 @@ public class AsmMetaParser implements MetaParser {
                             int size = Arrays.stream(mn.visibleParameterAnnotations)
                                     .filter(Objects::nonNull)
                                     .mapToInt(List::size)
-                                    .sum();
+                                    .sum() + methodMetas.size();
                             List<AnnotationMeta> paramAnnoMetas = new ArrayList<>(size);
                             for (int i = 0; i < mn.visibleParameterAnnotations.length; i++) {
                                 List<AnnotationNode> list = (List<AnnotationNode>) mn.visibleParameterAnnotations[i];
@@ -146,15 +153,27 @@ public class AsmMetaParser implements MetaParser {
         }
 
         private ClassNode loadClassNode(String className) {
-            InputStream is = cl.getResourceAsStream(className + ".class");
             try {
-                ClassReader cr = new ClassReader(is);
+                URL url = cl.getResource(className + ".class");
+                if (url == null) {
+                    throw new IOException("url == null");
+                }
+                URLConnection urlConnection = url.openConnection();
+
+                // gradle daemon bug:
+                // Different builds in one process because of daemon which makes the jar connection will read the content from cache if they points to the same jar file.
+                // But the file may be changed.
+
+                urlConnection.setUseCaches(false);
+                ClassReader cr = new ClassReader(urlConnection.getInputStream());
+                urlConnection.getInputStream().close();
                 ClassNode cn = new ClassNode();
                 cr.accept(cn, ClassReader.SKIP_DEBUG);
                 checkNode(cn);
                 return cn;
             } catch (IOException e) {
-                throw new LoadClassException();
+                URLClassLoader cl = (URLClassLoader) this.cl;
+                throw new LoadClassException("load class failure: " + className + " by\n" + Joiner.on('\n').join(cl.getURLs()), e);
             }
         }
 

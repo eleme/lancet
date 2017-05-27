@@ -1,11 +1,12 @@
 package me.ele.lancet.plugin.local;
 
+import com.android.build.api.transform.Status;
 import me.ele.lancet.weaver.internal.graph.*;
+import org.gradle.internal.impldep.aQute.bnd.build.Run;
 import org.objectweb.asm.Opcodes;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -13,13 +14,16 @@ import java.util.stream.Collectors;
  */
 public class MetaGraphGeneratorImpl implements MetaGraphGenerator {
 
+    private final CheckFlow checkFlow;
     private Map<String, Node> nodeMap = new ConcurrentHashMap<>(512);
+    private Graph graph;
 
-    public MetaGraphGeneratorImpl() {
+    public MetaGraphGeneratorImpl(CheckFlow checkFlow) {
+        this.checkFlow = checkFlow;
     }
 
     // thread safe
-    public void add(ClassEntity entity) {
+    public void add(ClassEntity entity, Status status) {
         Node current = getOrPutEmpty((entity.access & Opcodes.ACC_INTERFACE) != 0, entity.name);
 
         ClassNode superNode = null;
@@ -33,6 +37,7 @@ public class MetaGraphGeneratorImpl implements MetaGraphGenerator {
 
         current.entity = entity;
         current.parent = superNode;
+        current.status = status;
         current.interfaces = interfaceNodes;
     }
 
@@ -48,11 +53,15 @@ public class MetaGraphGeneratorImpl implements MetaGraphGenerator {
 
 
     List<ClassEntity> toLocalNodes() {
-        return nodeMap.values().stream().map(it -> it.entity).collect(Collectors.toList());
+        return nodeMap.values().stream().filter(it -> it.parent != null).map(it -> it.entity).collect(Collectors.toList());
     }
 
     @Override
-    public Map<String, Node> generate() {
-        return nodeMap;
+    public Graph generate() {
+        if (graph == null) {
+            graph = new Graph(nodeMap, checkFlow);
+            graph.prepare();
+        }
+        return graph;
     }
 }

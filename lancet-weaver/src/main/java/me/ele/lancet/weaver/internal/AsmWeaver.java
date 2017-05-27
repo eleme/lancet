@@ -19,10 +19,7 @@ import me.ele.lancet.weaver.internal.parser.AsmMetaParser;
  */
 public class AsmWeaver implements Weaver {
 
-    public static Weaver newInstance(ClassLoader cl, Map<String, Node> nodesMap, List<String> classes) {
-        MetaParser parser = new AsmMetaParser(cl);
-        Graph graph = new Graph(nodesMap);
-        TotalInfo totalInfo = parser.parse(classes, graph);
+    public static Weaver newInstance(TotalInfo totalInfo, Graph graph) {
         return new AsmWeaver(totalInfo, graph);
     }
 

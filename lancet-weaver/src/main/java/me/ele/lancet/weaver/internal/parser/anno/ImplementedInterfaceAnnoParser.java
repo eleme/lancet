@@ -24,7 +24,7 @@ public class ImplementedInterfaceAnnoParser implements AnnoParser {
     @Override
     public AnnotationMeta parseAnno(AnnotationNode annotationNode) {
         RefHolder<String[]> interfaces = new RefHolder<>(null);
-        RefHolder<Scope> scope = new RefHolder<>(Scope.DIRECT);
+        RefHolder<Scope> scope = new RefHolder<>(Scope.SELF);
 
         List<Object> values;
         if ((values = annotationNode.values) != null) {
@@ -69,10 +69,13 @@ public class ImplementedInterfaceAnnoParser implements AnnoParser {
     }
 
     private void computeInterface(HookInfoLocator locator, String[] interfaces, Scope scope) {
+
+
         Arrays.stream(interfaces)
                 .forEach(it -> {
+                    locator.mayAddCheckFlow(it, scope);
                     Set<String> classes = new HashSet<>();
-                    locator.graphs()
+                    locator.graph()
                             .implementsOf(it, scope)
                             .forEach(node -> {
                                 classes.add(node.entity.name);

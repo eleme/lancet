@@ -1,5 +1,6 @@
 package me.ele.lancet.weaver.internal.util;
 
+import me.ele.lancet.weaver.internal.log.Log;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -28,7 +29,7 @@ public class TraceUtil {
                 PrintWriter pw = new PrintWriter(sw);
                 ClassVisitor cv = new TraceClassVisitor(null, new ASMifier(), pw);
                 accept(cv);
-                System.out.println(sw);
+                Log.e(sw.toString());
                 if (next != null) {
                     accept(next);
                 }

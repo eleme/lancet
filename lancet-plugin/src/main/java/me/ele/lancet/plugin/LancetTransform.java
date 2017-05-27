@@ -3,23 +3,23 @@ package me.ele.lancet.plugin;
 import com.android.build.api.transform.*;
 import com.android.build.gradle.AppExtension;
 import com.android.build.gradle.internal.pipeline.TransformManager;
-import com.android.utils.FileUtils;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
 import me.ele.lancet.plugin.local.*;
 import me.ele.lancet.plugin.local.content.ContextThreadPoolProcessor;
-import me.ele.lancet.plugin.local.content.QualifiedContentProvider;
+import me.ele.lancet.weaver.MetaParser;
 import me.ele.lancet.weaver.Weaver;
 import me.ele.lancet.weaver.internal.AsmWeaver;
+import me.ele.lancet.weaver.internal.entity.TotalInfo;
 import me.ele.lancet.weaver.internal.log.Impl.FileLoggerImpl;
 import me.ele.lancet.weaver.internal.log.Log;
+import me.ele.lancet.weaver.internal.parser.AsmMetaParser;
 import org.gradle.api.Project;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
@@ -84,19 +84,42 @@ class LancetTransform extends Transform {
     @Override
     public void transform(TransformInvocation transformInvocation) throws TransformException, InterruptedException, IOException {
         initLog();
+
+        Log.i("start time: " + System.currentTimeMillis());
+
         TransformContext context = new TransformContext(transformInvocation, global);
-        Log.i("android plugin increamental: " + context.isIncremental());
+
+        Log.i("after android plugin, incremental: " + context.isIncremental());
+        Log.i("now: " + System.currentTimeMillis());
+
         PreClassParser preClassParser = new PreClassParser(cache);
         boolean incremental = preClassParser.execute(context);
-        Log.i("incremental build: " + incremental);
+        Log.i("after pre parse, incremental: " + incremental);
+        Log.i("now: " + System.currentTimeMillis());
 
+        MetaParser parser = createParser(context);
+        if (incremental && !context.getGraph().checkFlow()) {
+            incremental = false;
+            context.clear();
+        }
+        Log.i("after check flow, incremental: " + incremental);
+        Log.i("now: " + System.currentTimeMillis());
+
+        context.getGraph().flow().clear();
+        TotalInfo totalInfo = parser.parse(context.getClasses(), context.getGraph());
+
+        Weaver weaver = AsmWeaver.newInstance(totalInfo, context.getGraph());
         new ContextThreadPoolProcessor(context)
-                .process(incremental, new TransformProcessor(context, initWeaver(context)));
-
+                .process(incremental, new TransformProcessor(context, weaver));
         Log.i("build successfully done");
+        Log.i("now: " + System.currentTimeMillis());
+
+        cache.saveToLocal();
+        Log.i("cache saved");
+        Log.i("now: " + System.currentTimeMillis());
     }
 
-    private Weaver initWeaver(TransformContext context) {
+    private AsmMetaParser createParser(TransformContext context) {
         URL[] urls = Stream.concat(context.getAllJars().stream(), context.getAllDirs().stream()).map(QualifiedContent::getFile)
                 .map(File::toURI)
                 .map(u -> {
@@ -107,8 +130,9 @@ class LancetTransform extends Transform {
                     }
                 })
                 .toArray(URL[]::new);
-        ClassLoader cl = URLClassLoader.newInstance(urls);
-        return AsmWeaver.newInstance(cl, context.getNodesMap(), context.getClasses());
+        Log.d("urls:\n" + Joiner.on("\n ").join(urls));
+        ClassLoader cl = URLClassLoader.newInstance(urls, null);
+        return new AsmMetaParser(cl);
     }
 
     private void initLog() throws IOException {

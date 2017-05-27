@@ -1,5 +1,6 @@
 package me.ele.lancet.weaver.internal.parser.anno;
 
+import me.ele.lancet.weaver.internal.log.Log;
 import me.ele.lancet.weaver.internal.meta.HookInfoLocator;
 import me.ele.lancet.weaver.internal.parser.AcceptableAnnoParser;
 import me.ele.lancet.weaver.internal.parser.AnnotationMeta;
@@ -22,6 +23,7 @@ public class AcceptAny implements AcceptableAnnoParser {
 
     @Override
     public AnnotationMeta parseAnno(AnnotationNode annotationNode) {
+        Log.w("Annotation " + annotationNode.desc + " is lost.");
         return new AnnotationMeta(annotationNode.desc) {
 
             @Override
