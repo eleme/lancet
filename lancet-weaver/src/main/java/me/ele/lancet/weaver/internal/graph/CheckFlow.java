@@ -65,8 +65,6 @@ public class CheckFlow {
 
         // TODO: This grain is too coarse. Now, we just judge the extend and implements flow, check if some classes lost.
         public boolean checkExactly(Node n) {
-            Log.d("exact: false");
-            Log.d("name:" + n.entity.name);
             if (n.checkPass[0]) {
                 return true;
             }
@@ -86,8 +84,6 @@ public class CheckFlow {
         }
 
         public boolean checkNormally(Node n, Graph graph) {
-            Log.d("exact: true");
-            Log.d("name:" + n.entity.name);
             if (n.checkPass[1]) {
                 return true;
             }
