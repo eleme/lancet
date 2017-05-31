@@ -1,21 +1,18 @@
-package me.ele.lancet.plugin.local.content;
+package me.ele.lancet.plugin.internal.content;
 
-import com.android.annotations.NonNull;
-import com.android.build.api.transform.DirectoryInput;
 import com.android.build.api.transform.JarInput;
 import com.android.build.api.transform.QualifiedContent;
 import com.android.build.api.transform.Status;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Hashing;
-import me.ele.lancet.plugin.local.TransformContext;
-import me.ele.lancet.plugin.local.extend.BindingJarInput;
-import me.ele.lancet.plugin.local.preprocess.ParseFailureException;
+import me.ele.lancet.plugin.internal.TransformContext;
+import me.ele.lancet.plugin.internal.extend.BindingJarInput;
+import me.ele.lancet.plugin.internal.preprocess.ParseFailureException;
 import me.ele.lancet.weaver.internal.log.Log;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;

@@ -1,10 +1,7 @@
-package me.ele.lancet.plugin.local.preprocess;
+package me.ele.lancet.plugin.internal.preprocess;
 
 
 import me.ele.lancet.weaver.internal.graph.ClassEntity;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by gengwanpeng on 17/4/27.

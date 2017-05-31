@@ -1,4 +1,4 @@
-package me.ele.lancet.plugin.local;
+package me.ele.lancet.plugin.internal;
 
 import com.android.build.api.transform.Status;
 import com.google.common.io.Files;

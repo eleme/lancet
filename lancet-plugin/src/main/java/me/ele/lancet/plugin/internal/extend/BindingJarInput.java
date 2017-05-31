@@ -1,7 +1,6 @@
-package me.ele.lancet.plugin.local.extend;
+package me.ele.lancet.plugin.internal.extend;
 
 import com.android.build.api.transform.JarInput;
-import com.android.build.api.transform.QualifiedContent;
 import com.android.build.api.transform.Status;
 
 import java.io.File;

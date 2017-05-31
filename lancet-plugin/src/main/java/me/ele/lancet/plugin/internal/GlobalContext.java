@@ -1,4 +1,4 @@
-package me.ele.lancet.plugin.local;
+package me.ele.lancet.plugin.internal;
 
 import org.gradle.api.Project;
 

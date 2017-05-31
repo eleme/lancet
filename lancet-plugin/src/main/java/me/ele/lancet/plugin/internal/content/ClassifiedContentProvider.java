@@ -1,6 +1,5 @@
-package me.ele.lancet.plugin.local.content;
+package me.ele.lancet.plugin.internal.content;
 
-import com.android.build.api.transform.JarInput;
 import com.android.build.api.transform.QualifiedContent;
 
 import java.io.IOException;

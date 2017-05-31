@@ -1,7 +1,5 @@
-package me.ele.lancet.plugin.local.preprocess;
+package me.ele.lancet.plugin.internal.preprocess;
 
-import me.ele.lancet.plugin.local.preprocess.PreClassProcessor;
-import me.ele.lancet.plugin.local.preprocess.PreProcessClassVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 

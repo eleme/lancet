@@ -1,4 +1,4 @@
-package me.ele.lancet.plugin.local;
+package me.ele.lancet.plugin.internal;
 
 import com.android.build.api.transform.JarInput;
 import com.android.build.api.transform.QualifiedContent;
@@ -6,7 +6,7 @@ import com.android.build.api.transform.Status;
 import com.android.utils.FileUtils;
 import com.google.common.io.Files;
 import me.ele.lancet.plugin.Util;
-import me.ele.lancet.plugin.local.content.QualifiedContentProvider;
+import me.ele.lancet.plugin.internal.content.QualifiedContentProvider;
 import me.ele.lancet.weaver.ClassData;
 import me.ele.lancet.weaver.Weaver;
 

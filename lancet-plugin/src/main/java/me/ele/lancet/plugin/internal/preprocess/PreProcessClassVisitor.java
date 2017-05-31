@@ -1,4 +1,4 @@
-package me.ele.lancet.plugin.local.preprocess;
+package me.ele.lancet.plugin.internal.preprocess;
 
 import me.ele.lancet.base.annotations.*;
 import me.ele.lancet.weaver.internal.graph.ClassEntity;

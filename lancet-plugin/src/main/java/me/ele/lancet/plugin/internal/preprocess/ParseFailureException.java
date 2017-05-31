@@ -1,6 +1,4 @@
-package me.ele.lancet.plugin.local.preprocess;
-
-import me.ele.lancet.weaver.internal.log.Log;
+package me.ele.lancet.plugin.internal.preprocess;
 
 /**
  * Created by gengwanpeng on 17/5/4.

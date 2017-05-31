@@ -1,4 +1,4 @@
-package me.ele.lancet.plugin.local.content;
+package me.ele.lancet.plugin.internal.content;
 
 import com.android.build.api.transform.DirectoryInput;
 import com.android.build.api.transform.QualifiedContent;

@@ -1,9 +1,9 @@
-package me.ele.lancet.plugin.local.content;
+package me.ele.lancet.plugin.internal.content;
 
 import com.android.build.api.transform.JarInput;
 import com.android.build.api.transform.QualifiedContent;
 import com.google.common.io.ByteStreams;
-import me.ele.lancet.plugin.local.extend.BindingJarInput;
+import me.ele.lancet.plugin.internal.extend.BindingJarInput;
 import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedInputStream;

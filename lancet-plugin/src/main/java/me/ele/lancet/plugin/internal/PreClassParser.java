@@ -1,19 +1,17 @@
-package me.ele.lancet.plugin.local;
+package me.ele.lancet.plugin.internal;
 
 import com.android.build.api.transform.JarInput;
 import com.android.build.api.transform.QualifiedContent;
 import com.android.build.api.transform.Status;
 import me.ele.lancet.plugin.Util;
-import me.ele.lancet.plugin.local.content.JarContentProvider;
-import me.ele.lancet.plugin.local.content.ContextThreadPoolProcessor;
-import me.ele.lancet.plugin.local.content.QualifiedContentProvider;
-import me.ele.lancet.plugin.local.extend.BindingJarInput;
-import me.ele.lancet.plugin.local.preprocess.AsmClassProcessorImpl;
-import me.ele.lancet.plugin.local.preprocess.ParseFailureException;
-import me.ele.lancet.plugin.local.preprocess.PreClassProcessor;
+import me.ele.lancet.plugin.internal.content.ContextThreadPoolProcessor;
+import me.ele.lancet.plugin.internal.content.QualifiedContentProvider;
+import me.ele.lancet.plugin.internal.extend.BindingJarInput;
+import me.ele.lancet.plugin.internal.preprocess.AsmClassProcessorImpl;
+import me.ele.lancet.plugin.internal.preprocess.ParseFailureException;
+import me.ele.lancet.plugin.internal.preprocess.PreClassProcessor;
 import me.ele.lancet.weaver.internal.log.Log;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 

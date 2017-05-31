@@ -1,4 +1,4 @@
-package me.ele.lancet.plugin.local;
+package me.ele.lancet.plugin.internal;
 
 import com.android.build.api.transform.DirectoryInput;
 import com.android.build.api.transform.Format;
@@ -6,7 +6,6 @@ import com.android.build.api.transform.JarInput;
 import com.android.build.api.transform.QualifiedContent;
 import com.android.build.api.transform.TransformInvocation;
 import me.ele.lancet.weaver.internal.graph.Graph;
-import me.ele.lancet.weaver.internal.graph.Node;
 import me.ele.lancet.weaver.internal.log.Log;
 
 import java.io.File;
