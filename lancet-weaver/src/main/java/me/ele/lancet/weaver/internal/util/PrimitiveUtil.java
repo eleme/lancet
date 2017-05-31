@@ -1,6 +1,7 @@
 package me.ele.lancet.weaver.internal.util;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,7 +10,9 @@ import java.util.Set;
  */
 public class PrimitiveUtil {
     private static Map<String, String> boxMap;
+    private static Map<String, String> unboxMap;
     private static Map<String, String> methodMap;
+    private static Set<String> numberTypes;
 
     static {
         boxMap = new HashMap<>(8);
@@ -22,6 +25,16 @@ public class PrimitiveUtil {
         boxMap.put("J", "java/lang/Long");
         boxMap.put("D", "java/lang/Double");
 
+        unboxMap = new HashMap<>(8);
+        unboxMap.put("java/lang/Boolean", "Z");
+        unboxMap.put("java/lang/Character", "C");
+        unboxMap.put("java/lang/Byte", "B");
+        unboxMap.put("java/lang/Short", "S");
+        unboxMap.put("java/lang/Integer", "I");
+        unboxMap.put("java/lang/Float", "F");
+        unboxMap.put("java/lang/Long", "J");
+        unboxMap.put("java/lang/Double", "D");
+
         methodMap = new HashMap<>(8);
         methodMap.put("java/lang/Boolean", "booleanValue");
         methodMap.put("java/lang/Character", "charValue");
@@ -31,6 +44,14 @@ public class PrimitiveUtil {
         methodMap.put("java/lang/Float", "floatValue");
         methodMap.put("java/lang/Long", "longValue");
         methodMap.put("java/lang/Double", "doubleValue");
+
+        numberTypes = new HashSet<>();
+        numberTypes.add("java/lang/Byte");
+        numberTypes.add("java/lang/Short");
+        numberTypes.add("java/lang/Integer");
+        numberTypes.add("java/lang/Float");
+        numberTypes.add("java/lang/Long");
+        numberTypes.add("java/lang/Double");
     }
 
 
@@ -40,6 +61,14 @@ public class PrimitiveUtil {
             throw new IllegalArgumentException("The primitive type '" + primitive + "' is illegal.");
         }
         return clazz;
+    }
+
+    public static String unbox(String type) {
+        String ret = unboxMap.get(type);
+        if (ret == null) {
+            throw new IllegalArgumentException("The unbox type '" + type + "' is illegal.");
+        }
+        return ret;
     }
 
     public static String unboxMethod(String clazz) {
@@ -55,8 +84,20 @@ public class PrimitiveUtil {
     }
 
 
-
-    public static Set<String> boxedTypes(){
+    public static Set<String> boxedTypes() {
         return methodMap.keySet();
     }
+
+    public static String virtualType(String owner) {
+        if (numberTypes.contains(owner)) {
+            return "java/lang/Number";
+        }
+        return owner;
+    }
+
+    public static Set<String> boxedNumberTypes() {
+        return numberTypes;
+    }
+
+
 }

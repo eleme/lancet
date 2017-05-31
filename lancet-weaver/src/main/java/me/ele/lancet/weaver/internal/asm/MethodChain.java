@@ -2,6 +2,7 @@ package me.ele.lancet.weaver.internal.asm;
 
 import com.google.common.base.Preconditions;
 import me.ele.lancet.base.annotations.ClassOf;
+import me.ele.lancet.weaver.internal.asm.classvisitor.methodvisitor.AutoUnboxMethodVisitor;
 import me.ele.lancet.weaver.internal.graph.ClassEntity;
 import me.ele.lancet.weaver.internal.graph.FieldEntity;
 import me.ele.lancet.weaver.internal.graph.Graph;
@@ -86,7 +87,7 @@ public class MethodChain {
         head.createIfNeed(base, bitset, exs);
 
         MethodVisitor mv = cv.visitMethod(access, name, desc, null, exs);
-        node.accept(new MethodVisitor(Opcodes.ASM5, mv) {
+        node.accept(new MethodVisitor(Opcodes.ASM5, new AutoUnboxMethodVisitor(mv)) {
 
             @Override
             public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
@@ -233,7 +234,7 @@ public class MethodChain {
                     mv.visitInsn(SWAP);
                     if (PrimitiveUtil.isPrimitive(fn.desc)) {
                         String owner = PrimitiveUtil.box(fn.desc);
-                        mv.visitMethodInsn(INVOKEVIRTUAL, owner,
+                        mv.visitMethodInsn(INVOKEVIRTUAL, PrimitiveUtil.virtualType(owner),
                                 PrimitiveUtil.unboxMethod(owner), "()" + fn.desc, false);
                     }
                     invoke(mv);
@@ -244,6 +245,7 @@ public class MethodChain {
                         String owner = PrimitiveUtil.box(fn.desc);
                         mv.visitMethodInsn(INVOKESTATIC, owner,
                                 "valueOf", "(" + fn.desc + ")L" + owner + ";", false);
+                        ((AutoUnboxMethodVisitor) mv).markBoxed();
                     }
                 }
             }
