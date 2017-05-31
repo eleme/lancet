@@ -27,7 +27,7 @@ buildscript {
             if (ele) {
                 url "http://maven.dev.elenet.me/nexus/content/groups/public"
             } else {
-                url "https://dl.bintray.com/dieyidezui/maven"
+                url "https://dl.bintray.com/eleme-mt-arch/maven"
             }
         }
     }
