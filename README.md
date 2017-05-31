@@ -17,7 +17,7 @@ Firstly, add following code in root **build.gradle** of your project.
 
 ```groovy
 dependencies{
-    classpath 'me.ele:lancet-plugin:x.y.z'
+    classpath 'me.ele:lancet-plugin:1.0.0-beta1'
 }
 ```
 And then, add following code in your **application module's build.gradle**
@@ -26,10 +26,10 @@ And then, add following code in your **application module's build.gradle**
 apply plugin: 'me.ele.lancet'
 
 dependencies {
-    provided 'me.ele:lancet-base:x.y.z'
+    provided 'me.ele:lancet-base:1.0.0-beta1'
 }
 ```
-**x.y.z** is the version of lancet.
+
 That's OK.Now you can follow our tutorial to learn how to use it.
 
 ### Tutorial
