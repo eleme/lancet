@@ -181,7 +181,7 @@ protected void onStop(){
 ```
 
 The goal method of the hook method is 
-every leaf child of AppcompatActivity ```void onCreate(Bundle)```.
+every leaf child of AppcompatActivity ```void onStop()```.
 
 If a class ```MyActivity extends AppcompatActivity```do not override the onCreate method, we will create a method for ```MyActivity``` like this:
 
