@@ -9,6 +9,7 @@ import me.ele.lancet.plugin.Util;
 import me.ele.lancet.plugin.internal.content.QualifiedContentProvider;
 import me.ele.lancet.weaver.ClassData;
 import me.ele.lancet.weaver.Weaver;
+import me.ele.lancet.weaver.internal.log.Log;
 
 import java.io.*;
 import java.util.Map;
@@ -44,8 +45,7 @@ public class TransformProcessor implements QualifiedContentProvider.SingleClassP
                     FileUtils.deleteIfExists(targetFile);
                 default:
                     Files.createParentDirs(targetFile);
-                    map.put(content, new JarRunner(new JarOutputStream(
-                            new BufferedOutputStream(new FileOutputStream(targetFile)))));
+                    map.put(content, new JarRunner(content, targetFile));
             }
         }
         return true;
@@ -83,10 +83,13 @@ public class TransformProcessor implements QualifiedContentProvider.SingleClassP
 
     class JarRunner implements Closeable {
 
-        JarOutputStream jos;
+        private final JarOutputStream jos;
+        private final QualifiedContent content;
 
-        JarRunner(JarOutputStream jos) throws IOException {
-            this.jos = jos;
+        JarRunner(QualifiedContent content, File targetFile) throws IOException {
+            this.content = content;
+            this.jos = new JarOutputStream(
+                    new BufferedOutputStream(new FileOutputStream(targetFile)));
         }
 
         void run(String relativePath, byte[] bytes) throws IOException {
@@ -95,10 +98,14 @@ public class TransformProcessor implements QualifiedContentProvider.SingleClassP
                 jos.putNextEntry(entry);
                 jos.write(bytes);
             } else {
-                for (ClassData classData : weaver.weave(bytes, relativePath)) {
-                    ZipEntry entry = new ZipEntry(classData.getClassName() + ".class");
-                    jos.putNextEntry(entry);
-                    jos.write(classData.getClassBytes());
+                try {
+                    for (ClassData classData : weaver.weave(bytes, relativePath)) {
+                        ZipEntry entry = new ZipEntry(classData.getClassName() + ".class");
+                        jos.putNextEntry(entry);
+                        jos.write(classData.getClassBytes());
+                    }
+                } catch (RuntimeException e) {
+                    Log.e("error in transform: " + content.getFile().getAbsolutePath() + " " + relativePath, e);
                 }
             }
         }
@@ -111,10 +118,14 @@ public class TransformProcessor implements QualifiedContentProvider.SingleClassP
     class DirectoryRunner {
 
         void run(File relativeRoot, String relativePath, byte[] bytes) throws IOException {
-            for (ClassData data : weaver.weave(bytes, relativePath)) {
-                File target = Util.toSystemDependentFile(relativeRoot, data.getClassName() + ".class");
-                Files.createParentDirs(target);
-                Files.write(data.getClassBytes(), target);
+            try {
+                for (ClassData data : weaver.weave(bytes, relativePath)) {
+                    File target = Util.toSystemDependentFile(relativeRoot, data.getClassName() + ".class");
+                    Files.createParentDirs(target);
+                    Files.write(data.getClassBytes(), target);
+                }
+            } catch (RuntimeException e) {
+                Log.e("error in transform: " + relativeRoot.getAbsolutePath() + " " + relativePath, e);
             }
         }
     }
