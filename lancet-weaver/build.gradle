@@ -5,10 +5,10 @@ dependencies {
     testCompile 'com.squareup.okio:okio:1.11.0'
     testCompile 'org.assertj:assertj-core:3.6.2'
 
-    compile "com.android.tools.build:gradle:$android_tools_version"
+    compileClasspath "com.android.tools.build:gradle:$android_tools_version"
     compile project(':lancet-base')
     compile gradleApi()
-    compile "com.google.guava:guava:$guava_version"
+    compileClasspath "com.google.guava:guava:$guava_version"
     compile "org.ow2.asm:asm-all:$asm_version"
 }
 

@@ -17,7 +17,7 @@ Firstly, add following code in root **build.gradle** of your project.
 
 ```groovy
 dependencies{
-    classpath 'me.ele:lancet-plugin:1.0.0-beta1'
+    classpath 'me.ele:lancet-plugin:1.0.0-beta2'
 }
 ```
 And then, add following code in your **application module's build.gradle**
@@ -26,7 +26,7 @@ And then, add following code in your **application module's build.gradle**
 apply plugin: 'me.ele.lancet'
 
 dependencies {
-    provided 'me.ele:lancet-base:1.0.0-beta1'
+    provided 'me.ele:lancet-base:1.0.0-beta2'
 }
 ```
 
