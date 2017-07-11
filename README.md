@@ -173,7 +173,7 @@ Such as the above example, every class will be ignored if it's package name star
 ```java
 
 @TargetClass(value = "android.support.v7.app.AppCompatActivity", scope = Scope.LEAF)
-@Insert("onStop")
+@Insert(value = "onStop", mayCreateSuper = true)
 protected void onStop(){
     System.out.println("hello world");
     Origin.callVoid();
@@ -183,7 +183,7 @@ protected void onStop(){
 The goal method of the hook method is 
 every leaf child of AppcompatActivity ```void onStop()```.
 
-If a class ```MyActivity extends AppcompatActivity```do not override the onCreate method, we will create a method for ```MyActivity``` like this:
+If a class ```MyActivity extends AppcompatActivity```do not override the onStop method, we will create a method for ```MyActivity``` like this:
 
 ```java
 protected void onStop() {
