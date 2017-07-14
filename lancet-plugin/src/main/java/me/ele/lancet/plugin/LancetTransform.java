@@ -1,20 +1,15 @@
 package me.ele.lancet.plugin;
 
-import com.android.build.api.transform.*;
-import com.android.build.gradle.AppExtension;
+import com.android.build.api.transform.QualifiedContent;
+import com.android.build.api.transform.SecondaryFile;
+import com.android.build.api.transform.Transform;
+import com.android.build.api.transform.TransformException;
+import com.android.build.api.transform.TransformInvocation;
 import com.android.build.gradle.internal.pipeline.TransformManager;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
-import me.ele.lancet.plugin.internal.*;
-import me.ele.lancet.plugin.internal.content.ContextThreadPoolProcessor;
-import me.ele.lancet.weaver.MetaParser;
-import me.ele.lancet.weaver.Weaver;
-import me.ele.lancet.weaver.internal.AsmWeaver;
-import me.ele.lancet.weaver.internal.entity.TotalInfo;
-import me.ele.lancet.weaver.internal.log.Impl.FileLoggerImpl;
-import me.ele.lancet.weaver.internal.log.Log;
-import me.ele.lancet.weaver.internal.parser.AsmMetaParser;
+
 import org.gradle.api.Project;
 
 import java.io.File;
@@ -28,19 +23,31 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import me.ele.lancet.plugin.internal.GlobalContext;
+import me.ele.lancet.plugin.internal.LocalCache;
+import me.ele.lancet.plugin.internal.preprocess.PreClassAnalysis;
+import me.ele.lancet.plugin.internal.TransformContext;
+import me.ele.lancet.plugin.internal.TransformProcessor;
+import me.ele.lancet.plugin.internal.context.ContextReader;
+import me.ele.lancet.weaver.MetaParser;
+import me.ele.lancet.weaver.Weaver;
+import me.ele.lancet.weaver.internal.AsmWeaver;
+import me.ele.lancet.weaver.internal.entity.TransformInfo;
+import me.ele.lancet.weaver.internal.log.Impl.FileLoggerImpl;
+import me.ele.lancet.weaver.internal.log.Log;
+import me.ele.lancet.weaver.internal.parser.AsmMetaParser;
+
 class LancetTransform extends Transform {
 
     private final LancetExtension lancetExtension;
-    //private final AppExtension appExtension;
     private final GlobalContext global;
     private LocalCache cache;
 
 
-    public LancetTransform(Project project, LancetExtension lancetExtension, AppExtension appExtension) {
+    public LancetTransform(Project project, LancetExtension lancetExtension) {
         this.lancetExtension = lancetExtension;
-        //this.appExtension = appExtension;
         this.global = new GlobalContext(project);
-
+        // load the LocalCache from disk
         this.cache = new LocalCache(global.getLancetDir());
     }
 
@@ -67,6 +74,9 @@ class LancetTransform extends Transform {
     }
 
 
+    /**
+     * @return Hook classes we found in last compilation. If they has been changed,gradle will auto go full compile.
+     */
     @Override
     public Collection<SecondaryFile> getSecondaryFiles() {
         return cache.classesInDirs()
@@ -87,13 +97,14 @@ class LancetTransform extends Transform {
 
         Log.i("start time: " + System.currentTimeMillis());
 
+        // collect the information this compile need
         TransformContext context = new TransformContext(transformInvocation, global);
 
         Log.i("after android plugin, incremental: " + context.isIncremental());
         Log.i("now: " + System.currentTimeMillis());
 
-        PreClassParser preClassParser = new PreClassParser(cache);
-        boolean incremental = preClassParser.execute(context);
+        PreClassAnalysis preClassAnalysis = new PreClassAnalysis(cache);
+        boolean incremental = preClassAnalysis.execute(context);
         Log.i("after pre parse, incremental: " + incremental);
         Log.i("now: " + System.currentTimeMillis());
 
@@ -106,11 +117,11 @@ class LancetTransform extends Transform {
         Log.i("now: " + System.currentTimeMillis());
 
         context.getGraph().flow().clear();
-        TotalInfo totalInfo = parser.parse(context.getClasses(), context.getGraph());
+        TransformInfo transformInfo = parser.parse(context.getClasses(), context.getGraph());
 
-        Weaver weaver = AsmWeaver.newInstance(totalInfo, context.getGraph());
-        new ContextThreadPoolProcessor(context)
-                .process(incremental, new TransformProcessor(context, weaver));
+        Weaver weaver = AsmWeaver.newInstance(transformInfo, context.getGraph());
+        new ContextReader(context)
+                .accept(incremental, new TransformProcessor(context, weaver));
         Log.i("build successfully done");
         Log.i("now: " + System.currentTimeMillis());
 

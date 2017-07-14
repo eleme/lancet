@@ -1,9 +1,9 @@
-package me.ele.lancet.plugin.internal.content;
+package me.ele.lancet.plugin.internal.context;
 
 import com.android.build.api.transform.JarInput;
 import com.android.build.api.transform.QualifiedContent;
 import com.google.common.io.ByteStreams;
-import me.ele.lancet.plugin.internal.extend.BindingJarInput;
+
 import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedInputStream;
@@ -18,20 +18,11 @@ import java.util.zip.ZipInputStream;
 public class JarContentProvider extends TargetedQualifiedContentProvider {
 
     @Override
-    public void forEach(QualifiedContent content, SingleClassProcessor processor) throws IOException {
-        if (content instanceof BindingJarInput) {
-            if (processor.onStart(content)) {
-                for (JarInput jarInput : ((BindingJarInput) content).getInputs()) {
-                    forActualInput(jarInput, processor);
-                }
-            }
-            processor.onComplete(content);
-        } else {
-            forActualInput((JarInput) content, processor);
-        }
+    public void forEach(QualifiedContent content, ClassFetcher processor) throws IOException {
+        forActualInput((JarInput) content, processor);
     }
 
-    private void forActualInput(JarInput jarInput, SingleClassProcessor processor) throws IOException {
+    private void forActualInput(JarInput jarInput, ClassFetcher processor) throws IOException {
         if (processor.onStart(jarInput)) {
             ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(jarInput.getFile())));
             ZipEntry entry;
@@ -40,7 +31,7 @@ public class JarContentProvider extends TargetedQualifiedContentProvider {
                     continue;
                 }
                 byte[] data = ByteStreams.toByteArray(zis);
-                processor.onProcess(jarInput, jarInput.getStatus(), entry.getName(), data);
+                processor.onClassFetch(jarInput, jarInput.getStatus(), entry.getName(), data);
             }
             IOUtils.closeQuietly(zis);
         }

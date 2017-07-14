@@ -6,7 +6,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import me.ele.lancet.weaver.internal.entity.TotalInfo;
+import me.ele.lancet.weaver.internal.entity.TransformInfo;
 import me.ele.lancet.weaver.internal.log.Impl.SystemOutputImpl;
 import me.ele.lancet.weaver.internal.log.Log;
 import me.ele.lancet.weaver.internal.util.ClassFileUtil;
@@ -20,7 +20,7 @@ import okio.Okio;
  */
 
 public abstract class AOPBaseTest {
-    TotalInfo totalInfo;
+    TransformInfo transformInfo;
 
     @Before
     public void setUp(){
@@ -30,13 +30,13 @@ public abstract class AOPBaseTest {
 
     @Test
     public void testTransform() throws IOException {
-        totalInfo = new TotalInfo(classes);
-        totalInfo.setCallInfos(new ArrayList<>());
-        totalInfo.setExecuteInfos(new ArrayList<>());
-        totalInfo.setTryCatchInfos(new ArrayList<>());
+        transformInfo = new TransformInfo(classes);
+        transformInfo.setProxyInfo(new ArrayList<>());
+        transformInfo.setInsertInfo(new ArrayList<>());
+        transformInfo.setTryCatchInfo(new ArrayList<>());
         applyTotalInfo();
-        System.out.println(totalInfo);
-        TransformHelper.startTransform(totalInfo);
+        System.out.println(transformInfo);
+        TransformHelper.startTransform(transformInfo);
         Process process = Runtime.getRuntime().exec("./gradlew lancet-weaver:executeTestSampleProduct");
         BufferedSource source = Okio.buffer(Okio.source(process.getInputStream()));
         String output = source.readUtf8();
@@ -51,10 +51,10 @@ public abstract class AOPBaseTest {
     public abstract void checkOutput(String output) throws IOException;
 
     public void addCallClass(String className) throws IOException {
-        totalInfo.callInfos.addAll(HookInfoGnenerator.callInfoList(className));
+        transformInfo.proxyInfo.addAll(HookInfoGnenerator.callInfoList(className));
     }
 
     public void addExecuteClass(String className) throws IOException {
-        totalInfo.executeInfos.addAll(HookInfoGnenerator.executeInfoList(className));
+        transformInfo.executeInfo.addAll(HookInfoGnenerator.executeInfoList(className));
     }
 }

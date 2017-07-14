@@ -1,17 +1,11 @@
 package me.ele.lancet.weaver.internal;
 
-import java.util.List;
-import java.util.Map;
-
 import me.ele.lancet.weaver.ClassData;
-import me.ele.lancet.weaver.MetaParser;
 import me.ele.lancet.weaver.Weaver;
 import me.ele.lancet.weaver.internal.asm.ClassTransform;
-import me.ele.lancet.weaver.internal.entity.TotalInfo;
+import me.ele.lancet.weaver.internal.entity.TransformInfo;
 import me.ele.lancet.weaver.internal.graph.Graph;
-import me.ele.lancet.weaver.internal.graph.Node;
 import me.ele.lancet.weaver.internal.log.Log;
-import me.ele.lancet.weaver.internal.parser.AsmMetaParser;
 
 
 /**
@@ -19,22 +13,32 @@ import me.ele.lancet.weaver.internal.parser.AsmMetaParser;
  */
 public class AsmWeaver implements Weaver {
 
-    public static Weaver newInstance(TotalInfo totalInfo, Graph graph) {
-        return new AsmWeaver(totalInfo, graph);
+    /**
+     * Create a AsmWeaver instance. In a compilation process, the AsmWeaver instance will only be created once.
+     *
+     * @param transformInfo the transformInfo for this compilation process.
+     * @param graph
+     * @return
+     */
+    public static Weaver newInstance(TransformInfo transformInfo, Graph graph) {
+        return new AsmWeaver(transformInfo, graph);
     }
 
-    private final TotalInfo totalInfo;
+    private final TransformInfo transformInfo;
     private final Graph graph;
 
-    private AsmWeaver(TotalInfo totalInfo, Graph graph) {
-        Log.d(totalInfo.toString());
+    private AsmWeaver(TransformInfo transformInfo, Graph graph) {
+        Log.d(transformInfo.toString());
         this.graph = graph;
-        this.totalInfo = totalInfo;
+        this.transformInfo = transformInfo;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ClassData[] weave(byte[] input, String relativePath) {
-        return ClassTransform.weave(totalInfo, graph, input, relativePath);
+        return ClassTransform.weave(transformInfo, graph, input, relativePath);
     }
 
 }

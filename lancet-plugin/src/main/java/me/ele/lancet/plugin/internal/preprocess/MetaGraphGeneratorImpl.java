@@ -1,12 +1,22 @@
-package me.ele.lancet.plugin.internal;
+package me.ele.lancet.plugin.internal.preprocess;
 
 import com.android.build.api.transform.Status;
-import me.ele.lancet.weaver.internal.graph.*;
+
 import org.objectweb.asm.Opcodes;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import me.ele.lancet.weaver.internal.graph.CheckFlow;
+import me.ele.lancet.weaver.internal.graph.ClassEntity;
+import me.ele.lancet.weaver.internal.graph.ClassNode;
+import me.ele.lancet.weaver.internal.graph.Graph;
+import me.ele.lancet.weaver.internal.graph.InterfaceNode;
+import me.ele.lancet.weaver.internal.graph.MetaGraphGenerator;
+import me.ele.lancet.weaver.internal.graph.Node;
 
 /**
  * Created by gengwanpeng on 17/4/26.

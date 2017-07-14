@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.ele.lancet.weaver.internal.entity.CallInfo;
-import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
+import me.ele.lancet.weaver.internal.entity.ProxyInfo;
+import me.ele.lancet.weaver.internal.entity.InsertInfo;
 import okio.Okio;
 
 /**
@@ -50,21 +50,21 @@ public class HookInfoGnenerator {
         return hookNode;
     }
 
-    public static List<CallInfo> callInfoList(String className) throws IOException {
-        List<CallInfo> infos = new ArrayList<>();
+    public static List<ProxyInfo> callInfoList(String className) throws IOException {
+        List<ProxyInfo> infos = new ArrayList<>();
         for (MethodNode node : methodNodeList(className)) {
             String targetDesc = node.desc;
             if ((node.access & Opcodes.ACC_STATIC) == 0){
                 targetDesc = TypeUtil.removeFirstParam(targetDesc);
             }
             AnnotationNode annotationNode = (AnnotationNode) node.visibleAnnotations.get(0);
-            infos.add(new CallInfo("",(String)annotationNode.values.get(1),node.name,targetDesc,className,node));
+            infos.add(new ProxyInfo("",(String)annotationNode.values.get(1),node.name,targetDesc,className,node));
         }
         return infos;
     }
 
-    public static List<ExecuteInfo> executeInfoList(String className) throws IOException {
-        List<ExecuteInfo> infos = new ArrayList<>();
+    public static List<InsertInfo> executeInfoList(String className) throws IOException {
+        List<InsertInfo> infos = new ArrayList<>();
         for (MethodNode node : methodNodeList(className)) {
             String targetDesc = node.desc;
             if ((node.access & Opcodes.ACC_STATIC) == 0){
@@ -75,7 +75,7 @@ public class HookInfoGnenerator {
             if (annotationNode.values.size() > 2){
                 createSuper = (Boolean) annotationNode.values.get(3);
             }
-            infos.add(new ExecuteInfo(createSuper,(String)annotationNode.values.get(1),node.name,targetDesc,className,node));
+            infos.add(new InsertInfo(createSuper,(String)annotationNode.values.get(1),node.name,targetDesc,className,node));
         }
         return infos;
     }

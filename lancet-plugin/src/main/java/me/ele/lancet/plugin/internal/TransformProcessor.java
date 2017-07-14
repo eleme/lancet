@@ -5,22 +5,27 @@ import com.android.build.api.transform.QualifiedContent;
 import com.android.build.api.transform.Status;
 import com.android.utils.FileUtils;
 import com.google.common.io.Files;
-import me.ele.lancet.plugin.Util;
-import me.ele.lancet.plugin.internal.content.QualifiedContentProvider;
-import me.ele.lancet.weaver.ClassData;
-import me.ele.lancet.weaver.Weaver;
-import me.ele.lancet.weaver.internal.log.Log;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 
+import me.ele.lancet.plugin.Util;
+import me.ele.lancet.plugin.internal.context.ClassFetcher;
+import me.ele.lancet.weaver.ClassData;
+import me.ele.lancet.weaver.Weaver;
+import me.ele.lancet.weaver.internal.log.Log;
+
 /**
  * Created by gengwanpeng on 17/5/4.
  */
-public class TransformProcessor implements QualifiedContentProvider.SingleClassProcessor {
+public class TransformProcessor implements ClassFetcher {
 
     private final TransformContext context;
     private final Weaver weaver;
@@ -52,7 +57,7 @@ public class TransformProcessor implements QualifiedContentProvider.SingleClassP
     }
 
     @Override
-    public void onProcess(QualifiedContent content, Status status, String relativePath, byte[] bytes) throws IOException {
+    public void onClassFetch(QualifiedContent content, Status status, String relativePath, byte[] bytes) throws IOException {
         if (content instanceof JarInput) {
             JarRunner jarRunner = map.get(content);
             jarRunner.run(relativePath, bytes);

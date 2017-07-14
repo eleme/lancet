@@ -1,10 +1,18 @@
 package me.ele.lancet.weaver.internal.meta;
 
 import com.google.common.collect.Sets;
+
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.MethodNode;
+
+import java.util.Arrays;
+import java.util.Set;
+
 import me.ele.lancet.base.Scope;
-import me.ele.lancet.weaver.internal.entity.CallInfo;
-import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
-import me.ele.lancet.weaver.internal.entity.TotalInfo;
+import me.ele.lancet.weaver.internal.entity.ProxyInfo;
+import me.ele.lancet.weaver.internal.entity.InsertInfo;
+import me.ele.lancet.weaver.internal.entity.TransformInfo;
 import me.ele.lancet.weaver.internal.entity.TryCatchInfo;
 import me.ele.lancet.weaver.internal.exception.IllegalAnnotationException;
 import me.ele.lancet.weaver.internal.graph.ClassNode;
@@ -14,12 +22,6 @@ import me.ele.lancet.weaver.internal.graph.Node;
 import me.ele.lancet.weaver.internal.log.Log;
 import me.ele.lancet.weaver.internal.parser.AopMethodAdjuster;
 import me.ele.lancet.weaver.internal.util.TypeUtil;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.MethodNode;
-
-import java.util.Arrays;
-import java.util.Set;
 
 /**
  * Created by gengwanpeng on 17/5/3.
@@ -114,21 +116,21 @@ public class HookInfoLocator {
         returnType = Type.getReturnType(targetDesc);
     }
 
-    public void appendTo(TotalInfo totalInfo) {
+    public void appendTo(TransformInfo transformInfo) {
         check();
         switch (flag) {
             case INSERT:
                 classes.stream()
-                        .map(c -> new ExecuteInfo(mayCreateSuper, c, targetMethod, targetDesc, sourceClass, sourceNode))
-                        .forEach(totalInfo::addExecute);
+                        .map(c -> new InsertInfo(mayCreateSuper, c, targetMethod, targetDesc, sourceClass, sourceNode))
+                        .forEach(transformInfo::addInsertInfo);
                 break;
             case PROXY:
                 classes.stream()
-                        .map(c -> new CallInfo(nameRegex, c, targetMethod, targetDesc, sourceClass, sourceNode))
-                        .forEach(totalInfo::addCall);
+                        .map(c -> new ProxyInfo(nameRegex, c, targetMethod, targetDesc, sourceClass, sourceNode))
+                        .forEach(transformInfo::addProxyInfo);
                 break;
             case TRY_CATCH:
-                totalInfo.addTryCatch(new TryCatchInfo(nameRegex, sourceClass, sourceNode.name, targetDesc));
+                transformInfo.addTryCatch(new TryCatchInfo(nameRegex, sourceClass, sourceNode.name, targetDesc));
                 break;
         }
     }

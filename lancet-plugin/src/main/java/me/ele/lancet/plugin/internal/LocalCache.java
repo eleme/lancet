@@ -5,19 +5,26 @@ import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
-import me.ele.lancet.weaver.internal.graph.ClassEntity;
-import me.ele.lancet.weaver.internal.graph.CheckFlow;
+
 import org.apache.commons.io.Charsets;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.List;
 import java.util.stream.Stream;
+
+import me.ele.lancet.plugin.internal.preprocess.MetaGraphGeneratorImpl;
+import me.ele.lancet.weaver.internal.graph.CheckFlow;
+import me.ele.lancet.weaver.internal.graph.ClassEntity;
 
 /**
  * Created by gengwanpeng on 17/4/26.
  */
 public class LocalCache {
 
+    // Persistent storage for metas
     private File localCache;
     private final Metas metas;
     private Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
@@ -56,14 +63,16 @@ public class LocalCache {
         return metas.flow;
     }
 
-    public boolean canBeIncremental(TransformContext context) throws IOException {
-        return notModifiedAndRemoved(context); // && notAdded(context);
-    }
 
-    private boolean notModifiedAndRemoved(TransformContext context) {
-        List<String> targetJars = metas.jarsWithHookClasses;
+    /**
+     * if hook class has modified.
+     * @param context TransformContext for this compile
+     * @return true if hook class hasn't modified.
+     */
+    public boolean isHookClassModified(TransformContext context) {
+        List<String> hookClasses = metas.jarsWithHookClasses;
         return Stream.concat(context.getRemovedJars().stream(), context.getChangedJars().stream())
-                .noneMatch(jarInput -> targetJars.contains(jarInput.getFile().getAbsolutePath()));
+                .anyMatch(jarInput -> hookClasses.contains(jarInput.getFile().getAbsolutePath()));
     }
 
     public void accept(MetaGraphGeneratorImpl graph) {

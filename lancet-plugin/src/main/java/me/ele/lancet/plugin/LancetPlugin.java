@@ -6,8 +6,6 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.ProjectConfigurationException;
 
-import java.net.URLConnection;
-
 public class LancetPlugin implements Plugin<Project> {
 
     @Override
@@ -18,6 +16,6 @@ public class LancetPlugin implements Plugin<Project> {
 
         AppExtension appExtension = (AppExtension) project.getExtensions().getByName("android");
         LancetExtension lancetExtension = project.getExtensions().create("lancet", LancetExtension.class);
-        appExtension.registerTransform(new LancetTransform(project, lancetExtension, appExtension));
+        appExtension.registerTransform(new LancetTransform(project, lancetExtension));
     }
 }

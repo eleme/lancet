@@ -11,7 +11,7 @@ import java.util.Map;
 
 import me.ele.lancet.weaver.internal.asm.ClassCollector;
 import me.ele.lancet.weaver.internal.asm.ClassTransform;
-import me.ele.lancet.weaver.internal.entity.CallInfo;
+import me.ele.lancet.weaver.internal.entity.ProxyInfo;
 import me.ele.lancet.weaver.internal.log.Log;
 
 /**
@@ -20,13 +20,13 @@ import me.ele.lancet.weaver.internal.log.Log;
 public class ProxyMethodVisitor extends MethodVisitor {
 
     private final Map<String, MethodChain.Invoker> invokerMap;
-    private final Map<String, List<CallInfo>> matchMap;
+    private final Map<String, List<ProxyInfo>> matchMap;
     private final String className;
     private final String name;
     private final ClassCollector classCollector;
     private final MethodChain chain;
 
-    public ProxyMethodVisitor(MethodChain chain, MethodVisitor mv, Map<String, MethodChain.Invoker> invokerMap, Map<String, List<CallInfo>> matchMap, String className, String name, ClassCollector classCollector) {
+    public ProxyMethodVisitor(MethodChain chain, MethodVisitor mv, Map<String, MethodChain.Invoker> invokerMap, Map<String, List<ProxyInfo>> matchMap, String className, String name, ClassCollector classCollector) {
         super(Opcodes.ASM5, mv);
         this.chain = chain;
         this.invokerMap = invokerMap;
@@ -39,7 +39,7 @@ public class ProxyMethodVisitor extends MethodVisitor {
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
         String key = owner + " " + name + " " + desc;
-        List<CallInfo> infos = matchMap.get(key);
+        List<ProxyInfo> infos = matchMap.get(key);
         MethodChain.Invoker invoker = invokerMap.get(key);
         if (invoker != null) {
             invoker.invoke(mv);

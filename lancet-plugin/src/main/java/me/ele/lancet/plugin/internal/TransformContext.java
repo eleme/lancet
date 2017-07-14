@@ -5,15 +5,22 @@ import com.android.build.api.transform.Format;
 import com.android.build.api.transform.JarInput;
 import com.android.build.api.transform.QualifiedContent;
 import com.android.build.api.transform.TransformInvocation;
-import me.ele.lancet.weaver.internal.graph.Graph;
-import me.ele.lancet.weaver.internal.log.Log;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import me.ele.lancet.weaver.internal.graph.Graph;
+import me.ele.lancet.weaver.internal.log.Log;
 
 /**
  * Created by gengwanpeng on 17/4/26.
+ *
+ * A data sets collect all jar info and pre-analysis result.
+ *
  */
 public class TransformContext {
 
@@ -35,7 +42,9 @@ public class TransformContext {
         init();
     }
 
-
+    /**
+     * start collect.
+     */
     private void init() {
         allJars = new ArrayList<>(invocation.getInputs().size());
         addedJars = new ArrayList<>(invocation.getInputs().size());

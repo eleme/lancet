@@ -1,12 +1,14 @@
-package me.ele.lancet.plugin.internal.content;
+package me.ele.lancet.plugin.internal.context;
 
 import com.android.build.api.transform.QualifiedContent;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Created by gengwanpeng on 17/4/28.
+ *
+ * A QualifiedContentProvider proxy multiple ContentProviders.
+ *
  */
 public class ClassifiedContentProvider implements QualifiedContentProvider {
 
@@ -21,8 +23,9 @@ public class ClassifiedContentProvider implements QualifiedContentProvider {
     }
 
     @Override
-    public void forEach(QualifiedContent content, SingleClassProcessor processor) throws IOException {
-        Arrays.stream(providers).filter(p -> p.accepted(content)).findFirst()
-                .get().forEach(content, processor);
+    public void forEach(QualifiedContent content, ClassFetcher processor) throws IOException {
+        for (TargetedQualifiedContentProvider provider : providers) {
+            provider.forEach(content,processor);
+        }
     }
 }

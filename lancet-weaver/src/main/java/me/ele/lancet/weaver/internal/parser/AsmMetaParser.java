@@ -1,15 +1,8 @@
 package me.ele.lancet.weaver.internal.parser;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
-import me.ele.lancet.weaver.internal.util.AsmUtil;
-import me.ele.lancet.weaver.internal.util.TraceUtil;
-import me.ele.lancet.weaver.internal.util.TypeUtil;
+
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -17,10 +10,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InnerClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
@@ -40,7 +30,7 @@ import me.ele.lancet.base.annotations.Proxy;
 import me.ele.lancet.base.annotations.TargetClass;
 import me.ele.lancet.base.annotations.TryCatchHandler;
 import me.ele.lancet.weaver.MetaParser;
-import me.ele.lancet.weaver.internal.entity.TotalInfo;
+import me.ele.lancet.weaver.internal.entity.TransformInfo;
 import me.ele.lancet.weaver.internal.exception.LoadClassException;
 import me.ele.lancet.weaver.internal.exception.UnsupportedAnnotationException;
 import me.ele.lancet.weaver.internal.graph.Graph;
@@ -57,6 +47,7 @@ import me.ele.lancet.weaver.internal.parser.anno.NameRegexAnnoParser;
 import me.ele.lancet.weaver.internal.parser.anno.ProxyAnnoParser;
 import me.ele.lancet.weaver.internal.parser.anno.TargetClassAnnoParser;
 import me.ele.lancet.weaver.internal.parser.anno.TryCatchAnnoParser;
+import me.ele.lancet.weaver.internal.util.TypeUtil;
 
 
 /**
@@ -72,13 +63,13 @@ public class AsmMetaParser implements MetaParser {
     }
 
     @Override
-    public TotalInfo parse(List<String> classes, Graph graph) {
+    public TransformInfo parse(List<String> classes, Graph graph) {
         Log.i("aop classes: \n" + classes.stream().collect(Collectors.joining("\n")));
 
         return classes.stream().map(s -> new AsmClassParser(loader).parse(s))
                 .map(c -> c.toLocators(graph))
                 .flatMap(Collection::stream)
-                .collect(() -> new TotalInfo(classes), (t, l) -> l.appendTo(t), TotalInfo::combine);
+                .collect(() -> new TransformInfo(classes), (t, l) -> l.appendTo(t), TransformInfo::combine);
     }
 
     private class AsmClassParser {
@@ -161,7 +152,7 @@ public class AsmMetaParser implements MetaParser {
                 URLConnection urlConnection = url.openConnection();
 
                 // gradle daemon bug:
-                // Different builds in one process because of daemon which makes the jar connection will read the content from cache if they points to the same jar file.
+                // Different builds in one process because of daemon which makes the jar connection will read the context from cache if they points to the same jar file.
                 // But the file may be changed.
 
                 urlConnection.setUseCaches(false);

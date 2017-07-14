@@ -5,7 +5,7 @@ import org.objectweb.asm.tree.MethodNode;
 /**
  * Created by gengwanpeng on 17/3/27.
  */
-public class ExecuteInfo {
+public class InsertInfo {
 
     public boolean createSuper;
     public String targetClass;
@@ -14,7 +14,7 @@ public class ExecuteInfo {
     public String sourceClass;
     public MethodNode sourceMethod;
 
-    public ExecuteInfo(boolean createSuper, String targetClass, String targetMethod, String targetDesc, String sourceClass,MethodNode sourceMethod) {
+    public InsertInfo(boolean createSuper, String targetClass, String targetMethod, String targetDesc, String sourceClass, MethodNode sourceMethod) {
         this.createSuper = createSuper;
         this.targetClass = targetClass;
         this.targetMethod = targetMethod;
@@ -25,7 +25,7 @@ public class ExecuteInfo {
 
     @Override
     public String toString() {
-        return "ExecuteInfo{" +
+        return "InsertInfo{" +
                 "createSuper=" + createSuper +
                 ", targetClass='" + targetClass + '\'' +
                 ", targetMethod='" + targetMethod + '\'' +

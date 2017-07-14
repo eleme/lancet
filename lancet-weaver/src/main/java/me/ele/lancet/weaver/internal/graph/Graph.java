@@ -1,16 +1,17 @@
 package me.ele.lancet.weaver.internal.graph;
 
-import me.ele.lancet.base.Scope;
-import me.ele.lancet.weaver.internal.log.Log;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import me.ele.lancet.base.Scope;
+import me.ele.lancet.weaver.internal.log.Log;
+
 /**
  * Created by gengwanpeng on 17/5/5.
+ * Class dependency graphs.
  */
 public class Graph {
 

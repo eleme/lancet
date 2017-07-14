@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import me.ele.lancet.weaver.internal.asm.ClassTransform;
 import me.ele.lancet.weaver.internal.asm.LinkedClassVisitor;
-import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
+import me.ele.lancet.weaver.internal.entity.InsertInfo;
 import me.ele.lancet.weaver.internal.log.Log;
 import me.ele.lancet.weaver.internal.util.TypeUtil;
 
@@ -18,11 +18,11 @@ import me.ele.lancet.weaver.internal.util.TypeUtil;
  */
 public class InsertClassVisitor extends LinkedClassVisitor {
 
-    private Map<String, List<ExecuteInfo>> executeInfos;
-    private List<ExecuteInfo> matched;
+    private Map<String, List<InsertInfo>> executeInfos;
+    private List<InsertInfo> matched;
 
 
-    public InsertClassVisitor(Map<String, List<ExecuteInfo>> executeInfos) {
+    public InsertClassVisitor(Map<String, List<InsertInfo>> executeInfos) {
         this.executeInfos = executeInfos;
     }
 
@@ -36,7 +36,7 @@ public class InsertClassVisitor extends LinkedClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         if (matched != null) {
-            List<ExecuteInfo> methodsMatched = new ArrayList<>(matched.size() >> 1);
+            List<InsertInfo> methodsMatched = new ArrayList<>(matched.size() >> 1);
             matched.removeIf(e -> {
                 if (e.targetMethod.equals(name) && e.targetDesc.equals(desc)) {
                     if (((e.sourceMethod.access ^ access) & Opcodes.ACC_STATIC) != 0) {
@@ -81,7 +81,7 @@ public class InsertClassVisitor extends LinkedClassVisitor {
             new ArrayList<>(matched).stream()
                     .collect(Collectors.groupingBy(e -> e.targetMethod)).forEach((k, v) -> {
                 if (v.stream().anyMatch(e -> e.createSuper)) {
-                    ExecuteInfo e = v.get(0);
+                    InsertInfo e = v.get(0);
                     MethodVisitor mv = visitMethod(e.sourceMethod.access, e.targetMethod, e.targetDesc, e.sourceMethod.signature,
                             (String[]) e.sourceMethod.exceptions.toArray(new String[0]));
                     GeneratorAdapter adapter = new GeneratorAdapter(mv, e.sourceMethod.access, e.targetMethod, e.targetDesc);

@@ -10,18 +10,17 @@ import java.util.stream.Collectors;
 
 import me.ele.lancet.weaver.internal.asm.LinkedClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.methodvisitor.ProxyMethodVisitor;
-import me.ele.lancet.weaver.internal.entity.CallInfo;
+import me.ele.lancet.weaver.internal.entity.ProxyInfo;
 
 /**
  * Created by Jude on 17/4/26.
  */
 public class ProxyClassVisitor extends LinkedClassVisitor {
 
-    private List<CallInfo> infos;
-    private Map<String, List<CallInfo>> matches;
+    private List<ProxyInfo> infos;
+    private Map<String, List<ProxyInfo>> matches;
     private Map<String, MethodChain.Invoker> maps = new HashMap<>();
-
-    public ProxyClassVisitor(List<CallInfo> infos) {
+    public ProxyClassVisitor(List<ProxyInfo> infos) {
         this.infos = infos;
     }
 

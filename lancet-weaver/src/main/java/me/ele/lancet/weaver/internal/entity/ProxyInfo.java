@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 /**
  * Created by gengwanpeng on 17/3/27.
  */
-public class CallInfo {
+public class ProxyInfo {
 
     public String regex;
     public String targetClass;
@@ -21,7 +21,7 @@ public class CallInfo {
 
     public Pattern pattern;
 
-    public CallInfo(String regex, String targetClass, String targetMethod, String targetDesc,String sourceClass, MethodNode sourceMethod) {
+    public ProxyInfo(String regex, String targetClass, String targetMethod, String targetDesc, String sourceClass, MethodNode sourceMethod) {
         this.regex = regex;
         this.targetClass = targetClass;
         this.targetMethod = targetMethod;
@@ -41,7 +41,7 @@ public class CallInfo {
 
     @Override
     public String toString() {
-        return "CallInfo{" +
+        return "ProxyInfo{" +
                 "  regex=" + regex +
                 ", targetClass='" + targetClass + '\'' +
                 ", targetMethod='" + targetMethod + '\'' +

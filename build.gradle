@@ -26,7 +26,7 @@ buildscript {
         mavenCentral()
         maven {
             if (ele) {
-                url "http://maven.dev.elenet.me/nexus/content/groups/public"
+                url "http://maven.dev.elenet.me/nexus/context/groups/public"
             } else {
                 url "https://dl.bintray.com/eleme-mt-arch/maven"
             }
