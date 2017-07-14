@@ -155,11 +155,15 @@ public class MethodChain {
         headFromInsert(access, className, name, desc);
     }
 
+    public Invoker getHead(){
+        return head;
+    }
+
     public void visitHead(MethodVisitor mv) {
         head.invoke(mv);
     }
 
-    private static class Invoker implements Opcodes {
+    public static class Invoker implements Opcodes {
 
         public static Invoker forField(FieldInsnNode fn, boolean needCreate, String className) {
             String staticDesc = staticDesc(className, null, Preconditions.checkNotNull(fn));
