@@ -19,15 +19,17 @@ import me.ele.lancet.weaver.internal.log.Log;
  */
 public class ProxyMethodVisitor extends MethodVisitor {
 
+    private final Map<String, MethodChain.Invoker> invokerMap;
     private final Map<String, List<CallInfo>> matchMap;
     private final String className;
     private final String name;
     private final ClassCollector classCollector;
     private final MethodChain chain;
 
-    public ProxyMethodVisitor(MethodChain chain, MethodVisitor mv, Map<String, List<CallInfo>> matchMap, String className, String name, ClassCollector classCollector) {
+    public ProxyMethodVisitor(MethodChain chain, MethodVisitor mv, Map<String, MethodChain.Invoker> invokerMap, Map<String, List<CallInfo>> matchMap, String className, String name, ClassCollector classCollector) {
         super(Opcodes.ASM5, mv);
         this.chain = chain;
+        this.invokerMap = invokerMap;
         this.matchMap = matchMap;
         this.className = className;
         this.name = name;
@@ -36,9 +38,12 @@ public class ProxyMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
-        List<CallInfo> infos = matchMap.get(owner + " " + name + " " + desc);
-
-        if (infos != null && infos.size() > 0) {
+        String key = owner + " " + name + " " + desc;
+        List<CallInfo> infos = matchMap.get(key);
+        MethodChain.Invoker invoker = invokerMap.get(key);
+        if (invoker != null) {
+            invoker.invoke(mv);
+        } else if (infos != null && infos.size() > 0) {
 
             String staticDesc = TypeUtil.descToStatic(opcode == Opcodes.INVOKESTATIC ? Opcodes.ACC_STATIC : 0, desc, owner);
             // begin hook this code.
@@ -62,9 +67,8 @@ public class ProxyMethodVisitor extends MethodVisitor {
                 chain.next(artificialClassname, Opcodes.ACC_STATIC, methodName, staticDesc, c.sourceMethod, cv);
             });
 
-            infos.clear();
-
-            chain.visitHead(mv);
+            invokerMap.put(key, chain.getHead());
+            chain.getHead().invoke(mv);
         } else {
             super.visitMethodInsn(opcode, owner, name, desc, itf);
         }
