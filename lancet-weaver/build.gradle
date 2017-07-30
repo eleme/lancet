@@ -16,23 +16,3 @@ sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
 
 
-task compileTestSample (type: JavaCompile) {
-    source =  fileTree(dir: 'src/test/sample/source', include: '**/*.java')
-    sourceCompatibility = '1.7'
-    targetCompatibility = '1.7'
-    classpath = files('build/classes/main')
-    destinationDir = file('src/test/sample/class')
-    doFirst {
-        delete file('src/test/sample/class')
-    }
-}
-
-task executeTestSample(type:JavaExec) {
-    main = "com.sample.playground.Main"
-    classpath = files('src/test/sample/class')
-}
-
-task executeTestSampleProduct(type:JavaExec) {
-    main = "com.sample.playground.Main"
-    classpath = files('src/test/sample/product')
-}

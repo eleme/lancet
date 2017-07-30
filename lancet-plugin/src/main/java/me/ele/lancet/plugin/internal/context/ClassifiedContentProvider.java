@@ -25,7 +25,9 @@ public class ClassifiedContentProvider implements QualifiedContentProvider {
     @Override
     public void forEach(QualifiedContent content, ClassFetcher processor) throws IOException {
         for (TargetedQualifiedContentProvider provider : providers) {
-            provider.forEach(content,processor);
+            if(provider.accepted(content)){
+                provider.forEach(content,processor);
+            }
         }
     }
 }

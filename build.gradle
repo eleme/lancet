@@ -45,7 +45,15 @@ buildscript {
 
 subprojects { pro ->
 
-    if (pro.name == 'testsample')return
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            url 'https://maven.google.com'
+        }
+    }
+
+    if (pro.name == 'sample-test')return
 
     version = lancet_version
     group = lancet_group
@@ -125,13 +133,7 @@ subprojects { pro ->
             }
         }
     }
-    repositories {
-        jcenter()
-        mavenCentral()
-        maven {
-            url 'https://maven.google.com'
-        }
-    }
+
 }
 
 task uploadAll { task ->
@@ -144,7 +146,7 @@ task uploadAll { task ->
         project.tasks.build.mustRunAfter project.tasks.clean
 
         project.subprojects {
-            if (it.name != 'testsample') {
+            if (it.name != 'sample-test') {
                 Task upload = !ele ? it.tasks.bintrayUpload : it.tasks.uploadArchives;
                 task.dependsOn upload
                 upload.mustRunAfter project.tasks.build
@@ -152,11 +154,3 @@ task uploadAll { task ->
         }
     }
 }
-/*
-doLast {
-    "./gradlew clean build bintrayUpload " +
-            "-PbintrayUser=${properties.getProperty('bintrayUser')} " +
-            "-PbintrayKey=${properties.getProperty('bintrayKey')} " +
-            "-PdryRun=false"
-                    .execute()
-}*/
