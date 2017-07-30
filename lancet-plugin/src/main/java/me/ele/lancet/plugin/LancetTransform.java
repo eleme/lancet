@@ -105,7 +105,7 @@ class LancetTransform extends Transform {
 
         PreClassAnalysis preClassAnalysis = new PreClassAnalysis(cache);
         boolean incremental = preClassAnalysis.execute(context);
-        Log.i("after pre parse, incremental: " + incremental);
+        Log.i("after pre analysis, incremental: " + incremental);
         Log.i("now: " + System.currentTimeMillis());
 
         MetaParser parser = createParser(context);
@@ -120,8 +120,7 @@ class LancetTransform extends Transform {
         TransformInfo transformInfo = parser.parse(context.getClasses(), context.getGraph());
 
         Weaver weaver = AsmWeaver.newInstance(transformInfo, context.getGraph());
-        new ContextReader(context)
-                .accept(incremental, new TransformProcessor(context, weaver));
+        new ContextReader(context).accept(incremental, new TransformProcessor(context, weaver));
         Log.i("build successfully done");
         Log.i("now: " + System.currentTimeMillis());
 

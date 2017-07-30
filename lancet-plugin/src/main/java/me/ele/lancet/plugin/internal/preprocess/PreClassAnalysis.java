@@ -23,6 +23,9 @@ import me.ele.lancet.weaver.internal.log.Log;
  * When you see this class you may be as happy as me like this:
  * <a href="http://wx1.sinaimg.cn/large/415f82b9ly1fe9kqcoe2nj20k00k0dhy.jpg"></a>
  *
+ * PreClassAnalysis mainly records the dependency graph of all classes,
+ * and record the hook classes to judge if incremental compile available in next time.
+ *
  */
 public class PreClassAnalysis {
 
@@ -42,7 +45,8 @@ public class PreClassAnalysis {
     }
 
     /**
-     * start pre-analysis
+     * start pre-analysis, the only API for pre-analysis.
+     * this method will block until pre-analysis finish.
      * @param context
      * @return is incremental compile mode
      * @throws IOException
@@ -54,12 +58,11 @@ public class PreClassAnalysis {
 
         contextReader = new ContextReader(context);
 
-        if (context.isIncremental()
-                && !cache.isHookClassModified(context)){
+        if (context.isIncremental() && !cache.isHookClassModified(context)){
             // can use incremental
             partial = true;
-            partialParse(context);
-            onComplete(null, context);
+
+            saveData(partialParse(context), context);
         } else {
             // must full compile
             partial = false;
@@ -68,7 +71,7 @@ public class PreClassAnalysis {
             cache.clear();
             context.clear();
 
-            onComplete(fullyParse(context), context);
+            saveData(fullyParse(context), context);
 
             duration = System.currentTimeMillis() - duration;
             Log.tag("Timer").i("pre parse cost: " + duration);
@@ -90,7 +93,7 @@ public class PreClassAnalysis {
         return preAnalysisClassFetcher;
     }
 
-    private void onComplete(PreAnalysisClassFetcher preAnalysisClassFetcher, TransformContext context) {
+    private void saveData(PreAnalysisClassFetcher preAnalysisClassFetcher, TransformContext context) {
         if (partial) {
             cache.savePartially(graph.toLocalNodes());
         } else {

@@ -24,6 +24,7 @@ import me.ele.lancet.weaver.internal.graph.Node;
 public class MetaGraphGeneratorImpl implements MetaGraphGenerator {
 
     private final CheckFlow checkFlow;
+    // Key is class name. value is class node.
     private Map<String, Node> nodeMap = new ConcurrentHashMap<>(512);
     private Graph graph;
 
@@ -54,6 +55,7 @@ public class MetaGraphGeneratorImpl implements MetaGraphGenerator {
         nodeMap.remove(className);
     }
 
+    // find node by name, if node is not exist then create and add it.
     private Node getOrPutEmpty(boolean isInterface, String className) {
         return nodeMap.computeIfAbsent(className, n -> isInterface ?
                 new InterfaceNode(n) :

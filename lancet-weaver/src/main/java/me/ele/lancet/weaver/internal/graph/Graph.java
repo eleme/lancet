@@ -11,7 +11,7 @@ import me.ele.lancet.weaver.internal.log.Log;
 
 /**
  * Created by gengwanpeng on 17/5/5.
- * Class dependency graphs.
+ * Class dependency graph.
  */
 public class Graph {
 
@@ -28,6 +28,12 @@ public class Graph {
         return checkFlow;
     }
 
+    /**
+     * Before prepare, the Graph only has vector from child to super.
+     * this method will add vector from super to child.
+     * After prepare, there is a full graph.
+     *
+     */
     public void prepare() {
         nodeMap.values()
                 .forEach(n -> {
