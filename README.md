@@ -1,5 +1,7 @@
 # Lancet
 
+[Chinese README](README_zh.md)
+
 Lancet is a lightweight AOP framework for Android.
 
 It's fast and just take up a little time during compiling. Also, it supports incremental compiling.
@@ -17,7 +19,7 @@ Firstly, add following code in root **build.gradle** of your project.
 
 ```groovy
 dependencies{
-    classpath 'me.ele:lancet-plugin:1.0.0'
+    classpath 'me.ele:lancet-plugin:1.0.0-rc1'
 }
 ```
 And then, add following code in your **application module's build.gradle**
@@ -26,7 +28,7 @@ And then, add following code in your **application module's build.gradle**
 apply plugin: 'me.ele.lancet'
 
 dependencies {
-    provided 'me.ele:lancet-base:1.0.0'
+    provided 'me.ele:lancet-base:1.0.0-rc1'
 }
 ```
 
@@ -354,12 +356,12 @@ E/debug: me.ele.Main
 E/debug: a = 3
 ```
 
-##Tips
+## Tips
 1. Inner classes should be named like  ```package.outer_class$inner_class```
 2. SDK developer needn't to apply plugin, just ```provided me.ele:lancet-base:x.y.z```
 3. Although we support incremental compilation. But when you use ```Scope.LEAF、Scope.ALL``` or edit the hook class, the incremental judgement will be a little special. It may cause full compilation.
 
-##License
+## License
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
