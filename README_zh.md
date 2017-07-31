@@ -59,9 +59,14 @@ public @interface Proxy {
 }
 ```
 
-`@Proxy` 将使用新的方法**替换**代码里存在的原有的目标方法. 
-比如代码里有10个地方使用了 `Dog.bark()`, 代理这个方法后，所有的10个地方的代码会变为`_Lancet.xxxx.bark()`. 而在新方法中会执行你在Hook方法中所写的代码.
-`@Proxy` 通常用与对系统 API 的劫持。因为虽然我们不能注入代码到系统提供的库之中，但我们可以劫持掉所有调用系统API的地方。
+`@Proxy` 将使用新的方法**替换**代码里存在的原有的目标方法.   
+比如代码里有10个地方调用了 `Dog.bark()`, 代理这个方法后，所有的10个地方的代码会变为`_Lancet.xxxx.bark()`. 而在这个新方法中会执行你在Hook方法中所写的代码.  
+`@Proxy` 通常用与对系统 API 的劫持。因为虽然我们不能注入代码到系统提供的库之中，但我们可以劫持掉所有调用系统API的地方。  
+
+##### @NameRegex
+@NameRegex 用来限制范围操作的作用域. 仅用于`Proxy`模式中, 比如你只想代理掉某一个包名下所有的目标操作. 或者你在代理所有的网络请求时，不想代理掉自己发起的请求. 使用`NameRegex`对 `TargetClass` , `ImplementedInterface` 筛选出的class再进行一次匹配. 
+
+
 
 #### @Insert 
 ``` java
@@ -71,10 +76,10 @@ public @interface Insert {
 }
 ```
 
-`@Insert` 将新代码插入到目标方法原有代码前后。
-`@Insert` 常用于操作App与library的类，并且可以通过`This`操作目标类的私有属性与方法(下文将会介绍)。
-`@Insert` 当目标方法不存在时，还可以使用`mayCreateSuper`参数来创建目标方法。
-比如下面将代码注入每一个Activity的`onStop`生命周期
+`@Insert` 将新代码插入到目标方法原有代码前后。  
+`@Insert` 常用于操作App与library的类，并且可以通过`This`操作目标类的私有属性与方法(下文将会介绍)。  
+`@Insert` 当目标方法不存在时，还可以使用`mayCreateSuper`参数来创建目标方法。  
+比如下面将代码注入每一个Activity的`onStop`生命周期  
 
 ```java
 
@@ -86,7 +91,7 @@ protected void onStop(){
 }
 ```
 
-`Scope` 将在后文介绍，这里的意为目标是 `AppCompatActivity` 的所有最终子类。
+`Scope` 将在后文介绍，这里的意为目标是 `AppCompatActivity` 的所有最终子类。  
 如果一个类 `MyActivity extends AppcompatActivity` 没有重写 `onStop` 会自动创建`onStop`方法，而`Origin`在这里就代表了`super.onStop()`, 最后就是这样的效果：
 
 ```java
@@ -153,21 +158,16 @@ public enum Scope {
 * Scope.LEAF -> B D
 
 
-### 更多功能
+### 匹配目标方法
+虽然在 `Proxy` , `Insert` 中我们指定了方法名, 但识别方法必须要更细致的信息. 我们会直接使用 Hook 方法的修饰符，参数类型来匹配方法.  
+所以一定要保持 Hook 方法的 `public/protected/private` `static` 信息与目标方法一致，参数类型，返回类型与目标方法一致.  
+返回类型可以用 Object 代替.  
+方法名不限. 异常声明也不限.  
 
-##### @NameRegex
-@NameRegex 用来限制范围操作的作用域. 仅用于`Proxy`模式中, 比如你只想代理掉某一个包名下所有的目标操作. 或者你在代理所有的网络请求时，不想代理掉自己发起的请求. 使用`NameRegex`对 `TargetClass` , `ImplementedInterface` 筛选出的class再进行一次匹配. 
-
-
-#### 匹配目标方法
-虽然在 `Proxy` , `Insert` 中我们指定了方法名, 但识别方法必须要更细致的信息. 我们会直接使用 Hook 方法的修饰符，参数类型来匹配方法.
-所以一定要保持 Hook 方法的 `public/protected/private` `static` 信息与目标方法一致，参数类型与个数与目标方法一致.
-返回值与方法名不限. 异常声明也不限.
-
-但有时候我们并没有权限声明目标类. 这时候怎么办？
+但有时候我们并没有权限声明目标类. 这时候怎么办？  
 ##### @ClassOf
-可以使用 `ClassOf` 注解来替代对类的直接 import.
-比如下面这个例子：
+可以使用 `ClassOf` 注解来替代对类的直接 import.  
+比如下面这个例子：  
 ```java
 public class A {
     protected int execute(B b){
@@ -190,7 +190,7 @@ public int hookExecute(@ClassOf("com.dieyidezui.demo.A$B") Object o) {
 }
 ```
 
-`ClassOf` 的 value 一定要按照 **`(package_name.)(outer_class_name$)inner_class_name([]...)`**的模板.
+`ClassOf` 的 value 一定要按照 **`(package_name.)(outer_class_name$)inner_class_name([]...)`**的模板.  
 比如:
 * java.lang.Object
 * java.lang.Integer[][]
@@ -198,13 +198,13 @@ public int hookExecute(@ClassOf("com.dieyidezui.demo.A$B") Object o) {
 * A$B
 
 ### API
-我们可以通过 `Origin` 与 `This` 与目标类进行一些交互.
+我们可以通过 `Origin` 与 `This` 与目标类进行一些交互.  
 
 #### Origin
-`Origin` 用来调用原目标方法. 可以被多次调用.
-`Origin.call()` 用来调用有返回值的方法.
-`Origin.callVoid()` 用来调用没有返回值的方法.
-另外，如果你有捕捉异常的需求.可以使用
+`Origin` 用来调用原目标方法. 可以被多次调用.  
+`Origin.call()` 用来调用有返回值的方法.  
+`Origin.callVoid()` 用来调用没有返回值的方法.  
+另外，如果你有捕捉异常的需求.可以使用  
 `Origin.call/callThrowOne/callThrowTwo/callThrowThree()`
 `Origin.callVoid/callVoidThrowOne/callVoidThrowTwo/callVoidThrowThree()`
 
@@ -225,17 +225,17 @@ public int read(byte[] bytes) throws IOException {
 
 
 #### This
-仅用于`Insert` 方式的非静态方法的Hook中.(暂时)
+仅用于`Insert` 方式的非静态方法的Hook中.(暂时)  
 
 ##### get()
-返回目标方法被调用的实例化对象.
+返回目标方法被调用的实例化对象.  
 
 ###### putField & getField
-你可以直接存取目标类的所有属性，无论是 `protected` or `private`.
-另外，如果这个属性不存在，我们还会自动创建这个属性. Exciting!
-自动装箱拆箱肯定也支持了.
+你可以直接存取目标类的所有属性，无论是 `protected` or `private`.  
+另外，如果这个属性不存在，我们还会自动创建这个属性. Exciting!  
+自动装箱拆箱肯定也支持了.  
 
-一些已知的缺陷:
+一些已知的缺陷:  
 + `Proxy` 不能使用 `This`
 + 你不能存取你父类的属性. 当你尝试存取父类属性时，我们还是会创建新的属性.
 
@@ -266,9 +266,9 @@ public void testThis() {
 ```
 
 ## Tips
-1. 内部类应该命名为  ```package.outer_class$inner_class```
-2. SDK 开发者不需要 `apply` 插件, 只需要 ```provided me.ele:lancet-base:x.y.z```
-3. 尽管我们支持增量编译. 但当我们使用 ```Scope.LEAF、Scope.ALL``` 覆盖的类有变动 或者修改 Hook 类时, 本次编译将会变成全量编译.
+1. 内部类应该命名为  ```package.outer_class$inner_class```  
+2. SDK 开发者不需要 `apply` 插件, 只需要 ```provided me.ele:lancet-base:x.y.z```  
+3. 尽管我们支持增量编译. 但当我们使用 ```Scope.LEAF、Scope.ALL``` 覆盖的类有变动 或者修改 Hook 类时, 本次编译将会变成全量编译.  
 
 ## License
 
