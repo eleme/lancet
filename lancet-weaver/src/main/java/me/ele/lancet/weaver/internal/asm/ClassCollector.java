@@ -70,14 +70,10 @@ public class ClassCollector {
         ClassData[] classDataArray = new ClassData[mClassWriters.size() + 1];
         int index = 0;
         for (Map.Entry<String, ClassWriter> entry : mClassWriters.entrySet()) {
-            classDataArray[index] = new ClassData();
-            classDataArray[index].setClassName(getCanonicalName(entry.getKey()));
-            classDataArray[index].setClassBytes(entry.getValue().toByteArray());
+            classDataArray[index] = new ClassData(entry.getValue().toByteArray(), getCanonicalName(entry.getKey()));
             index++;
         }
-        classDataArray[index] = new ClassData();
-        classDataArray[index].setClassName(originClassName);
-        classDataArray[index].setClassBytes(originClassWriter.toByteArray());
+        classDataArray[index] = new ClassData(originClassWriter.toByteArray(), originClassName);
         return classDataArray;
     }
 

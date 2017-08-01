@@ -103,14 +103,10 @@ public class TransformProcessor implements ClassFetcher {
                 jos.putNextEntry(entry);
                 jos.write(bytes);
             } else {
-                try {
-                    for (ClassData classData : weaver.weave(bytes, relativePath)) {
-                        ZipEntry entry = new ZipEntry(classData.getClassName() + ".class");
-                        jos.putNextEntry(entry);
-                        jos.write(classData.getClassBytes());
-                    }
-                } catch (RuntimeException e) {
-                    Log.e("error in transform: " + content.getFile().getAbsolutePath() + " " + relativePath, e);
+                for (ClassData classData : weaver.weave(bytes, relativePath)) {
+                    ZipEntry entry = new ZipEntry(classData.getClassName() + ".class");
+                    jos.putNextEntry(entry);
+                    jos.write(classData.getClassBytes());
                 }
             }
         }
@@ -123,14 +119,10 @@ public class TransformProcessor implements ClassFetcher {
     class DirectoryRunner {
 
         void run(File relativeRoot, String relativePath, byte[] bytes) throws IOException {
-            try {
-                for (ClassData data : weaver.weave(bytes, relativePath)) {
-                    File target = Util.toSystemDependentFile(relativeRoot, data.getClassName() + ".class");
-                    Files.createParentDirs(target);
-                    Files.write(data.getClassBytes(), target);
-                }
-            } catch (RuntimeException e) {
-                Log.e("error in transform: " + relativeRoot.getAbsolutePath() + " " + relativePath, e);
+            for (ClassData data : weaver.weave(bytes, relativePath)) {
+                File target = Util.toSystemDependentFile(relativeRoot, data.getClassName() + ".class");
+                Files.createParentDirs(target);
+                Files.write(data.getClassBytes(), target);
             }
         }
     }

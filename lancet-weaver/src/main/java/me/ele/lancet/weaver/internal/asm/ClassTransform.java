@@ -18,10 +18,8 @@ public class ClassTransform {
 
     public static final String AID_INNER_CLASS_NAME = "_lancet";
 
-    public static ClassData[] weave(TransformInfo transformInfo, Graph graph, byte[] classByte, String relativePath) {
+    public static ClassData[] weave(TransformInfo transformInfo, Graph graph, byte[] classByte, String internalName) {
         ClassCollector classCollector = new ClassCollector(new ClassReader(classByte), graph);
-
-        String internalName = relativePath.substring(0, relativePath.lastIndexOf('.'));
 
         classCollector.setOriginClassName(internalName);
 

@@ -38,7 +38,16 @@ public class AsmWeaver implements Weaver {
      */
     @Override
     public ClassData[] weave(byte[] input, String relativePath) {
-        return ClassTransform.weave(transformInfo, graph, input, relativePath);
+        if(!relativePath.endsWith(".class")){
+            throw new IllegalArgumentException("relativePath is not a class: " + relativePath);
+        }
+        String internalName = relativePath.substring(0, relativePath.lastIndexOf('.'));
+        try {
+            return ClassTransform.weave(transformInfo, graph, input, internalName);
+        }catch (RuntimeException e){
+            Log.e("error in transform", e);
+            return new ClassData[]{new ClassData(input, internalName)};
+        }
     }
 
 }
