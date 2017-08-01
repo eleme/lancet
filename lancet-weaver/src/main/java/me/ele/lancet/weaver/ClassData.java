@@ -8,6 +8,11 @@ public class ClassData {
     byte[] classBytes;
     String className;
 
+    public ClassData(byte[] classBytes, String className) {
+        this.classBytes = classBytes;
+        this.className = className;
+    }
+
     public byte[] getClassBytes() {
         return classBytes;
     }
