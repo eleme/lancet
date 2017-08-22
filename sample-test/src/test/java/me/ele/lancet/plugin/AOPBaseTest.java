@@ -51,6 +51,7 @@ public abstract class AOPBaseTest {
         when(transformInput.getJarInputs()).thenReturn(Collections.emptyList());
         // dir input
         DirectoryInput sampleDirectoryInput = Mockito.mock(DirectoryInput.class);
+        System.out.println(new File("").getAbsoluteFile());
         when(sampleDirectoryInput.getChangedFiles()).thenReturn(generateClassMap(new File(ClassFileUtil.ClassDir)));
         when(sampleDirectoryInput.getFile()).thenReturn(new File(ClassFileUtil.ClassDir));
 

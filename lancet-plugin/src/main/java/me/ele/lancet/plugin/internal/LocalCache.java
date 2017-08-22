@@ -51,12 +51,12 @@ public class LocalCache {
     }
 
 
-    public List<String> classes() {
-        return metas.classes;
+    public List<String> hookClasses() {
+        return metas.hookClasses;
     }
 
-    public List<String> classesInDirs() {
-        return metas.classesInDirs;
+    public List<String> hookClassesInDir() {
+        return metas.hookClassesInDir;
     }
 
     public CheckFlow hookFlow() {
@@ -101,10 +101,10 @@ public class LocalCache {
         saveToLocal();
     }
 
-    public void saveFully(List<ClassEntity> classMetas, List<String> classes, List<String> classesInDirs, List<String> jarWithHookClasses) {
+    public void saveFully(List<ClassEntity> classMetas, List<String> hookClasses, List<String> hookClassesInDir, List<String> jarWithHookClasses) {
         metas.classMetas = classMetas;
-        metas.classes = classes;
-        metas.classesInDirs = classesInDirs;
+        metas.hookClasses = hookClasses;
+        metas.hookClassesInDir = hookClassesInDir;
         metas.jarsWithHookClasses = jarWithHookClasses;
         saveToLocal();
     }

@@ -26,6 +26,7 @@ public class GetFieldTest extends AOPBaseTest {
             System.out.println("get "+coffeeBox.getLatte());
             return (Cup) Origin.call();
         }
+
     }
 
     @Override

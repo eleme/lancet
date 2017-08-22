@@ -101,7 +101,7 @@ public class PreClassAnalysis {
         }
 
         context.setGraph(graph.generate());
-        context.setClasses(cache.classes());
+        context.setHookClasses(cache.hookClasses());
     }
 
 

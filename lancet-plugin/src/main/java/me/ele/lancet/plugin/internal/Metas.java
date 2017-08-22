@@ -1,20 +1,20 @@
 package me.ele.lancet.plugin.internal;
 
 
-import me.ele.lancet.weaver.internal.graph.ClassEntity;
-import me.ele.lancet.weaver.internal.graph.CheckFlow;
-
 import java.util.Collections;
 import java.util.List;
+
+import me.ele.lancet.weaver.internal.graph.CheckFlow;
+import me.ele.lancet.weaver.internal.graph.ClassEntity;
 
 /**
  * Created by gengwanpeng on 17/4/26.
  */
 class Metas {
 
-    public List<String> classes = Collections.emptyList();
+    public List<String> hookClasses = Collections.emptyList();
 
-    public List<String> classesInDirs = Collections.emptyList();
+    public List<String> hookClassesInDir = Collections.emptyList();
 
     public List<String> jarsWithHookClasses = Collections.emptyList();
 
@@ -25,11 +25,11 @@ class Metas {
 
     public Metas withoutNull() {
         Metas shallowClone = new Metas();
-        if (classes != null) {
-            shallowClone.classes = classes;
+        if (hookClasses != null) {
+            shallowClone.hookClasses = hookClasses;
         }
-        if (classesInDirs != null) {
-            shallowClone.classesInDirs = classesInDirs;
+        if (hookClassesInDir != null) {
+            shallowClone.hookClassesInDir = hookClassesInDir;
         }
         if (jarsWithHookClasses != null) {
             shallowClone.jarsWithHookClasses = jarsWithHookClasses;

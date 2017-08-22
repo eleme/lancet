@@ -68,4 +68,8 @@ public class TypeUtil {
     public static boolean isPublic(int access) {
         return (access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC;
     }
+
+    public static int resetAccessScope(int access,int scope){
+        return access & ~(Opcodes.ACC_PRIVATE | Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED) | scope;
+    }
 }

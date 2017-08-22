@@ -79,7 +79,7 @@ class LancetTransform extends Transform {
      */
     @Override
     public Collection<SecondaryFile> getSecondaryFiles() {
-        return cache.classesInDirs()
+        return cache.hookClassesInDir()
                 .stream()
                 .map(File::new)
                 .map(SecondaryFile::nonIncremental)
@@ -117,7 +117,7 @@ class LancetTransform extends Transform {
         Log.i("now: " + System.currentTimeMillis());
 
         context.getGraph().flow().clear();
-        TransformInfo transformInfo = parser.parse(context.getClasses(), context.getGraph());
+        TransformInfo transformInfo = parser.parse(context.getHookClasses(), context.getGraph());
 
         Weaver weaver = AsmWeaver.newInstance(transformInfo, context.getGraph());
         new ContextReader(context).accept(incremental, new TransformProcessor(context, weaver));

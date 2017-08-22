@@ -14,10 +14,14 @@ public class CoffeeMaker {
     public Cup brew(Cup cup) {
         cup.putCoffee(coffeeBox.getLatte());
         SugarBox.addSugar(cup,10);
+        hand(cup);
+        return cup;
+    }
+
+    private void hand(Cup cup){
         heater.on();
         pump.pump();
         cup.full();
         heater.off();
-        return cup;
     }
 }

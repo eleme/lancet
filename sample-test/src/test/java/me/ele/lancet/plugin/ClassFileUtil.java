@@ -11,10 +11,10 @@ import java.util.List;
 
 public class ClassFileUtil {
 
-    public static final String MetaDir = "sample-test/build/lancet/";
-    public static final String ClassDir = "sample-test/build/classes/java/main";
-    public static final String TestDir = "sample-test/build/classes/java/test";
-    public static final String ProductDir = "sample-test/build/product/java/main";
+    public static final String MetaDir = (new File("").getAbsolutePath().contains("sample-test")?"":"sample-test/")    +"build/lancet/";
+    public static final String ClassDir = (new File("").getAbsolutePath().contains("sample-test")?"":"sample-test/")   +"build/classes/java/main";
+    public static final String TestDir = (new File("").getAbsolutePath().contains("sample-test")?"":"sample-test/")   +"build/classes/java/test";
+    public static final String ProductDir = (new File("").getAbsolutePath().contains("sample-test")?"":"sample-test/")   +"build/product/java/main";
 
     public static File getTestFile(String className){
         className = className.replace(".","/");

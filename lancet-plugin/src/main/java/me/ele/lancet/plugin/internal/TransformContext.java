@@ -33,7 +33,7 @@ public class TransformContext {
     private Collection<DirectoryInput> allDirs;
 
     private GlobalContext global;
-    private List<String> classes;
+    private List<String> hookClasses;
     private Graph graph;
 
     public TransformContext(TransformInvocation invocation, GlobalContext global) {
@@ -110,12 +110,12 @@ public class TransformContext {
         return global;
     }
 
-    public void setClasses(List<String> classes) {
-        this.classes = classes;
+    public void setHookClasses(List<String> hookClasses) {
+        this.hookClasses = hookClasses;
     }
 
-    public List<String> getClasses() {
-        return classes;
+    public List<String> getHookClasses() {
+        return hookClasses;
     }
 
     public Graph getGraph() {

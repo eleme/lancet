@@ -18,10 +18,10 @@ public class TransformInfo {
     public Map<String, List<InsertInfo>> executeInfo = new HashMap<>();
     public List<ProxyInfo> proxyInfo = new ArrayList<>();
     public List<TryCatchInfo> tryCatchInfo = new ArrayList<>();
-    public Set<String> exclude = new HashSet<>();
+    public Set<String> hookClasses = new HashSet<>();
 
-    public TransformInfo(List<String> classes) {
-        exclude.addAll(classes);
+    public TransformInfo(List<String> hookClasses) {
+        this.hookClasses.addAll(hookClasses);
     }
 
     public void combine(TransformInfo other) {
@@ -30,7 +30,7 @@ public class TransformInfo {
 
         tryCatchInfo.addAll(other.tryCatchInfo);
         proxyInfo.addAll(other.proxyInfo);
-        exclude.addAll(other.exclude);
+        hookClasses.addAll(other.hookClasses);
     }
 
     public void addInsertInfo(InsertInfo e) {
@@ -58,8 +58,8 @@ public class TransformInfo {
         this.proxyInfo = proxyInfo;
     }
 
-    public void setExclude(Set<String> exclude) {
-        this.exclude = exclude;
+    public void setHookClasses(Set<String> hookClasses) {
+        this.hookClasses = hookClasses;
     }
 
     @Override
@@ -86,10 +86,10 @@ public class TransformInfo {
                 content.append(' ').append(tryCatchInfo).append("\n");
             }
         }
-        if (exclude != null) {
-            content.append("Excludes:\n");
-            for (String exclude : this.exclude) {
-                content.append(' ').append(exclude).append("\n");
+        if (hookClasses != null) {
+            content.append("HookClasses:\n");
+            for (String hookClasses : this.hookClasses) {
+                content.append(' ').append(hookClasses).append("\n");
             }
         }
         return content.toString();

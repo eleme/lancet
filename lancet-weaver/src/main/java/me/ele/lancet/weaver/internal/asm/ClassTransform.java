@@ -3,7 +3,7 @@ package me.ele.lancet.weaver.internal.asm;
 import org.objectweb.asm.ClassReader;
 
 import me.ele.lancet.weaver.ClassData;
-import me.ele.lancet.weaver.internal.asm.classvisitor.ContextClassVisitor;
+import me.ele.lancet.weaver.internal.asm.classvisitor.HookClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.InsertClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.ProxyClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.TryCatchInfoClassVisitor;
@@ -29,7 +29,7 @@ public class ClassTransform {
         ClassContext context = new ClassContext(graph, chain, classCollector.getOriginClassVisitor());
 
         ClassTransform transform = new ClassTransform(classCollector, context);
-        transform.connect(new ContextClassVisitor(transformInfo.exclude));
+        transform.connect(new HookClassVisitor(transformInfo.hookClasses));
         transform.connect(new ProxyClassVisitor(transformInfo.proxyInfo));
         transform.connect(new InsertClassVisitor(transformInfo.executeInfo));
         transform.connect(new TryCatchInfoClassVisitor(transformInfo.tryCatchInfo));

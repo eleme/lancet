@@ -63,13 +63,13 @@ public class AsmMetaParser implements MetaParser {
     }
 
     @Override
-    public TransformInfo parse(List<String> classes, Graph graph) {
-        Log.i("aop classes: \n" + classes.stream().collect(Collectors.joining("\n")));
+    public TransformInfo parse(List<String> hookClasses, Graph graph) {
+        Log.i("aop classes: \n" + hookClasses.stream().collect(Collectors.joining("\n")));
 
-        return classes.stream().map(s -> new AsmClassParser(loader).parse(s))
+        return hookClasses.stream().map(s -> new AsmClassParser(loader).parse(s))
                 .map(c -> c.toLocators(graph))
                 .flatMap(Collection::stream)
-                .collect(() -> new TransformInfo(classes), (t, l) -> l.appendTo(t), TransformInfo::combine);
+                .collect(() -> new TransformInfo(hookClasses), (t, l) -> l.appendTo(t), TransformInfo::combine);
     }
 
     private class AsmClassParser {
@@ -184,8 +184,11 @@ public class AsmMetaParser implements MetaParser {
         }
 
         private boolean checkMethod(MethodNode methodNode) {
-            return ((List<AnnotationNode>)methodNode.visibleAnnotations).stream()
-                    .anyMatch(annotationNode -> annotationNode.desc.contains("lancet"));
+            List<AnnotationNode> list = methodNode.visibleAnnotations;
+            if (list != null ){
+                return list.stream().anyMatch(annotationNode -> annotationNode.desc.contains("lancet"));
+            }
+            return false;
         }
     }
 }
