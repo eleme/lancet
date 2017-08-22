@@ -171,13 +171,14 @@ public class AsmMetaParser implements MetaParser {
         @SuppressWarnings("unchecked")
         private void checkNode(ClassNode cn) {
             if (cn.fields.size() > 0) {
-                throw new IllegalStateException("can't declare fields in hook class");
+                String s = cn.fields.stream().map(fieldNode -> fieldNode.name).collect(Collectors.joining(","));
+                throw new IllegalStateException("can't declare fields '"+s+"' in hook class "+cn.name);
             }
             int ac = Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC;
             cn.innerClasses.forEach(c -> {
                 InnerClassNode n = (InnerClassNode) c;
                 if ((n.access & ac) != ac) {
-                    throw new IllegalStateException("inner class in hook class must be public static");
+                    throw new IllegalStateException("inner class in hook class "+cn.name+" must be public static");
                 }
             });
         }

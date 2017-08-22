@@ -13,7 +13,7 @@ buildscript {
             bintrayKey = properties.getProperty('bintrayKey')
         }
         lancet_group = 'me.ele'
-        lancet_version = '1.0.0'
+        lancet_version = '1.0.0-rc1'
         //lancet_version = '0.0.1.8-SNAPSHOT'
 
         asm_version = '5.1'
