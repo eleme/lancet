@@ -22,11 +22,11 @@
 package me.ele.lancet.weaver.internal.log.Impl;
 
 
+import org.gradle.api.logging.LogLevel;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
-
-import me.ele.lancet.weaver.internal.log.ILogger;
 
 
 /**
@@ -46,8 +46,8 @@ public class FileLoggerImpl extends BaseLogger {
     }
 
     @Override
-    protected synchronized void write(String prefix, String msg, Throwable t) {
-        pr.println(String.format("[%-10s] %s", prefix, msg));
+    protected void write(LogLevel level, String prefix, String msg, Throwable t) {
+        pr.println(String.format("%s [%-10s] %s",level.name(), prefix, msg));
         if (t != null) {
             t.printStackTrace(pr);
         }

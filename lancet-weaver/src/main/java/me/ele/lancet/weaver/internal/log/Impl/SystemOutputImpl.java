@@ -21,14 +21,9 @@
 //         .............................................
 package me.ele.lancet.weaver.internal.log.Impl;
 
-import org.gradle.api.logging.Logger;
-import org.gradle.api.logging.Logging;
+import org.gradle.api.logging.LogLevel;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import me.ele.lancet.weaver.internal.log.ILogger;
 
 /**
  * Created by gengwanpeng on 16/7/6.
@@ -36,14 +31,14 @@ import me.ele.lancet.weaver.internal.log.ILogger;
 public class SystemOutputImpl extends BaseLogger {
 
     @Override
-    protected synchronized void write(String prefix, String msg, Throwable t) {
+    protected void write(LogLevel level, String prefix, String msg, Throwable t) {
         PrintStream ps = System.out;
         if (prefix.charAt(0) == 'E' || prefix.charAt(0) == 'W') {
             ps = System.err;
         }
-        ps.println((String.format("[%-10s] %s", prefix, msg)));
+        ps.println((String.format("%s [%-10s] %s", level.name(),prefix, msg)));
         if (t != null) {
-            ps.println((stackToString(t)));
+            ps.println(level.name()+" "+stackToString(t));
         }
     }
 }

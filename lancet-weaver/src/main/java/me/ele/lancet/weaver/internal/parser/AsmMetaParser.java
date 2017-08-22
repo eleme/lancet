@@ -7,6 +7,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InnerClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
@@ -47,7 +48,6 @@ import me.ele.lancet.weaver.internal.parser.anno.NameRegexAnnoParser;
 import me.ele.lancet.weaver.internal.parser.anno.ProxyAnnoParser;
 import me.ele.lancet.weaver.internal.parser.anno.TargetClassAnnoParser;
 import me.ele.lancet.weaver.internal.parser.anno.TryCatchAnnoParser;
-import me.ele.lancet.weaver.internal.util.TypeUtil;
 
 
 /**
@@ -97,7 +97,7 @@ public class AsmMetaParser implements MetaParser {
             ClassMetaInfo meta = new ClassMetaInfo(className);
             meta.annotationMetas = nodesToMetas(cn.visibleAnnotations);
             meta.methods = ((List<MethodNode>) cn.methods).stream()
-                    .filter(m -> !m.name.equals("<clinit>") && !m.name.equals("<init>") && !TypeUtil.isAbstract(m.access))
+                    .filter(this::checkMethod)
                     .map(mn -> {
                         List<AnnotationMeta> methodMetas = nodesToMetas(mn.visibleAnnotations);
 
@@ -171,8 +171,8 @@ public class AsmMetaParser implements MetaParser {
         @SuppressWarnings("unchecked")
         private void checkNode(ClassNode cn) {
             if (cn.fields.size() > 0) {
-                String s = cn.fields.stream().map(fieldNode -> fieldNode.name).collect(Collectors.joining(","));
-                throw new IllegalStateException("can't declare fields '"+s+"' in hook class "+cn.name);
+                String s = ((List<FieldNode>)cn.fields).stream().map(fieldNode -> fieldNode.name).collect(Collectors.joining(","));
+                Log.w("can't declare fields '"+s+"' in hook class "+cn.name);
             }
             int ac = Opcodes.ACC_STATIC | Opcodes.ACC_PUBLIC;
             cn.innerClasses.forEach(c -> {
@@ -181,6 +181,11 @@ public class AsmMetaParser implements MetaParser {
                     throw new IllegalStateException("inner class in hook class "+cn.name+" must be public static");
                 }
             });
+        }
+
+        private boolean checkMethod(MethodNode methodNode) {
+            return ((List<AnnotationNode>)methodNode.visibleAnnotations).stream()
+                    .anyMatch(annotationNode -> annotationNode.desc.contains("lancet"));
         }
     }
 }
