@@ -2,6 +2,7 @@ package me.ele.lancet.weaver.internal.asm.classvisitor.methodvisitor;
 
 import me.ele.lancet.weaver.internal.asm.MethodChain;
 import me.ele.lancet.weaver.internal.util.TypeUtil;
+
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -44,7 +45,7 @@ public class ProxyMethodVisitor extends MethodVisitor {
         if (invoker != null) {
             invoker.invoke(mv);
         } else if (infos != null && infos.size() > 0) {
-
+            infos.forEach(info -> info.isEffective = true);
             String staticDesc = TypeUtil.descToStatic(opcode == Opcodes.INVOKESTATIC ? Opcodes.ACC_STATIC : 0, desc, owner);
             // begin hook this code.
             chain.headFromProxy(opcode, owner, name, desc);

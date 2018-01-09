@@ -14,4 +14,6 @@ public @interface Insert {
     String value();
 
     boolean mayCreateSuper() default false;
+
+    boolean shouldIgnoreCheck() default false;
 }

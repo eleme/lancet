@@ -21,6 +21,9 @@ public class ProxyInfo {
 
     public Pattern pattern;
 
+    public boolean isTargetMethodExist;
+    public boolean isEffective;
+
     public ProxyInfo(String regex, String targetClass, String targetMethod, String targetDesc, String sourceClass, MethodNode sourceMethod) {
         this.regex = regex;
         this.targetClass = targetClass;
@@ -32,6 +35,8 @@ public class ProxyInfo {
         if (!Strings.isNullOrEmpty(regex)) {
             this.pattern = Pattern.compile(regex);
         }
+        isTargetMethodExist = false;
+        isEffective = false;
     }
 
     public boolean match(String className) {

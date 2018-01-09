@@ -1,12 +1,18 @@
 package me.ele.lancet.weaver.internal.asm;
 
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
+
+import java.util.List;
 
 import me.ele.lancet.weaver.ClassData;
 import me.ele.lancet.weaver.internal.asm.classvisitor.HookClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.InsertClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.ProxyClassVisitor;
 import me.ele.lancet.weaver.internal.asm.classvisitor.TryCatchInfoClassVisitor;
+import me.ele.lancet.weaver.internal.entity.InsertInfo;
 import me.ele.lancet.weaver.internal.entity.TransformInfo;
 import me.ele.lancet.weaver.internal.graph.Graph;
 
@@ -23,6 +29,7 @@ public class ClassTransform {
 
         classCollector.setOriginClassName(internalName);
 
+        checkIfInsertMethodExist(transformInfo, classByte, internalName);
         MethodChain chain = new MethodChain(internalName, classCollector.getOriginClassVisitor(), graph);
         ClassContext context = new ClassContext(graph, chain, classCollector.getOriginClassVisitor());
 
@@ -33,6 +40,27 @@ public class ClassTransform {
         transform.connect(new TryCatchInfoClassVisitor(transformInfo.tryCatchInfo));
         transform.startTransform();
         return classCollector.generateClassBytes();
+    }
+
+    private static void checkIfInsertMethodExist(TransformInfo transformInfo, byte[] classByte, String internalName) {
+        List<InsertInfo> matchInsertMethods = transformInfo.executeInfo.get(internalName);
+        if (matchInsertMethods == null || matchInsertMethods.isEmpty())
+            return;
+        ClassReader cr = new ClassReader(classByte);
+        ClassNode cn = new ClassNode();
+        cr.accept(cn, ClassReader.SKIP_CODE);
+        List<MethodNode> methods = cn.methods;
+        methods.forEach(m -> matchInsertMethods.forEach(e -> {
+            if (e.targetMethod.equals(m.name) && e.targetDesc.equals(m.desc)) {
+                if (((e.sourceMethod.access ^ m.access) & Opcodes.ACC_STATIC) != 0) {
+                    throw new IllegalStateException(e.sourceClass + "." + e.sourceMethod.name + " should have the same static flag with "
+                            + internalName + "." + m.name);
+                }
+                if ((m.access & (Opcodes.ACC_NATIVE | Opcodes.ACC_ABSTRACT)) == 0) {
+                    e.isTargetMethodExist = true;
+                }
+            }
+        }));
     }
 
     private LinkedClassVisitor mHeadVisitor;

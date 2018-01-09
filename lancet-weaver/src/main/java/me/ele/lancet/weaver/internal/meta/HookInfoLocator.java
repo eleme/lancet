@@ -52,6 +52,7 @@ public class HookInfoLocator {
 
     private String flowClassName;
     private final Graph graph;
+    private boolean shouldIgnoreCheck;
 
     public HookInfoLocator(Graph graph) {
         this.graph = graph;
@@ -83,10 +84,11 @@ public class HookInfoLocator {
         targetDesc = sourceNode.desc = Type.getMethodDescriptor(returnType, argsType);
     }
 
-    public void setInsert(String targetMethod, boolean mayCreateSuper) {
+    public void setInsert(String targetMethod, boolean mayCreateSuper, boolean shouldIgnoreCheck) {
         this.flag |= INSERT;
         this.targetMethod = targetMethod;
         this.mayCreateSuper = mayCreateSuper;
+        this.shouldIgnoreCheck = shouldIgnoreCheck;
     }
 
     public void setProxy(String targetMethod) {
@@ -121,7 +123,7 @@ public class HookInfoLocator {
         switch (flag) {
             case INSERT:
                 classes.stream()
-                        .map(c -> new InsertInfo(mayCreateSuper, c, targetMethod, targetDesc, sourceClass, sourceNode))
+                        .map(c -> new InsertInfo(mayCreateSuper, c, targetMethod, targetDesc, sourceClass, sourceNode, shouldIgnoreCheck))
                         .forEach(transformInfo::addInsertInfo);
                 break;
             case PROXY:

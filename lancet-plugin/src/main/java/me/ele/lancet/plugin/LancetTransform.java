@@ -17,8 +17,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,6 +36,8 @@ import me.ele.lancet.plugin.internal.context.ContextReader;
 import me.ele.lancet.weaver.MetaParser;
 import me.ele.lancet.weaver.Weaver;
 import me.ele.lancet.weaver.internal.AsmWeaver;
+import me.ele.lancet.weaver.internal.entity.InsertInfo;
+import me.ele.lancet.weaver.internal.entity.ProxyInfo;
 import me.ele.lancet.weaver.internal.entity.TransformInfo;
 import me.ele.lancet.weaver.internal.log.Impl.FileLoggerImpl;
 import me.ele.lancet.weaver.internal.log.Log;
@@ -120,7 +126,36 @@ class LancetTransform extends Transform {
         TransformInfo transformInfo = parser.parse(context.getHookClasses(), context.getGraph());
 
         Weaver weaver = AsmWeaver.newInstance(transformInfo, context.getGraph());
+        Map<String, List<InsertInfo>> executeInfoBak = new HashMap<>();
+        if (lancetExtension.isCheckUselessProxyMethodEnable()) {
+            // backup @Insert executeInfo
+            for (String k : transformInfo.executeInfo.keySet()) {
+                List<InsertInfo> infosBak = new ArrayList<>();
+                List<InsertInfo> insertInfos = transformInfo.executeInfo.get(k);
+                infosBak.addAll(insertInfos);
+                executeInfoBak.put(k, infosBak);
+            }
+        }
         new ContextReader(context).accept(incremental, new TransformProcessor(context, weaver));
+        if (lancetExtension.isCheckUselessProxyMethodEnable()) {
+            List<ProxyInfo> proxyInfoList = transformInfo.proxyInfo;
+            proxyInfoList.forEach(info -> {
+                if (!info.isTargetMethodExist) {
+                    throw new IllegalStateException("@Proxy: " + info.toString() + " target method is not exist!");
+                }
+                if (!info.isEffective) {
+                    throw new IllegalStateException("@Proxy: " + info.toString() + " is useless!");
+                }
+            });
+            for (String k : executeInfoBak.keySet()) {
+                List<InsertInfo> insertInfos = executeInfoBak.get(k);
+                insertInfos.forEach(info -> {
+                    if (!info.shouldIgoreCheck && !info.isTargetMethodExist) {
+                        throw new IllegalStateException("@Insert: " + info.toString() + " target method is not exist!");
+                    }
+                });
+            }
+        }
         Log.i("build successfully done");
         Log.i("now: " + System.currentTimeMillis());
 

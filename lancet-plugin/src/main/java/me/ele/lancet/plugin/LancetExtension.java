@@ -2,6 +2,7 @@
 package me.ele.lancet.plugin;
 
 import com.google.common.base.Strings;
+
 import me.ele.lancet.weaver.internal.log.Log;
 
 import java.io.File;
@@ -10,6 +11,7 @@ import java.util.Objects;
 public class LancetExtension {
     private Log.Level level = Log.Level.INFO;
     private String fileName = null;
+    private boolean checkUselessProxyMethodEnable = false;
 
     public void logLevel(Log.Level level) {
         this.level = Objects.requireNonNull(level, "Log.Level is null");
@@ -56,5 +58,13 @@ public class LancetExtension {
 
     public String getFileName() {
         return fileName;
+    }
+
+    public boolean isCheckUselessProxyMethodEnable() {
+        return checkUselessProxyMethodEnable;
+    }
+
+    public void setCheckUselessProxyMethodEnable(boolean enable) {
+        checkUselessProxyMethodEnable = enable;
     }
 }
