@@ -14,9 +14,9 @@ pom.xml.*
 release.properties
 # Idea
 .idea
-*.iml
-classes
 obj
 #MacOS
 .DS_Store
 local.properties
+lancet-weaver/src/test/sample/class/
+lancet-weaver/src/test/sample/product/

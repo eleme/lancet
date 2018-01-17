@@ -15,13 +15,13 @@ public class TargetMethodInfo {
     public String myDescriptor;
     public String name;
 
-    public List<ExecuteInfo> executes = new ArrayList<>();
+    public List<InsertInfo> executes = new ArrayList<>();
 
     public TargetMethodInfo() {
     }
 
 
-    public void addExecute(ExecuteInfo info) {
+    public void addExecute(InsertInfo info) {
         executes.add(info);
         createSuper |= info.createSuper;
     }

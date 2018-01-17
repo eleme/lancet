@@ -21,63 +21,22 @@
 //         .............................................
 package me.ele.lancet.weaver.internal.log.Impl;
 
+import org.gradle.api.logging.LogLevel;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import me.ele.lancet.weaver.internal.log.ILogger;
 
 /**
  * Created by gengwanpeng on 16/7/6.
  */
-public class SystemLoggerImpl implements ILogger {
+public class SystemLoggerImpl extends BaseLogger {
 
     private final Logger logger = Logging.getLogger("lancet");
 
     @Override
-    public void d(String tag,String msg) {
-        write("D "+tag, msg, null);
-    }
-
-    @Override
-    public void i(String tag,String msg) {
-        write("I "+tag, msg, null);
-    }
-
-    @Override
-    public void w(String tag,String msg) {
-        w(tag,msg, null);
-    }
-
-    @Override
-    public void w(String tag,String msg, Throwable t) {
-        write("W "+tag, msg, t);
-    }
-
-    @Override
-    public void e(String tag,String msg) {
-        e(tag,msg, null);
-    }
-
-    @Override
-    public void e(String tag,String msg, Throwable t) {
-        write("E "+tag, msg, t);
-    }
-
-    synchronized protected void write(String prefix, String msg, Throwable t) {
-        logger.info(String.format("[%-10s] %s", prefix, msg));
+    protected synchronized void write(LogLevel level, String prefix, String msg, Throwable t) {
+        logger.log(level,String.format("[%-10s] %s", prefix, msg));
         if (t != null) {
-            logger.info(stackToString(t));
+            logger.log(level,stackToString(t));
         }
-    }
-
-    private static String stackToString(Throwable t) {
-        StringWriter sw = new StringWriter(128);
-        PrintWriter ps = new PrintWriter(sw);
-        t.printStackTrace(ps);
-        ps.flush();
-        return sw.toString();
     }
 }

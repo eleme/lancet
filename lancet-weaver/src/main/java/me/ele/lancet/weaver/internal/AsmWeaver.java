@@ -1,38 +1,11 @@
 package me.ele.lancet.weaver.internal;
 
-import me.ele.lancet.base.PlaceHolder;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.util.CheckClassAdapter;
-
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import me.ele.lancet.base.api.ClassSupplier;
-import me.ele.lancet.weaver.MetaParser;
+import me.ele.lancet.weaver.ClassData;
 import me.ele.lancet.weaver.Weaver;
-import me.ele.lancet.weaver.internal.asm.CustomClassLoaderClassWriter;
-import me.ele.lancet.weaver.internal.asm.classvisitor.CallClassVisitor;
-import me.ele.lancet.weaver.internal.asm.classvisitor.ExcludeClassVisitor;
-import me.ele.lancet.weaver.internal.asm.classvisitor.ExecuteClassVisitor;
-import me.ele.lancet.weaver.internal.asm.classvisitor.TryCatchInfoClassVisitor;
-import me.ele.lancet.weaver.internal.entity.CallInfo;
-import me.ele.lancet.weaver.internal.entity.ExecuteInfo;
-import me.ele.lancet.weaver.internal.entity.TotalInfo;
-import me.ele.lancet.weaver.internal.entity.TryCatchInfo;
-import me.ele.lancet.weaver.internal.meta.ClassMetaInfo;
-import me.ele.lancet.weaver.internal.meta.MethodMetaInfo;
-import me.ele.lancet.weaver.internal.parser.ReflectiveMetaParser;
-import me.ele.lancet.weaver.internal.supplier.ComponentSupplier;
-import me.ele.lancet.weaver.internal.supplier.DirCodeSupplier;
-import me.ele.lancet.weaver.internal.supplier.JarClassSupplier;
+import me.ele.lancet.weaver.internal.asm.ClassTransform;
+import me.ele.lancet.weaver.internal.entity.TransformInfo;
+import me.ele.lancet.weaver.internal.graph.Graph;
+import me.ele.lancet.weaver.internal.log.Log;
 
 
 /**
@@ -40,97 +13,41 @@ import me.ele.lancet.weaver.internal.supplier.JarClassSupplier;
  */
 public class AsmWeaver implements Weaver {
 
-
-    public static AsmWeaver newInstance(Collection<File> jars, Collection<File> dirs) {
-        URLClassLoader dirLoader = URLClassLoader.newInstance(toUrls(dirs), Thread.currentThread().getContextClassLoader());
-        URLClassLoader loader = URLClassLoader.newInstance(toUrls(jars), dirLoader);
-
-        ClassSupplier dirSupplier = new DirCodeSupplier(dirLoader);
-        ClassSupplier jarSupplier = new JarClassSupplier(jars, loader);
-        ClassSupplier supplier = ComponentSupplier.newInstance(dirSupplier, jarSupplier);
-
-        MetaParser parser = new ReflectiveMetaParser(loader);
-        List<Class<?>> classes = supplier.get();
-        List<ClassMetaInfo> list = parser.parse(classes);
-
-        return new AsmWeaver(loader, classes, list);
+    /**
+     * Create a AsmWeaver instance. In a compilation process, the AsmWeaver instance will only be created once.
+     *
+     * @param transformInfo the transformInfo for this compilation process.
+     * @param graph
+     * @return
+     */
+    public static Weaver newInstance(TransformInfo transformInfo, Graph graph) {
+        return new AsmWeaver(transformInfo, graph);
     }
 
-    private final URLClassLoader loader;
-    private final List<Class<?>> classes;
-    private final TotalInfo totalInfo;
-    private final Set<String> excludes;
+    private final TransformInfo transformInfo;
+    private final Graph graph;
 
-    public AsmWeaver(URLClassLoader loader, List<Class<?>> classes, List<ClassMetaInfo> list) {
-        this.loader = loader;
-        this.classes = classes;
-        this.totalInfo = convertToAopInfo(list);
-        this.excludes = classes.stream().map(c -> c.getName().replace('.', '/')).collect(Collectors.toSet());
+    private AsmWeaver(TransformInfo transformInfo, Graph graph) {
+        Log.d(transformInfo.toString());
+        this.graph = graph;
+        this.transformInfo = transformInfo;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public List<String> getBuiltInNames() {
-        return classes.stream().map(Class::getName).collect(Collectors.toList());
-    }
-
-    @Override
-    public byte[] weave(byte[] input) {
-        ClassReader cr = new ClassReader(input);
-
-        CustomClassLoaderClassWriter cw = new CustomClassLoaderClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        cw.setCustomClassLoader(loader);
-
-        CheckClassAdapter cc = new CheckClassAdapter(cw);
-
-        ExecuteClassVisitor xcv = new ExecuteClassVisitor(Opcodes.ASM5, cw, totalInfo);
-        CallClassVisitor ccv = new CallClassVisitor(Opcodes.ASM5, xcv, totalInfo);
-        TryCatchInfoClassVisitor tcv = new TryCatchInfoClassVisitor(Opcodes.ASM5, ccv, totalInfo);
-        ExcludeClassVisitor ecv = new ExcludeClassVisitor(Opcodes.ASM5, tcv, excludes);
-
-        cr.accept(ecv, ClassReader.SKIP_FRAMES);
-
-        if (ecv.isSupplierClass()) {
-            return null;
+    public ClassData[] weave(byte[] input, String relativePath) {
+        if(!relativePath.endsWith(".class")){
+            throw new IllegalArgumentException("relativePath is not a class: " + relativePath);
         }
-
-        if (ecv.isExclude()) {
-            return input;
+        String internalName = relativePath.substring(0, relativePath.lastIndexOf('.'));
+        try {
+            return ClassTransform.weave(transformInfo, graph, input, internalName);
+        }catch (RuntimeException e){
+            Log.e("error in transform", e);
+            return new ClassData[]{new ClassData(input, internalName)};
         }
-        return cw.toByteArray();
     }
 
-    private static TotalInfo convertToAopInfo(List<ClassMetaInfo> list) {
-        List<ExecuteInfo> executeInfos = list.stream().flatMap(c -> c.infos.stream())
-                .filter(m -> m.getType() == MethodMetaInfo.TYPE_EXECUTE)
-                .map(m -> new ExecuteInfo(m.isStatic(), m.isMayCreateSuper(), m.getTargetClass(), m.getTargetSuperClass(), m.getTargetInterfaces(),
-                        m.getTargetMethod(), m.getMyDescriptor(), m.getMyMethod(), m.getNode()))
-                .collect(Collectors.toList());
-        List<TryCatchInfo> tryCatchInfos = list.stream()
-                .flatMap(c -> c.infos.stream())
-                .filter(m -> m.getType() == MethodMetaInfo.TYPE_HANDLER)
-                .map(m -> new TryCatchInfo(m.getRegex(), m.getMyClass(), m.getMyMethod(), m.getMyDescriptor()))
-                .collect(Collectors.toList());
-
-        List<CallInfo> callInfos = list.stream()
-                .flatMap(c -> c.infos.stream())
-                .filter(m -> m.getType() == MethodMetaInfo.TYPE_CALL)
-                .map(m -> new CallInfo(m.isStatic(), m.getRegex(), m.getTargetClass(), m.getTargetMethod(), m.getMyDescriptor(), m.getMyClass(), m.getMyMethod(), m.getNode()))
-                .peek(CallInfo::transformSelf)
-                .collect(Collectors.toList());
-
-        return new TotalInfo(executeInfos, tryCatchInfos, callInfos);
-    }
-
-    private static URL[] toUrls(Collection<File> files) {
-        return files.stream()
-                .map(File::toURI)
-                .map(u -> {
-                    try {
-                        return u.toURL();
-                    } catch (MalformedURLException ignored) {
-                        throw new AssertionError();
-                    }
-                })
-                .toArray(URL[]::new);
-    }
 }
