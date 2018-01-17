@@ -44,7 +44,7 @@ Look at the following code:
 ```java
 @Proxy("i")
 @TargetClass("android.util.Log")
-public int i(String tag, String msg){
+public static int anyName(String tag, String msg){
     msg = msg + "lancet";
     return (int) Origin.call();
 }
