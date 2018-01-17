@@ -35,7 +35,7 @@ Lancet 使用注解来指定代码织入的规则与位置。
 ```java
 @Proxy("i")
 @TargetClass("android.util.Log")
-public int i(String tag, String msg){
+public static int anyName(String tag, String msg){
     msg = msg + "lancet";
     return (int) Origin.call();
 }
