@@ -1,10 +1,12 @@
 package me.ele.lancet.weaver.internal.parser.anno;
 
 import com.google.common.base.Strings;
+
 import me.ele.lancet.weaver.internal.exception.IllegalAnnotationException;
 import me.ele.lancet.weaver.internal.meta.HookInfoLocator;
 import me.ele.lancet.weaver.internal.parser.AnnoParser;
 import me.ele.lancet.weaver.internal.parser.AnnotationMeta;
+
 import org.objectweb.asm.tree.AnnotationNode;
 
 import java.util.List;
@@ -21,6 +23,8 @@ public class InsertAnnoParser implements AnnoParser {
         List<Object> values;
         String targetMethod = null;
         boolean mayCreateSuper = false;
+        boolean shouldIgnoreCheck = false;
+
         if ((values = annotationNode.values) != null) {
             for (int i = 0; i < values.size(); i += 2) {
                 switch ((String) values.get(i)) {
@@ -29,16 +33,18 @@ public class InsertAnnoParser implements AnnoParser {
                         if (Strings.isNullOrEmpty(targetMethod)) {
                             throw new IllegalAnnotationException("@InsertAnnoParser value can't be empty or null");
                         }
-
                         break;
                     case "mayCreateSuper":
                         mayCreateSuper = (boolean) values.get(i + 1);
+                        break;
+                    case "shouldIgnoreCheck":
+                        shouldIgnoreCheck = (boolean) values.get(i + 1);
                         break;
                     default:
                         throw new IllegalAnnotationException();
                 }
             }
-            return new InsertAnnoMeta(annotationNode.desc, targetMethod, mayCreateSuper);
+            return new InsertAnnoMeta(annotationNode.desc, targetMethod, mayCreateSuper, shouldIgnoreCheck);
         }
 
         throw new IllegalAnnotationException("@InsertAnnoParser is illegal, must specify value field");
@@ -48,16 +54,18 @@ public class InsertAnnoParser implements AnnoParser {
 
         private final String targetMethod;
         private final boolean mayCreateSuper;
+        private final boolean shouldIgnoreCheck;
 
-        private InsertAnnoMeta(String desc, String targetMethod, boolean mayCreateSuper) {
+        private InsertAnnoMeta(String desc, String targetMethod, boolean mayCreateSuper, boolean shouldIgnoreCheck) {
             super(desc);
             this.targetMethod = targetMethod;
             this.mayCreateSuper = mayCreateSuper;
+            this.shouldIgnoreCheck = shouldIgnoreCheck;
         }
 
         @Override
         public void accept(HookInfoLocator locator) {
-            locator.setInsert(targetMethod, mayCreateSuper);
+            locator.setInsert(targetMethod, mayCreateSuper, shouldIgnoreCheck);
         }
     }
 }
