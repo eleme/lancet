@@ -45,7 +45,7 @@ public class AsmWeaver implements Weaver {
         try {
             return ClassTransform.weave(transformInfo, graph, input, internalName);
         }catch (RuntimeException e){
-            Log.e("error in transform", e);
+            Log.e("error in transform: " + relativePath, e);
             return new ClassData[]{new ClassData(input, internalName)};
         }
     }

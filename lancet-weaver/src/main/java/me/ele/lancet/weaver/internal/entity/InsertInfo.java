@@ -1,5 +1,6 @@
 package me.ele.lancet.weaver.internal.entity;
 
+import me.ele.lancet.weaver.internal.util.AsmUtil;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
@@ -14,6 +15,13 @@ public class InsertInfo {
     public String sourceClass;
     public MethodNode sourceMethod;
 
+    private ThreadLocal<MethodNode> local = new ThreadLocal<MethodNode>(){
+        @Override
+        protected MethodNode initialValue() {
+            return AsmUtil.clone(sourceMethod);
+        }
+    };
+
     public InsertInfo(boolean createSuper, String targetClass, String targetMethod, String targetDesc, String sourceClass, MethodNode sourceMethod) {
         this.createSuper = createSuper;
         this.targetClass = targetClass;
@@ -21,6 +29,10 @@ public class InsertInfo {
         this.targetDesc = targetDesc;
         this.sourceClass = sourceClass;
         this.sourceMethod = sourceMethod;
+    }
+
+    public MethodNode threadLocalNode() {
+        return local.get();
     }
 
     @Override
