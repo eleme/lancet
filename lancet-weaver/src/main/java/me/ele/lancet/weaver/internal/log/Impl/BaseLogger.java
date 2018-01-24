@@ -14,12 +14,12 @@ public abstract class BaseLogger implements ILogger {
 
     @Override
     public void d(String tag, String msg) {
-        write(LogLevel.DEBUG,tag, msg, null);
+        write(LogLevel.DEBUG, tag, msg, null);
     }
 
     @Override
     public void i(String tag, String msg) {
-        write(LogLevel.INFO,tag, msg, null);
+        write(LogLevel.INFO, tag, msg, null);
     }
 
     @Override
@@ -29,7 +29,7 @@ public abstract class BaseLogger implements ILogger {
 
     @Override
     public void w(String tag, String msg, Throwable t) {
-        write(LogLevel.WARN,tag, msg, t);
+        write(LogLevel.WARN, tag, msg, t);
     }
 
     @Override
@@ -39,7 +39,7 @@ public abstract class BaseLogger implements ILogger {
 
     @Override
     public void e(String tag, String msg, Throwable t) {
-        write(LogLevel.WARN,tag, msg, t);
+        write(LogLevel.ERROR, tag, msg, t);
     }
 
     protected abstract void write(LogLevel level, String prefix, String msg, Throwable t);

@@ -47,18 +47,20 @@ public class PreClassAnalysis {
     /**
      * start pre-analysis, the only API for pre-analysis.
      * this method will block until pre-analysis finish.
+     *
+     * @param incremental
      * @param context
      * @return is incremental compile mode
      * @throws IOException
      * @throws InterruptedException
      */
-    public boolean execute(TransformContext context) throws IOException, InterruptedException {
+    public boolean execute(boolean incremental, TransformContext context) throws IOException, InterruptedException {
         Log.d(context.toString());
         long duration = System.currentTimeMillis();
 
         contextReader = new ContextReader(context);
 
-        if (context.isIncremental() && !cache.isHookClassModified(context)){
+        if (incremental && context.isIncremental() && !cache.isHookClassModified(context)){
             // can use incremental
             partial = true;
 

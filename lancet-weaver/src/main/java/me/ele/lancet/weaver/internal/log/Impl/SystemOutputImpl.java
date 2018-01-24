@@ -33,12 +33,12 @@ public class SystemOutputImpl extends BaseLogger {
     @Override
     protected void write(LogLevel level, String prefix, String msg, Throwable t) {
         PrintStream ps = System.out;
-        if (prefix.charAt(0) == 'E' || prefix.charAt(0) == 'W') {
+        if (level == LogLevel.WARN || level == LogLevel.ERROR) {
             ps = System.err;
         }
-        ps.println((String.format("%s [%-10s] %s", level.name(),prefix, msg)));
+        ps.println((String.format("%s [%-10s] %s", level.name(), prefix, msg)));
         if (t != null) {
-            ps.println(level.name()+" "+stackToString(t));
+            ps.println(level.name() + " " + stackToString(t));
         }
     }
 }

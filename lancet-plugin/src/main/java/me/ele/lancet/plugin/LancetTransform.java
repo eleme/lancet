@@ -103,8 +103,12 @@ class LancetTransform extends Transform {
         Log.i("after android plugin, incremental: " + context.isIncremental());
         Log.i("now: " + System.currentTimeMillis());
 
+        boolean incremental = lancetExtension.getIncremental();
+
         PreClassAnalysis preClassAnalysis = new PreClassAnalysis(cache);
-        boolean incremental = preClassAnalysis.execute(context);
+
+        incremental = preClassAnalysis.execute(incremental, context);
+
         Log.i("after pre analysis, incremental: " + incremental);
         Log.i("now: " + System.currentTimeMillis());
 

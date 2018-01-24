@@ -2,6 +2,7 @@ package me.ele.lancet.weaver.internal.entity;
 
 import com.google.common.base.Strings;
 
+import me.ele.lancet.weaver.internal.util.AsmUtil;
 import org.objectweb.asm.tree.MethodNode;
 
 import java.util.regex.Pattern;
@@ -21,6 +22,13 @@ public class ProxyInfo {
 
     public Pattern pattern;
 
+    private ThreadLocal<MethodNode> local = new ThreadLocal<MethodNode>(){
+        @Override
+        protected MethodNode initialValue() {
+            return AsmUtil.clone(sourceMethod);
+        }
+    };
+
     public ProxyInfo(String regex, String targetClass, String targetMethod, String targetDesc, String sourceClass, MethodNode sourceMethod) {
         this.regex = regex;
         this.targetClass = targetClass;
@@ -32,6 +40,10 @@ public class ProxyInfo {
         if (!Strings.isNullOrEmpty(regex)) {
             this.pattern = Pattern.compile(regex);
         }
+    }
+
+    public MethodNode threadLocalNode() {
+        return local.get();
     }
 
     public boolean match(String className) {
