@@ -64,7 +64,7 @@ public class ProxyMethodVisitor extends MethodVisitor {
                         " from " + c.sourceClass + "." + c.sourceMethod.name);
 
                 String methodName = c.sourceClass.replace("/", "_") + "_" + c.sourceMethod.name;
-                chain.next(artificialClassname, Opcodes.ACC_STATIC, methodName, staticDesc, c.sourceMethod, cv);
+                chain.next(artificialClassname, Opcodes.ACC_STATIC, methodName, staticDesc, c.threadLocalNode(), cv);
             });
 
             invokerMap.put(key, chain.getHead());

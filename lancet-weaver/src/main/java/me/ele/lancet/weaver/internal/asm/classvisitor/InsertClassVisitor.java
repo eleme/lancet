@@ -65,7 +65,7 @@ public class InsertClassVisitor extends LinkedClassVisitor {
                     Log.tag("transform").i(
                             " from " + e.sourceClass + "." + e.sourceMethod.name);
                     String methodName = e.sourceClass.replace("/", "_") + "_" + e.sourceMethod.name;
-                    chain.next(owner, Opcodes.ACC_STATIC, methodName, staticDesc, e.sourceMethod, cv);
+                    chain.next(owner, Opcodes.ACC_STATIC, methodName, staticDesc, e.threadLocalNode(), cv);
                 });
                 chain.fakePreMethod(getContext().name, access, name, desc, signature, exceptions);
 

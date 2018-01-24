@@ -10,6 +10,7 @@ import java.util.Objects;
 public class LancetExtension {
     private Log.Level level = Log.Level.INFO;
     private String fileName = null;
+    private boolean incremental = true;
 
     public void logLevel(Log.Level level) {
         this.level = Objects.requireNonNull(level, "Log.Level is null");
@@ -48,6 +49,18 @@ public class LancetExtension {
             throw new IllegalArgumentException("File name is illegal: " + fileName);
         }
         this.fileName = fileName;
+    }
+
+    public void setIncremental(boolean incremental) {
+        this.incremental = incremental;
+    }
+
+    public boolean getIncremental() {
+        return this.incremental;
+    }
+
+    public void incremental(boolean incremental) {
+        this.incremental = incremental;
     }
 
     public Log.Level getLogLevel() {
