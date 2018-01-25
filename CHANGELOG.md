@@ -1,5 +1,9 @@
 #Change Log
 
+## Version 1.0.4
+*2018-01-25
+* Fix: in rare case, lancet generate illegal bytecode because of multi-thread.
+
 ## Version 1.0.3
 *2018-01-24*
 * Fix: in rare case, lancet generate illegal bytecode because of multi-thread.
