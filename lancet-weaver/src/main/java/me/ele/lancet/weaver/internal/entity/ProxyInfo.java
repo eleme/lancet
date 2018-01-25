@@ -24,7 +24,7 @@ public class ProxyInfo {
 
     private ThreadLocal<MethodNode> local = new ThreadLocal<MethodNode>(){
         @Override
-        protected MethodNode initialValue() {
+        synchronized protected MethodNode initialValue() {
             return AsmUtil.clone(sourceMethod);
         }
     };
