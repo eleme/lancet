@@ -32,7 +32,7 @@ public class DirectoryContentProvider extends TargetedQualifiedContentProvider {
                 /**
                  * if this compile is full compilation. we traverse all classes as newly added classes
                  */
-                for (File f : Files.fileTreeTraverser().preOrderTraversal(root)) {
+                for (File f : Files.fileTraverser().depthFirstPreOrder(root)) {
                     if (f.isFile() && f.getName().endsWith(".class")) {
                         byte[] data = Files.toByteArray(f);
                         String relativePath = base.relativize(f.toURI()).toString();
