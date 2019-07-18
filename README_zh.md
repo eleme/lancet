@@ -13,7 +13,7 @@ Lancet 是一个轻量级Android AOP框架。
 在根目录的 `build.gradle` 添加:
 ```groovy
 dependencies{
-    classpath 'me.ele:lancet-plugin:1.0.4'
+    classpath 'me.ele:lancet-plugin:1.0.5'
 }
 ```
 在 app 目录的'build.gradle' 添加：
@@ -21,7 +21,7 @@ dependencies{
 apply plugin: 'me.ele.lancet'
 
 dependencies {
-    provided 'me.ele:lancet-base:1.0.4'
+    provided 'me.ele:lancet-base:1.0.5'
 }
 ```
 
