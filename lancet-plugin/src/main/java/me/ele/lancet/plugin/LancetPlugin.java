@@ -13,7 +13,7 @@ public class LancetPlugin implements Plugin<Project> {
     public void apply(Project project) {
         if (project.getPlugins().findPlugin("com.android.application") == null
                 && project.getPlugins().findPlugin("com.android.library") == null) {
-            throw new ProjectConfigurationException("Need android application/library plugin to be applied first", null);
+            throw new ProjectConfigurationException("Need android application/library plugin to be applied first", (Throwable) null);
         }
 
         BaseExtension baseExtension = (BaseExtension) project.getExtensions().getByName("android");
