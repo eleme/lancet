@@ -190,7 +190,7 @@ public int hookExecute(@ClassOf("com.dieyidezui.demo.A$B") Object o) {
 }
 ```
 
-`ClassOf` 的 value 一定要按照 **`(package_name.)(outer_class_name$)inner_class_name([]...)`**的模板.  
+`ClassOf` 的 value 一定要按照 <strong>`(package_name.)(outer_class_name$)inner_class_name([]...)`</strong>的模板.  
 比如:
 * java.lang.Object
 * java.lang.Integer[][]
