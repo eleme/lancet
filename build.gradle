@@ -19,7 +19,7 @@ buildscript {
         asm_version = '5.1'
         //android_tools_version = '2.4.0-alpha6'
         android_tools_version = '3.3.2'
-        guava_version = '22.0'
+        guava_version = '24.0'
     }
     repositories {
         jcenter()
