@@ -18,10 +18,13 @@ In addition, not only App developers but also SDK developers can use Lancet.
 Firstly, add following code in root **build.gradle** of your project.
 
 ```groovy
-dependencies{
+dependencies {
+    classpath 'com.android.tools.build:gradle:3.3.2'
     classpath 'me.ele:lancet-plugin:1.0.6'
 }
 ```
+Tips: Lancet 1.0.5 and above only supports gradle 3.3.2 and above.
+
 And then, add following code in your **application module's build.gradle**
 
 ```groovy
