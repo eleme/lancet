@@ -60,4 +60,9 @@ public class PreProcessClassVisitor extends ClassVisitor {
             isHookClass = true;
         }
     }
+
+    @Override
+    public ModuleVisitor visitModule(String name, int access, String version) {
+        return null;
+    }
 }
