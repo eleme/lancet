@@ -1,5 +1,9 @@
 #Change Log
 
+## Version 1.0.6
+*2020-06-17
+* Fix: update guava version.
+
 ## Version 1.0.5
 *2019-07-18
 * Fix: support latest gradle version.

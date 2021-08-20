@@ -7,21 +7,34 @@ Lancet 是一个轻量级Android AOP框架。
 + 没有任何多余代码插入 apk.
 + 支持用于 SDK, 可以在SDK编写注入代码来修改依赖SDK的App.
 
+## 说明
+
+该项目是从[lancet](https://github.com/eleme/lancet)中fork出来的分支.
+
+我们将项目中的ASM版本升级为6.0，目的在于解决这个[issue](https://github.com/eleme/lancet/issues/46).
+
 ## 开始使用
 ### 安装
 
 在根目录的 `build.gradle` 添加:
 ```groovy
-dependencies{
-    classpath 'me.ele:lancet-plugin:1.0.5'
+repositories 
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    classpath 'com.android.tools.build:gradle:3.3.2'
+    classpath 'com.github.axen1314:lancet-plugin:1.0.6'
 }
 ```
+注意: Lancet 1.0.5 及以上版本只支持 gradle 3.3.2 及以上版本。
+
 在 app 目录的'build.gradle' 添加：
 ```groovy
 apply plugin: 'me.ele.lancet'
 
 dependencies {
-    provided 'me.ele:lancet-base:1.0.5'
+    compileOnly 'com.github.axen1314:lancet-base:1.0.6'
 }
 ```
 
@@ -61,7 +74,7 @@ public @interface Proxy {
 
 `@Proxy` 将使用新的方法**替换**代码里存在的原有的目标方法.   
 比如代码里有10个地方调用了 `Dog.bark()`, 代理这个方法后，所有的10个地方的代码会变为`_Lancet.xxxx.bark()`. 而在这个新方法中会执行你在Hook方法中所写的代码.  
-`@Proxy` 通常用与对系统 API 的劫持。因为虽然我们不能注入代码到系统提供的库之中，但我们可以劫持掉所有调用系统API的地方。  
+`@Proxy` 通常用于对系统 API 的劫持。因为虽然我们不能注入代码到系统提供的库之中，但我们可以劫持掉所有调用系统API的地方。  
 
 ##### @NameRegex
 @NameRegex 用来限制范围操作的作用域. 仅用于`Proxy`模式中, 比如你只想代理掉某一个包名下所有的目标操作. 或者你在代理所有的网络请求时，不想代理掉自己发起的请求. 使用`NameRegex`对 `TargetClass` , `ImplementedInterface` 筛选出的class再进行一次匹配. 
@@ -190,7 +203,7 @@ public int hookExecute(@ClassOf("com.dieyidezui.demo.A$B") Object o) {
 }
 ```
 
-`ClassOf` 的 value 一定要按照 **`(package_name.)(outer_class_name$)inner_class_name([]...)`**的模板.  
+`ClassOf` 的 value 一定要按照 <strong>`(package_name.)(outer_class_name$)inner_class_name([]...)`</strong>的模板.  
 比如:
 * java.lang.Object
 * java.lang.Integer[][]
