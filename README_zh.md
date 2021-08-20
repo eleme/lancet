@@ -7,14 +7,24 @@ Lancet 是一个轻量级Android AOP框架。
 + 没有任何多余代码插入 apk.
 + 支持用于 SDK, 可以在SDK编写注入代码来修改依赖SDK的App.
 
+## 说明
+
+该项目是从[lancet](https://github.com/eleme/lancet)中fork出来的分支.
+
+我们将项目中的ASM版本升级为6.0，目的在于解决这个[issue](https://github.com/eleme/lancet/issues/46).
+
 ## 开始使用
 ### 安装
 
 在根目录的 `build.gradle` 添加:
 ```groovy
+repositories 
+    maven { url 'https://jitpack.io' }
+}
+
 dependencies {
     classpath 'com.android.tools.build:gradle:3.3.2'
-    classpath 'me.ele:lancet-plugin:1.0.6'
+    classpath 'com.github.axen1314:lancet-plugin:1.0.6'
 }
 ```
 注意: Lancet 1.0.5 及以上版本只支持 gradle 3.3.2 及以上版本。
@@ -24,7 +34,7 @@ dependencies {
 apply plugin: 'me.ele.lancet'
 
 dependencies {
-    provided 'me.ele:lancet-base:1.0.6'
+    compileOnly 'com.github.axen1314:lancet-base:1.0.6'
 }
 ```
 

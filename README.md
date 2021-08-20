@@ -12,15 +12,25 @@ It takes no runtime jar.
 
 In addition, not only App developers but also SDK developers can use Lancet.
 
+## Description
+
+This project is forked from [Lancet](https://github.com/eleme/lancet).
+
+We upgrade the asm to 6.0 to avoid this [issue](https://github.com/eleme/lancet/issues/46).
+
 ## Usage
 ### Installation
 
 Firstly, add following code in root **build.gradle** of your project.
 
 ```groovy
+repositories 
+    maven { url 'https://jitpack.io' }
+}
+
 dependencies {
     classpath 'com.android.tools.build:gradle:3.3.2'
-    classpath 'me.ele:lancet-plugin:1.0.6'
+    classpath 'com.github.axen1314:lancet-plugin:1.0.6'
 }
 ```
 Tips: Lancet 1.0.5 and above only supports gradle 3.3.2 and above.
@@ -31,7 +41,7 @@ And then, add following code in your **application module's build.gradle**
 apply plugin: 'me.ele.lancet'
 
 dependencies {
-    provided 'me.ele:lancet-base:1.0.6'
+    compileOnly 'com.github.axen1314:lancet-base:1.0.6'
 }
 ```
 
