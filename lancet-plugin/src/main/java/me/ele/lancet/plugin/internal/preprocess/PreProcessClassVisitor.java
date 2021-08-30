@@ -1,13 +1,21 @@
 package me.ele.lancet.plugin.internal.preprocess;
 
-import me.ele.lancet.base.annotations.*;
-import me.ele.lancet.weaver.internal.graph.ClassEntity;
-import me.ele.lancet.weaver.internal.graph.FieldEntity;
-import me.ele.lancet.weaver.internal.graph.MethodEntity;
-import org.objectweb.asm.*;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 import java.util.Arrays;
 import java.util.Collections;
+
+import me.ele.lancet.base.annotations.Insert;
+import me.ele.lancet.base.annotations.Proxy;
+import me.ele.lancet.base.annotations.TryCatchHandler;
+import me.ele.lancet.weaver.internal.graph.ClassEntity;
+import me.ele.lancet.weaver.internal.graph.FieldEntity;
+import me.ele.lancet.weaver.internal.graph.MethodEntity;
 
 /**
  * Created by gengwanpeng on 17/4/27.
@@ -44,7 +52,7 @@ public class PreProcessClassVisitor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         entity.methods.add(new MethodEntity(access, name, desc));
         if (!isHookClass) {
-            return new MethodVisitor(Opcodes.ASM5) {
+            return new MethodVisitor(Opcodes.ASM6) {
                 @Override
                 public AnnotationVisitor visitAnnotation(String annoDesc, boolean visible) {
                     judge(annoDesc);
