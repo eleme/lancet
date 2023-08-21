@@ -41,6 +41,7 @@ public class TransformProcessor implements ClassFetcher {
     public boolean onStart(QualifiedContent content) throws IOException {
         if (content instanceof JarInput) {
             JarInput jarInput = (JarInput) content;
+            // 输出字节码的位置
             File targetFile = context.getRelativeFile(content);
             switch (jarInput.getStatus()) {
                 case REMOVED:
@@ -104,6 +105,7 @@ public class TransformProcessor implements ClassFetcher {
                 jos.write(bytes);
             } else {
                 for (ClassData classData : weaver.weave(bytes, relativePath)) {
+                    // classData 存储编织好的字节码
                     ZipEntry entry = new ZipEntry(classData.getClassName() + ".class");
                     jos.putNextEntry(entry);
                     jos.write(classData.getClassBytes());

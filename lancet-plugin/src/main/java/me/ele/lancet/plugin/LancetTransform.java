@@ -64,7 +64,7 @@ class LancetTransform extends Transform {
 
 
     @Override
-    public Set<QualifiedContent.Scope> getScopes() {
+    public Set<QualifiedContent.ScopeType> getScopes() {
         return TransformManager.SCOPE_FULL_PROJECT;
     }
 

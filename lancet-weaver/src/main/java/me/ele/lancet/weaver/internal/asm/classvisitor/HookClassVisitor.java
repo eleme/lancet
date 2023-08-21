@@ -16,7 +16,9 @@ public class HookClassVisitor extends LinkedClassVisitor {
     private final Set<String> excludes;
     private boolean matched;
 
+
     public HookClassVisitor(Set<String> excludes) {
+        super();
         this.excludes = excludes;
     }
 

@@ -21,7 +21,7 @@ public class TraceUtil {
 
 
     public static ClassVisitor dump(ClassVisitor next) {
-        return new ClassNode(Opcodes.ASM5) {
+        return new ClassNode(Opcodes.ASM6) {
             @Override
             public void visitEnd() {
                 super.visitEnd();
@@ -38,7 +38,7 @@ public class TraceUtil {
     }
 
     public static MethodVisitor dump(MethodVisitor next) {
-        return new MethodNode(Opcodes.ASM5) {
+        return new MethodNode(Opcodes.ASM6) {
 
             @Override
             public void visitEnd() {
@@ -63,7 +63,7 @@ public class TraceUtil {
         PrintWriter pw = new PrintWriter(sw);
         Printer printer = new ASMifier();
         TraceMethodVisitor traceMv = new TraceMethodVisitor(printer);
-        return new MethodVisitor(Opcodes.ASM5,traceMv) {
+        return new MethodVisitor(Opcodes.ASM6,traceMv) {
 
             @Override
             public void visitEnd() {

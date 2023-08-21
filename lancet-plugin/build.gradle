@@ -1,30 +1,28 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile gradleApi()
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation gradleApi()
     compileOnly "com.android.tools.build:gradle:$android_tools_version"
-    compile "com.google.code.gson:gson:2.8.0"
-    compile project(':lancet-weaver')
-    testCompile gradleTestKit()
-    testCompile 'junit:junit:4.12'
+    implementation "com.google.code.gson:gson:2.8.0"
+    api project(':lancet-weaver')
 }
 
 sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
 
-task createClasspathManifest {
-    def outputDir = file("$buildDir/$name")
-
-    inputs.files sourceSets.main.runtimeClasspath
-    outputs.dir outputDir
-
-    doLast {
-        outputDir.mkdirs()
-        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
-    }
+dependencies {
+//    testRuntime files(createClasspathManifest)
 }
 
-dependencies {
-    testRuntime files(createClasspathManifest)
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = group
+            artifactId = 'gradle'
+            version = version
+            from components.java
+        }
+    }
 }

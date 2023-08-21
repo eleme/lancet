@@ -27,7 +27,7 @@ public class ProxyMethodVisitor extends MethodVisitor {
     private final MethodChain chain;
 
     public ProxyMethodVisitor(MethodChain chain, MethodVisitor mv, Map<String, MethodChain.Invoker> invokerMap, Map<String, List<ProxyInfo>> matchMap, String className, String name, ClassCollector classCollector) {
-        super(Opcodes.ASM5, mv);
+        super(Opcodes.ASM6, mv);
         this.chain = chain;
         this.invokerMap = invokerMap;
         this.matchMap = matchMap;
@@ -40,6 +40,7 @@ public class ProxyMethodVisitor extends MethodVisitor {
     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
         String key = owner + " " + name + " " + desc;
         List<ProxyInfo> infos = matchMap.get(key);
+        // 复用；如果之前已经创建好了，内部类。直接替换为新指令
         MethodChain.Invoker invoker = invokerMap.get(key);
         if (invoker != null) {
             invoker.invoke(mv);
@@ -55,7 +56,7 @@ public class ProxyMethodVisitor extends MethodVisitor {
             Log.tag("transform").i("start weave Call method " + " for " + owner + "." + name + desc +
                     " in " + className + "." + this.name);
 
-            infos.forEach(c -> {
+            infos.forEach(c -> { // sourceMethod 是hookClass的method
                 if (TypeUtil.isStatic(c.sourceMethod.access) != (opcode == Opcodes.INVOKESTATIC)) {
                     throw new IllegalStateException(c.sourceClass + "." + c.sourceMethod.name + " should have the same " +
                             "static flag with " + owner + "." + name);
@@ -64,10 +65,13 @@ public class ProxyMethodVisitor extends MethodVisitor {
                         " from " + c.sourceClass + "." + c.sourceMethod.name);
 
                 String methodName = c.sourceClass.replace("/", "_") + "_" + c.sourceMethod.name;
+                // artificialClassName 需要生成的内部类的名称
+                // 生成内部类方法
                 chain.next(artificialClassname, Opcodes.ACC_STATIC, methodName, staticDesc, c.threadLocalNode(), cv);
             });
 
             invokerMap.put(key, chain.getHead());
+            // 替换调用指令
             chain.getHead().invoke(mv);
         } else {
             super.visitMethodInsn(opcode, owner, name, desc, itf);

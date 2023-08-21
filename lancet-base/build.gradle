@@ -1,8 +1,21 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
 }
 
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = group
+            artifactId = 'base'
+            version = version
+            from components.java
+        }
+    }
+}

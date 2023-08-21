@@ -37,6 +37,7 @@ public class ClassCollector {
 
     public ClassVisitor getOriginClassVisitor() {
         if(originClassWriter ==null){
+            // 负责写字节码
             originClassWriter = new ClassWriter(mClassReader, 0);
         }
         return originClassWriter;
@@ -44,7 +45,7 @@ public class ClassCollector {
 
     public ClassVisitor getInnerClassVisitor(String classSimpleName) {
         ClassWriter writer = mClassWriters.get(classSimpleName);
-        if (writer == null) {
+        if (writer == null) { // inner class visitor . 创建innerClass Write，用于输出内部类的实现
             writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
             initForWriter(writer, classSimpleName);
             mClassWriters.put(classSimpleName, writer);

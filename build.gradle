@@ -4,153 +4,39 @@ buildscript {
     ext {
         Properties properties = new Properties()
         properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        bintrayUser = properties.getProperty('bintrayUser')
+        bintrayKey = properties.getProperty('bintrayKey')
+        lancet_group = 'com.blueberry.lancet'
+        lancet_version = '0.0.2-SNAPSHOT'
 
-        ele = true
-        ele = "true" == properties.getProperty("ele")
-
-        if (!ele) {
-            bintrayUser = properties.getProperty('bintrayUser')
-            bintrayKey = properties.getProperty('bintrayKey')
-        }
-        lancet_group = 'me.ele'
-        lancet_version = '1.0.6'
-        //lancet_version = '0.0.1.8-SNAPSHOT'
-
-        asm_version = '5.1'
-        //android_tools_version = '2.4.0-alpha6'
-        android_tools_version = '3.3.2'
+        asm_version = '7.0'
+        android_tools_version = '4.0.1'
         guava_version = '24.0'
     }
     repositories {
         jcenter()
         mavenCentral()
         maven {
-            if (ele) {
-                url "http://maven.dev.elenet.me/nexus/content/groups/public"
-            } else {
-                url "https://dl.bintray.com/eleme-mt-arch/maven"
-            }
+            url "https://dl.bintray.com/eleme-mt-arch/maven"
         }
     }
     dependencies {
-        if (ele) {
-            classpath 'me.ele:eradle:1.7.0'
-        } else {
-            classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-        }
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     }
 }
 
 subprojects { pro ->
-
     repositories {
         jcenter()
         mavenCentral()
         maven {
             url 'https://maven.google.com'
         }
+        maven {
+            url 'https://mvnrepository.com/artifact'
+        }
     }
-
     if (pro.name == 'sample-test')return
-
     version = lancet_version
     group = lancet_group
-
-    if (ele) {
-        apply plugin: 'eradle'
-        modifyPom {
-            project {
-                groupId lancet_group
-                artifactId pro.name
-                version lancet_version
-                packaging 'jar'
-            }
-        }
-        extraArchive {
-            sources = true
-        }
-    } else {
-        apply plugin: 'maven'
-        apply plugin: 'com.jfrog.bintray'
-        afterEvaluate {
-            task sourcesJar(type: Jar) {
-                from sourceSets.main.java.srcDirs
-                classifier = 'sources'
-            }
-
-            task javadocJar(type: Jar, dependsOn: javadoc) {
-                classifier = 'javadoc'
-                from javadoc.destinationDir
-            }
-
-            artifacts {
-                archives sourcesJar
-                archives javadocJar
-            }
-            tasks.install {
-                repositories.mavenInstaller {
-                    pom {
-                        project {
-                            packaging 'jar'
-                            licenses {
-                                license {
-                                    name 'The Apache Software License, Version 2.0'
-                                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                                }
-                            }
-                            developers {
-                                developer {
-                                    id 'dieyidezui'
-                                    name '耿万鹏'
-                                    email 'dieyidezui@gmail.com'
-                                }
-                                developer {
-                                    id 'jude95'
-                                    name '朱晨曦'
-                                    email '973829691@qq.com'
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        bintray {
-            user = bintrayUser
-            key = bintrayKey
-            configurations = ['archives']
-            pkg {
-                userOrg = "eleme-mt-arch"
-                repo = "maven"
-                userOrg = "eleme-mt-arch"
-                name = pro.name    //发布到JCenter上的项目名字
-                websiteUrl = "https://github.com/eleme/lancet"
-                vcsUrl = "git@github.com:eleme/lancet.git"
-                licenses = ["Apache-2.0"]
-                publish = true
-            }
-        }
-    }
-
-}
-
-task uploadAll { task ->
-
-    task.group = 'upload'
-    gradle.projectsEvaluated {
-        task.dependsOn project.tasks.clean
-        task.dependsOn project.tasks.build
-
-        project.tasks.build.mustRunAfter project.tasks.clean
-
-        project.subprojects {
-            if (it.name != 'sample-test') {
-                Task upload = !ele ? it.tasks.bintrayUpload : it.tasks.uploadArchives;
-                task.dependsOn upload
-                upload.mustRunAfter project.tasks.build
-            }
-        }
-    }
 }

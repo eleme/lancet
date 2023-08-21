@@ -1,18 +1,27 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
 
 dependencies {
-    testCompile "junit:junit:4.12"
-    testCompile 'com.squareup.okio:okio:1.11.0'
-    testCompile 'org.assertj:assertj-core:3.6.2'
-
-    compileClasspath "com.android.tools.build:gradle:$android_tools_version"
-    compile project(':lancet-base')
-    compile gradleApi()
-    compileClasspath "com.google.guava:guava:$guava_version"
-    compile "org.ow2.asm:asm-all:$asm_version"
+    compileOnly "com.android.tools.build:gradle:$android_tools_version"
+    api project(':lancet-base')
+    compileOnly gradleApi()
+    compileOnly "com.google.guava:guava:$guava_version"
+    implementation "org.ow2.asm:asm:$asm_version"
 }
 
 sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
 
+
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = group
+            artifactId = 'lancet-weaver'
+            version = version
+            from components.java
+        }
+    }
+}
 

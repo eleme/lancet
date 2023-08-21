@@ -33,7 +33,7 @@ public class MethodChain {
     private static final String CLASS_OF = Type.getDescriptor(ClassOf.class);
 
     private final String className;
-    private final ClassVisitor base;
+    private final ClassVisitor base; // write visitor
     private final Graph graph;
     private Bitset bitset;
 
@@ -87,7 +87,7 @@ public class MethodChain {
         head.createIfNeed(base, bitset, exs);
 
         MethodVisitor mv = cv.visitMethod(access, name, desc, null, exs);
-        node.accept(new MethodVisitor(Opcodes.ASM5, new AutoUnboxMethodVisitor(mv)) {
+        node.accept(new MethodVisitor(Opcodes.ASM6, new AutoUnboxMethodVisitor(mv)) {
 
             @Override
             public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
